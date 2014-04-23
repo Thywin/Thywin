@@ -24,37 +24,29 @@
  *
  */
 
-
 #ifndef HAPPYHTTP_H
 #define HAPPYHTTP_H
-
 
 #include <string>
 #include <map>
 #include <vector>
 #include <deque>
 
-
-
-
 // forward decl
 struct in_addr;
 
-namespace happyhttp
-{
-
+namespace happyhttp {
 
 class Response;
 
 // Helper Functions
-void BailOnSocketError( const char* context );
-struct in_addr *atoaddr( const char* address);
+void BailOnSocketError(const char* context);
+struct in_addr *atoaddr(const char* address);
 
-
-typedef void (*ResponseBegin_CB)( const Response* r, void* userdata );
-typedef void (*ResponseData_CB)( const Response* r, void* userdata, const unsigned char* data, int numbytes );
-typedef void (*ResponseComplete_CB)( const Response* r, void* userdata );
-
+typedef void (*ResponseBegin_CB)(const Response* r, void* userdata);
+typedef void (*ResponseData_CB)(const Response* r, void* userdata,
+		const unsigned char* data, int numbytes);
+typedef void (*ResponseComplete_CB)(const Response* r, void* userdata);
 
 // HTTP status codes
 enum {
@@ -82,7 +74,7 @@ enum {
 	NOT_MODIFIED = 304,
 	USE_PROXY = 305,
 	TEMPORARY_REDIRECT = 307,
-	
+
 	// 4xx client error
 	BAD_REQUEST = 400,
 	UNAUTHORIZED = 401,
@@ -118,22 +110,20 @@ enum {
 	NOT_EXTENDED = 510,
 };
 
-
-
 // Exception class
 
-class Wobbly
-{
+class Wobbly {
 public:
-	Wobbly( const char* fmt, ... );
-	const char* what() const
-		{ return m_Message; }
+	Wobbly(const char* fmt, ...);
+	const char* what() const {
+		return m_Message;
+	}
 protected:
-	enum { MAXLEN=256 };
-	char m_Message[ MAXLEN ];
+	enum {
+		MAXLEN = 256
+	};
+	char m_Message[MAXLEN];
 };
-
-
 
 //-------------------------------------------------
 // Connection
@@ -142,12 +132,11 @@ protected:
 // responses.
 // ------------------------------------------------
 
-class Connection
-{
+class Connection {
 	friend class Response;
 public:
 	// doesn't connect immediately
-	Connection( const char* host, int port );
+	Connection(const char* host, int port);
 	~Connection();
 
 	// Set up the response handling callbacks. These will be invoked during
@@ -156,11 +145,8 @@ public:
 	// datacb		- called repeatedly to handle body data
 	// completecb	- response is completed
 	// userdata is passed as a param to all callbacks.
-	void setcallbacks(
-		ResponseBegin_CB begincb,
-		ResponseData_CB datacb,
-		ResponseComplete_CB completecb,
-		void* userdata );
+	void setcallbacks(ResponseBegin_CB begincb, ResponseData_CB datacb,
+			ResponseComplete_CB completecb, void* userdata);
 
 	// Don't need to call connect() explicitly as issuing a request will
 	// call it automatically if needed.
@@ -176,19 +162,20 @@ public:
 	void pump();
 
 	// any requests still outstanding?
-	bool outstanding() const
-		{ return !m_Outstanding.empty(); }
+	bool outstanding() const {
+		return !m_Outstanding.empty();
+	}
 
 	// ---------------------------
 	// high-level request interface
 	// ---------------------------
-	
+
 	// method is "GET", "POST" etc...
 	// url is only path part: eg  "/index.html"
 	// headers is array of name/value pairs, terminated by a null-ptr
 	// body & bodysize specify body data of request (eg values for a form)
-	void request( const char* method, const char* url, const char* headers[]=0,
-		const unsigned char* body=0, int bodysize=0 );
+	void request(const char* method, const char* url, const char* headers[] = 0,
+			const unsigned char* body = 0, int bodysize = 0);
 
 	// ---------------------------
 	// low-level request interface
@@ -197,42 +184,39 @@ public:
 	// begin request
 	// method is "GET", "POST" etc...
 	// url is only path part: eg  "/index.html"
-	void putrequest( const char* method, const char* url );
+	void putrequest(const char* method, const char* url);
 
 	// Add a header to the request (call after putrequest() )
-	void putheader( const char* header, const char* value );
-	void putheader( const char* header, int numericvalue );	// alternate version
+	void putheader(const char* header, const char* value);
+	void putheader(const char* header, int numericvalue);	// alternate version
 
 	// Finished adding headers, issue the request.
 	void endheaders();
 
 	// send body data if any.
 	// To be called after endheaders()
-	void send( const unsigned char* buf, int numbytes );
+	void send(const unsigned char* buf, int numbytes);
 
 protected:
 	// some bits of implementation exposed to Response class
 
 	// callbacks
-	ResponseBegin_CB	m_ResponseBeginCB;
-	ResponseData_CB		m_ResponseDataCB;
-	ResponseComplete_CB	m_ResponseCompleteCB;
-	void*				m_UserData;
+	ResponseBegin_CB m_ResponseBeginCB;
+	ResponseData_CB m_ResponseDataCB;
+	ResponseComplete_CB m_ResponseCompleteCB;
+	void* m_UserData;
 
 private:
-	enum { IDLE, REQ_STARTED, REQ_SENT } m_State;
+	enum {
+		IDLE, REQ_STARTED, REQ_SENT
+	} m_State;
 	std::string m_Host;
 	int m_Port;
 	int m_Sock;
-	std::vector< std::string > m_Buffer;	// lines of request
+	std::vector<std::string> m_Buffer;	// lines of request
 
-	std::deque< Response* > m_Outstanding;	// responses for outstanding requests
+	std::deque<Response*> m_Outstanding;// responses for outstanding requests
 };
-
-
-
-
-
 
 //-------------------------------------------------
 // Response
@@ -240,18 +224,16 @@ private:
 // Handles parsing of response data.
 // ------------------------------------------------
 
-
-class Response
-{
+class Response {
 	friend class Connection;
 public:
 
 	// retrieve a header (returns 0 if not present)
-	const char* getheader( const char* name ) const;
+	const char* getheader(const char* name) const;
 
-	bool completed() const
-		{ return m_State == COMPLETE; }
-
+	bool completed() const {
+		return m_State == COMPLETE;
+	}
 
 	// get the HTTP status code
 	int getstatus() const;
@@ -260,18 +242,19 @@ public:
 	const char* getreason() const;
 
 	// true if connection is expected to close after this response.
-	bool willclose() const
-		{ return m_WillClose; }
+	bool willclose() const {
+		return m_WillClose;
+	}
 protected:
 	// interface used by Connection
 
 	// only Connection creates Responses.
-	Response( const char* method, Connection& conn );
+	Response(const char* method, Connection& conn);
 
 	// pump some data in for processing.
 	// Returns the number of bytes used.
 	// Will always return 0 when response is complete.
-	int pump( const unsigned char* data, int datasize );
+	int pump(const unsigned char* data, int datasize);
 
 	// tell response that connection has closed
 	void notifyconnectionclosed();
@@ -291,43 +274,38 @@ private:
 	std::string m_Method;		// req method: "GET", "POST" etc...
 
 	// status line
-	std::string	m_VersionString;	// HTTP-Version
-	int	m_Version;			// 10: HTTP/1.0    11: HTTP/1.x (where x>=1)
+	std::string m_VersionString;	// HTTP-Version
+	int m_Version;			// 10: HTTP/1.0    11: HTTP/1.x (where x>=1)
 	int m_Status;			// Status-Code
 	std::string m_Reason;	// Reason-Phrase
 
 	// header/value pairs
-	std::map<std::string,std::string> m_Headers;
+	std::map<std::string, std::string> m_Headers;
 
-	int		m_BytesRead;		// body bytes read so far
-	bool	m_Chunked;			// response is chunked?
-	int		m_ChunkLeft;		// bytes left in current chunk
-	int		m_Length;			// -1 if unknown
-	bool	m_WillClose;		// connection will close at response end?
+	int m_BytesRead;		// body bytes read so far
+	bool m_Chunked;			// response is chunked?
+	int m_ChunkLeft;		// bytes left in current chunk
+	int m_Length;			// -1 if unknown
+	bool m_WillClose;		// connection will close at response end?
 
 	std::string m_LineBuf;		// line accumulation for states that want it
 	std::string m_HeaderAccum;	// accumulation buffer for headers
 
-
 	void FlushHeader();
-	void ProcessStatusLine( std::string const& line );
-	void ProcessHeaderLine( std::string const& line );
-	void ProcessTrailerLine( std::string const& line );
-	void ProcessChunkLenLine( std::string const& line );
+	void ProcessStatusLine(std::string const& line);
+	void ProcessHeaderLine(std::string const& line);
+	void ProcessTrailerLine(std::string const& line);
+	void ProcessChunkLenLine(std::string const& line);
 
-	int ProcessDataChunked( const unsigned char* data, int count );
-	int ProcessDataNonChunked( const unsigned char* data, int count );
+	int ProcessDataChunked(const unsigned char* data, int count);
+	int ProcessDataNonChunked(const unsigned char* data, int count);
 
 	void BeginBody();
 	bool CheckClose();
 	void Finish();
 };
 
-
-
 }	// end namespace happyhttp
 
-
 #endif // HAPPYHTTP_H
-
 
