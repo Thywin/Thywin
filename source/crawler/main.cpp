@@ -1,80 +1,108 @@
-#include "happyhttp.h"
 #include <cstdio>
 #include <cstring>
 #include <stdlib.h>
+#include <sys/wait.h>
 #include <fcntl.h>
+#include <unistd.h>
+#include <iostream>
+#include "md5.h"
+#include "crawler.hpp"
 
-int count = 0;
-int fileID = -1;
-void OnBegin(const happyhttp::Response* r, void* userdata)
+int main()
 {
-	printf("BEGIN (%d %s)\n", r->getstatus(), r->getreason());
-	count = 0;
-}
+	char* collection[] = {
+		"nu.nl",
+		"www.google.nl",
+		"http://buried.com/",
+		"http://www.zedwood.com/article/cpp-md5-function",
+		"http://bobobobo.wordpress.com/2010/10/17/md5-c-implementation/",
+		"https://www.hackthissite.org/articles/read/1078"
+	};
 
-void OnData(const happyhttp::Response* r, void* userdata,
-		const unsigned char* data, int n)
-{
-	// fwrite(data, 1, n, stdout);
-
-	if (write(fileID, data,n) < 1)
+	for (unsigned int i = 0; i < 6; i++)
 	{
-		perror("failed to write");
-	}
-	else
-	{
-		//printf("%c",data);
-		fwrite(data, 1, n, stdout);
-	}
-
-	count += n;
-}
-
-void OnComplete(const happyhttp::Response* r, void* userdata)
-{
-	printf("COMPLETE (%d bytes)\n\n", count);
-}
-
-void sendRequestTest(char* site, char* site2)
-{
-	happyhttp::Connection conn(site, 80);
-	conn.setcallbacks(OnBegin, OnData, OnComplete, 0);
-
-	conn.request("GET", site2, 0, 0, 0);
-
-	while (conn.outstanding())
-	{
-		conn.pump();
-	}
-}
-
-int main(int argc, char** argv)
-{
-	char* collection[4] = { "www.google.nl", "kooisoftware.nl", "www.nu.nl", "www.blackbirddevelopment.nl" };
-
-	try
-	{
-		for (int i = 0; i < 4; i++)
+		printf("Starting collection: %d\n", i);
+		if (crawler::crawl(collection[i]) < 0)
 		{
-			fileID = open(collection[i], O_CREAT | O_WRONLY, 0777);
-			if (fileID < 0)
-			{
-				perror("failed to create file");
-			}
-			else
-			{
-				printf("Opening: %s", collection[i]);
-				sendRequestTest(collection[i], "/");
-				printf("Closing file\n");
-				close(fileID);
-			}
+			printf("Process failied!\n");
 		}
-		//sendRequestTest(argv[1], argv[2]);
-	}
-	catch (happyhttp::Wobbly& e)
-	{
-		fprintf(stderr, "Exception:\n%s\n", e.what());
 	}
 
 	return EXIT_SUCCESS;
+}
+
+int crawler::crawl(char* url)
+{
+	printf("Start from crawl: %s\n",url);
+    int iPID, aiPX[2], aiPY[2];
+
+    pipe(aiPX);
+    pipe(aiPY);
+
+    switch(iPID = fork())
+    {
+        case 0:
+            crawler::Child(aiPX, aiPY, url);
+            break;
+
+        case -1:
+            perror("Can\'t create child!");
+            return -1;
+
+        default:
+            crawler::Parent(aiPX, aiPY, url);
+    }
+
+    return 0;
+}
+
+void crawler::Parent(int* aiPX, int* aiPY, char* url) {
+    char c;
+    int fd;
+
+    close(aiPX[0]);
+    close(aiPY[1]);
+
+    std::string newurl(url);
+    const char* newerulr = md5(newurl).c_str();
+
+    printf("Creating new file: %s (PARENT)\n",newerulr);
+    fd = open(newerulr, O_TRUNC | O_CREAT | O_RDWR, 0777);
+    if (fd < 0) {
+    	perror("Failure");
+    }
+    while(read(aiPY[0], &c, 1))
+        write(fd, &c, 1);
+    printf("Finished writing to file (PARENT)\n");
+    close(aiPY[0]);
+
+    close(fd);
+
+    wait(0);
+}
+
+void crawler::Child(int* aiPX, int* aiPY, char* url) {
+    close(aiPX[1]);
+    close(aiPY[0]);
+
+    close(0);
+    dup(aiPX[0]);
+    close(aiPX[0]);
+
+    close(1);
+    dup(aiPY[1]);
+    close(aiPY[1]);
+
+    char* exec[4];
+	exec[0] = "wget";
+	exec[1] = "-qO-";
+	exec[2] = url;
+    exec[3] = NULL;
+    printf("Starting wget for: %s (CHILD)\n",url);
+    execvp(exec[0], exec);
+    perror("Exec error");
+
+    printf("Bestandsnaam: %s", url);
+
+    exit(1);
 }

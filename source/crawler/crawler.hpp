@@ -11,42 +11,8 @@
 
 namespace crawler
 {
-	class URL
-	{
-		public:
-			char* getURL();
-		private:
-			char* url;
-	};
-
-	class Parser
-	{
-		public:
-			char *getIP();
-		private:
-			char *ip;
-	};
-
-	class Scheduler
-	{
-		public:
-			char *getIP();
-		private:
-			char *ip;
-	};
-
-	class Crawler
-	{
-		public:
-
-		protected:
-
-		private:
-			URL crawlList[MAX_CRAWL_LIST];
-			void findParser();
-			void findScheduler();
-			void requestNextURL();
-			void crawlNext();
-	};
+	int crawl(char* url);
+	void Parent(int* aiPX, int* aiPY, char* url);
+	void Child(int* aiPX, int* aiPY, char* url);
 }
 #endif /* CRAWLER_HPP_ */
