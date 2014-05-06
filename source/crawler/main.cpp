@@ -50,7 +50,7 @@ void sendRequestTest(char* site, char* site2)
 
 int main(int argc, char** argv)
 {
-	char *collection[3] = { "www.google.nl", "kooisoftware.nl", "www.nu.nl", "www.blackbirddevelopment.nl" };
+	char* collection[4] = { "www.google.nl", "kooisoftware.nl", "www.nu.nl", "www.blackbirddevelopment.nl" };
 	try
 	{
 		for (int i = 0; i < 3; i++)
