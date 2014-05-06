@@ -9,10 +9,15 @@
 #define CRAWLER_HPP_
 #define MAX_CRAWL_LIST 10
 
-namespace crawler
+namespace thywin
 {
-	int crawl(char* url);
-	void Parent(int* aiPX, int* aiPY, char* url);
-	void Child(int* aiPX, int* aiPY, char* url);
+	class crawler
+	{
+	public:
+		int crawl(char* url);
+	private:
+		void Parent(int* aiPY, char* url);
+		void Child(int* aiPY, char* url);
+	};
 }
 #endif /* CRAWLER_HPP_ */
