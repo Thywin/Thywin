@@ -18,6 +18,7 @@ namespace crawler
 		private:
 			char* url;
 	};
+
 	class Parser
 	{
 		public:
@@ -33,20 +34,19 @@ namespace crawler
 		private:
 			char *ip;
 	};
+
 	class Crawler
 	{
-	public:
+		public:
 
-	protected:
+		protected:
 
-
-	private:
-		URL crawlList[MAX_CRAWL_LIST];
-		void findParser();
-		void findScheduler();
-		void requestNextURL();
-		void crawlNext();
+		private:
+			URL crawlList[MAX_CRAWL_LIST];
+			void findParser();
+			void findScheduler();
+			void requestNextURL();
+			void crawlNext();
 	};
-
 }
 #endif /* CRAWLER_HPP_ */
