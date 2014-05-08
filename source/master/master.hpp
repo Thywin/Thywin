@@ -10,9 +10,24 @@
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sstream>
+
 
 namespace thywin
 {
+	const short URL = 1;
+	const short DOCUMENT = 2;
+	const short GET = 1;
+	const short PUT = 2;
+	struct requestContainer {
+		short type;
+		short action;
+		int size;
+		//std::stringstream content;
+		//std::stringstream meta;
+	};
+
+
 	class master
 	{
 	public:
@@ -59,19 +74,6 @@ namespace thywin
 		//map<std::string,int> documentVector;
 	};
 
-
-	class URLQueue
-	{
-
-	};
-
-
-	class DocumentQueu
-	{
-
-	};
-
-
 	class Indices
 	{
 
@@ -81,7 +83,7 @@ namespace thywin
 	class Storage
 	{
 	public:
-		URL getURLFromQueue();
+		void getURLFromQueue();
 	};
 }
 
