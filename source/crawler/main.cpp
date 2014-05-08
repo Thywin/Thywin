@@ -1,27 +1,50 @@
+/*
+ * main.hpp
+ *
+ *  Created on: 25 apr. 2014
+ *      Author: Thomas, Bobby
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "crawler.hpp"
 
+struct requestContainer {
+	short type;
+	short action;
+	int sizeOfContent;
+	char* content;
+	int sizeOfMeta;
+	char* meta;
+};
+
 int main()
 {
-	char* collection[] = {
-		"nu.nl",
-		"www.google.nl",
-		"http://buried.com/",
-		"http://www.zedwood.com/article/cpp-md5-function",
-		"http://bobobobo.wordpress.com/2010/10/17/md5-c-implementation/",
-		"https://www.hackthissite.org/articles/read/1078"
-	};
+//	char* collection[] = {
+//		"nu.nl",
+//		"www.google.nl",
+//		"http://buried.com/",
+//		"http://www.zedwood.com/article/cpp-md5-function",
+//		"http://bobobobo.wordpress.com/2010/10/17/md5-c-implementation/",
+//		"https://www.hackthissite.org/articles/read/1078"
+//	};
 
 	thywin::crawler crawler;
-	for (unsigned int i = 0; i < 6; i++)
+
+	for (unsigned int i = 0; i < 100; i++)
 	{
-		printf("Starting collection: %d\n", i);
-		if (crawler.crawl(collection[i]) < 0)
-		{
-			printf("Process failed!\n");
-		}
+		crawler.getUrl();
+		//crawler.crawl(url);
 	}
+
+//	for (unsigned int i = 0; i < 6; i++)
+//	{
+//		printf("Starting collection: %d\n", i);
+//		if (crawler.crawl(collection[i]) < 0)
+//		{
+//			printf("Process failed!\n");
+//		}
+//	}
 
 	return EXIT_SUCCESS;
 }
