@@ -18,7 +18,7 @@
 #include "md5.h"
 #include "crawler.hpp"
 
-void thywin::crawler::crawlUrl()
+char* thywin::crawler::getUrl()
 {
 	struct sockaddr_in saddr;
 	int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -53,12 +53,12 @@ void thywin::crawler::crawlUrl()
 	printf("size: %d %s\n", received, receiveBuffer);
 	close(sock);
 
-	std::string str(receiveBuffer);
-
 	crawl(receiveBuffer);
+
+	return receiveBuffer;
 }
 
-void thywin::crawler::sendUrlDocument(std::string url, const std::string documentName)
+void thywin::crawler::sendUrlDocument(char* url, const char* documentName)
 {
 	struct sockaddr_in saddr;
 	int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -80,21 +80,22 @@ void thywin::crawler::sendUrlDocument(std::string url, const std::string documen
 	requestContainer sendUrlDocumentMessage;
 	sendUrlDocumentMessage.type = DOCUMENT;
 	sendUrlDocumentMessage.action = PUT;
-	sendUrlDocumentMessage.size = url.size();
+	sendUrlDocumentMessage.size = strlen(url);
+
+	printf("Url Length: %s %d\n", url, strlen(url));
+	printf("DocumentName: %s\n", documentName);
 
 	if (send(sock, (void *)&sendUrlDocumentMessage, sizeof(requestContainer), 0) < 0)
 	{
 		perror("Send failed");
 	}
 
-	const char* charurl = url.c_str();
-	if (send(sock, charurl, strlen(charurl), 0) < 0)
+	if (send(sock, url, strlen(url), 0) < 0)
 	{
 		perror("Send URL failed");
 	}
 
-	const char* charDocumentName = documentName.c_str();
-	int fd = open(charDocumentName, O_RDONLY);
+	int fd = open(documentName, O_RDONLY);
 	int readSize = 0;
 	char c;
 	while ((readSize = read(fd, &c, 1)) > 0) {
@@ -108,7 +109,7 @@ void thywin::crawler::sendUrlDocument(std::string url, const std::string documen
 	close(sock);
 }
 
-int thywin::crawler::crawl(std::string url)
+int thywin::crawler::crawl(char* url)
 {
 	int aiPY[2];
 	pipe(aiPY);
@@ -116,7 +117,7 @@ int thywin::crawler::crawl(std::string url)
 	switch (fork())
 	{
 		case 0:
-			crawler::Child(aiPY, url);
+			crawler::Child( aiPY, url);
 			break;
 
 		case -1:
@@ -129,12 +130,13 @@ int thywin::crawler::crawl(std::string url)
 	return 0;
 }
 
-void thywin::crawler::Parent(int* aiPY, std::string url)
+void thywin::crawler::Parent(int* aiPY, char* url)
 {
 	char c;
 	int fd;
 	close(aiPY[1]);
-
+	char oldurl[strlen(url)];
+	strcpy(oldurl, url);
 	std::string newurl(md5(url));
 	const char* newerurl = newurl.c_str();
 
@@ -149,27 +151,24 @@ void thywin::crawler::Parent(int* aiPY, std::string url)
 		write(fd, &c, 1);
 	}
 
-	sendUrlDocument(url, newerurl);
+	sendUrlDocument(oldurl, newerurl);
 
 	close(aiPY[0]);
 	close(fd);
 	wait(0);
 }
 
-void thywin::crawler::Child(int* aiPY, std::string url)
+void thywin::crawler::Child(int* aiPY, char* url)
 {
 	close(aiPY[0]);
 	close(1);
 	dup(aiPY[1]);
 	close(aiPY[1]);
 
-	char* charurl;
-	strcpy(charurl, url.c_str());
-
 	char* exec[] = {
 		"wget",
 		"-qO-",
-		charurl,
+		url,
 		NULL
 	};
 

@@ -27,12 +27,12 @@ namespace thywin
 	class crawler
 	{
 	public:
-		int crawl(std::string url);
-		void crawlUrl();
-		void sendUrlDocument(std::string url, const std::string documentName);
+		int crawl(char* url);
+		char* getUrl();
+		void sendUrlDocument(char* url, const char* documentName);
 	private:
-		void Parent(int* aiPY, std::string url);
-		void Child(int* aiPY, std::string url);
+		void Parent(int* aiPY, char* url);
+		void Child(int* aiPY, char* url);
 	};
 }
 #endif /* CRAWLER_HPP_ */
