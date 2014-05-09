@@ -16,9 +16,31 @@ namespace thywin {
 class DocumentVector: public std::map<std::string, unsigned int> {
 public:
 	DocumentVector();
+
+	/**
+	 * This constructor takes a string as argument.
+	 * Converts the input string to lowercase, counts the words and creates a DocumentVector
+	 */
 	DocumentVector(std::string text);
+
 	virtual ~DocumentVector();
-	double CompareTo(DocumentVector* documentVector);
+
+	/**
+	 * Computes the cosine similairy between the DocumentVector it is called upon
+	 * and the DocumentVector passed as argument.
+	 */
+	double CalculateSimilarity(DocumentVector* documentVector);
+
+	/**
+	 * Computes the magnitude (length) of the DocumentVector
+	 */
+	double GetMagnitude();
+
+	/**
+	 * Computes the dot product between the DocumentVector it is called upon
+	 * and the DocumentVector passed as argument.
+	 */
+	double DotProduct(DocumentVector* documentVector);
 };
 
 } /* namespace thywin */
