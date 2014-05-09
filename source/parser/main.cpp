@@ -3,17 +3,15 @@
 #include <stdlib.h>
 #include <string>
 
-#include "HTMLFileParser.h"
+#include "DocumentVector.h"
+using namespace thywin;
 
 int main(int argc, char** argv)
 {
-	std::string temp = std::string("dit is een <kaas> test <string> haha\n");
-	thywin::HTMLFileParser parser;
+	DocumentVector a = DocumentVector("aapje aapje aapje aapje aapje hallo hallo hallo hallo");
+	DocumentVector b = DocumentVector("aapje aapje doei doei doei doei doei doei");
 
-	std::string newstr = parser.ExtractText(temp);
-
-	std::cout << temp;
-	std::cout << newstr;
+	std::cout << a.CalculateSimilarity(&b) << std::endl;
 
 	return EXIT_SUCCESS;
 }
