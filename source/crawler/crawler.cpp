@@ -33,7 +33,7 @@ void thywin::crawler::crawlUrl()
 	saddr.sin_port = htons(7000);
 	saddr.sin_addr.s_addr = inet_addr("192.168.100.11");
 
-	if (connect(sock, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
+	if (connect(sock, (struct sockaddr *) &saddr, sizeof(saddr)) < 0)
 	{
 		perror("Connect failed");
 	}
@@ -42,25 +42,27 @@ void thywin::crawler::crawlUrl()
 	getUrlMessage.type = URL;
 	getUrlMessage.action = GET;
 
-	if (send(sock, (void *)&getUrlMessage, sizeof(requestContainer), 0) < 0)
+	if (send(sock, (void *) &getUrlMessage, sizeof(requestContainer), 0) < 0)
 	{
 		perror("Send failed");
 	}
 
 	std::string received;
 	char buffer;
-	while(recv(sock, &buffer, sizeof(buffer), 0) > 0)
+	while (recv(sock, &buffer, sizeof(buffer), 0) > 0)
 	{
 		received.push_back(buffer);
 	}
 
-	std::cout << "size: " << received.size() << "\nBuffer: " << received << std::endl;
+	std::cout << "size: " << received.size() << "\nBuffer: " << received
+			<< std::endl;
 	close(sock);
 
 	crawl(received);
 }
 
-void thywin::crawler::sendUrlDocument(std::string url, std::string documentName, int* aiPY)
+void thywin::crawler::sendUrlDocument(std::string url, std::string documentName,
+		int* aiPY)
 {
 	close(aiPY[1]);
 	struct sockaddr_in saddr;
@@ -75,7 +77,7 @@ void thywin::crawler::sendUrlDocument(std::string url, std::string documentName,
 	saddr.sin_port = htons(7000);
 	saddr.sin_addr.s_addr = inet_addr("192.168.100.11");
 
-	if (connect(sock, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
+	if (connect(sock, (struct sockaddr *) &saddr, sizeof(saddr)) < 0)
 	{
 		perror("Connect failed");
 	}
@@ -85,9 +87,11 @@ void thywin::crawler::sendUrlDocument(std::string url, std::string documentName,
 	sendUrlDocumentMessage.action = PUT;
 	sendUrlDocumentMessage.size = url.size();
 
-	std::cout << "Url: " << url << " Length: " << url.size() << " DocumentName: " << documentName << std::endl;
+	std::cout << "Url: " << url << " Length: " << url.size()
+			<< " DocumentName: " << documentName << std::endl;
 
-	if (send(sock, (void *)&sendUrlDocumentMessage, sizeof(requestContainer), 0) < 0)
+	if (send(sock, (void *) &sendUrlDocumentMessage, sizeof(requestContainer),
+			0) < 0)
 	{
 		perror("Send failed");
 	}
@@ -100,7 +104,8 @@ void thywin::crawler::sendUrlDocument(std::string url, std::string documentName,
 
 	int readSize = 0;
 	char c;
-	while ((readSize = read(aiPY[0], &c, sizeof(c))) > 0) {
+	while ((readSize = read(aiPY[0], &c, sizeof(c))) > 0)
+	{
 		if (send(sock, &c, 1, 0) < 0)
 		{
 			perror("Send Document failed");
@@ -118,16 +123,16 @@ int thywin::crawler::crawl(std::string url)
 
 	switch (fork())
 	{
-		case 0:
-			crawler::Child(aiPY, url);
-			break;
+	case 0:
+		crawler::Child(aiPY, url);
+		break;
 
-		case -1:
-			perror("Can\'t create child!");
-			return -1;
+	case -1:
+		perror("Can\'t create child!");
+		return -1;
 
-		default:
-			crawler::Parent(aiPY, url);
+	default:
+		crawler::Parent(aiPY, url);
 	}
 	return 0;
 }
@@ -151,12 +156,9 @@ void thywin::crawler::Child(int* aiPY, std::string url)
 	char* newerurl;
 	strcpy(newerurl, newurl);
 
-	char* exec[] = {
-		"wget",
-		"-qO-",
-		newerurl,
-		NULL
-	};
+	char* exec[] =
+	{ "wget", "-qO-", newerurl,
+	NULL };
 
 	execvp(exec[0], exec);
 	perror("Exec error");

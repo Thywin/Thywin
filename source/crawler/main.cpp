@@ -9,15 +9,6 @@
 #include <stdio.h>
 #include "crawler.hpp"
 
-struct requestContainer {
-	short type;
-	short action;
-	int sizeOfContent;
-	char* content;
-	int sizeOfMeta;
-	char* meta;
-};
-
 int main()
 {
 	thywin::crawler crawler;
