@@ -13,26 +13,27 @@
 
 namespace thywin
 {
-	const short URL = 1;
-	const short DOCUMENT = 2;
-	const short GET = 1;
-	const short PUT = 2;
+const short URL = 1;
+const short DOCUMENT = 2;
+const short GET = 1;
+const short PUT = 2;
 
-	struct requestContainer {
-		short type;
-		short action;
-		int size;
-	};
+struct requestContainer
+{
+	short type;
+	short action;
+	int size;
+};
 
-	class crawler
-	{
-	public:
-		int crawl(std::string url);
-		void crawlUrl();
-		void sendUrlDocument(std::string url, const std::string documentName);
-	private:
-		void Parent(int* aiPY, std::string url);
-		void Child(int* aiPY, std::string url);
-	};
+class crawler
+{
+public:
+	void crawlUrl();
+private:
+	int crawl(std::string url);
+	void sendUrlDocument(std::string url, std::string documentName, int* aiPY);
+	void Parent(int* aiPY, std::string url);
+	void Child(int* aiPY, std::string url);
+};
 }
 #endif /* CRAWLER_HPP_ */
