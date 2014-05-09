@@ -12,80 +12,78 @@
 #include <stdlib.h>
 #include <sstream>
 
-
 namespace thywin
 {
-	const short URL = 1;
-	const short DOCUMENT = 2;
-	const short GET = 1;
-	const short PUT = 2;
-	struct requestContainer {
-		short type;
-		short action;
-		int size;
-		//std::stringstream content;
-		//std::stringstream meta;
-	};
+const short URL = 1;
+const short DOCUMENT = 2;
+const short GET = 1;
+const short PUT = 2;
+struct RequestPacket
+{
+	short type;
+	short action;
+	int size;
+	//std::stringstream content;
+	//std::stringstream meta;
+};
 
+class master
+{
+public:
+	int setupServer(int port);
+	void handleConnection(void *socket);
+	void handleGetURL(int socket);
+	void handleGetDocument(int socket);
+	void handlePutURL(int socket, RequestPacket container);
+	void handlePutDocument(int socket, RequestPacket container);
+	int* startNewConnectionThread(void *socket);
 
-	class master
-	{
-	public:
-		int setupServer(int port);
-		void handleConnection(void *socket);
+private:
 
-	private:
+};
 
+class RequestHandler
+{
+public:
+	RequestHandler(int clientSocket);
+};
 
-	};
+class URL
+{
+public:
+	std::string getURL();
+	double getRelevance();
 
+private:
+	std::string URL;
+	double relevance;
+};
 
-	class RequestHandler
-	{
-	public:
-		RequestHandler(int clientSocket);
-	};
+class Document
+{
+public:
+	std::string getContent();
 
+private:
+	std::string content;
+};
 
-	class URL
-	{
-	public:
-		std::string getURL();
-		double getRelevance();
+class Index
+{
+private:
+	//map<std::string,int> documentVector;
+};
 
-	private:
-		std::string URL;
-		double relevance;
-	};
+class Indices
+{
 
+};
 
-	class Document
-	{
-	public:
-		std::string getContent();
-
-	private:
-		std::string content;
-	};
-
-	class Index
-	{
-	private:
-		//map<std::string,int> documentVector;
-	};
-
-	class Indices
-	{
-
-	};
-
-
-	class Storage
-	{
-	public:
-		void getURLFromQueue();
-	};
+class Storage
+{
+public:
+	void getURLFromQueue();
+};
 }
-
 
 #endif /* MASTER_HPP_ */
