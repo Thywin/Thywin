@@ -3,17 +3,12 @@
 #include <stdlib.h>
 #include <string>
 
-#include "HTMLFileParser.h"
+#include "Parser.h"
 
 int main(int argc, char** argv)
 {
-	std::string temp = std::string("dit is een <kaas> test <string> haha\n");
-	thywin::HTMLFileParser parser;
-
-	std::string newstr = parser.ExtractText(temp);
-
-	std::cout << temp;
-	std::cout << newstr;
+	thywin::Parser parser("192.168.100.11", "192.168.100.11", "192.168.100.11");
+	parser.Run();
 
 	return EXIT_SUCCESS;
 }

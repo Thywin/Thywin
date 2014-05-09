@@ -9,7 +9,7 @@
 #define PARSER_H_
 
 #include <string>
-#include "Communicator.h"
+#include "ParserCommunicator.h"
 
 namespace thywin
 {
@@ -24,7 +24,7 @@ public:
 	void Run();
 
 private:
-	Communicator communicator;
+	ParserCommunicator communicator;
 	bool running;
 };
 
