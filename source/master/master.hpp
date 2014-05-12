@@ -11,79 +11,58 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sstream>
+#include <mutex>
 
 namespace thywin
 {
-const short URL = 1;
-const short DOCUMENT = 2;
-const short GET = 1;
-const short PUT = 2;
-struct RequestPacket
-{
-	short type;
-	short action;
-	int size;
-	//std::stringstream content;
-	//std::stringstream meta;
-};
+	struct URIElement
+	{
+			std::string URI;
+			int hostDocumentRelevance;
+	};
+	struct documentElement
+	{
+			std::string URI;
+			std::string content;
+	};
 
-class master
-{
-public:
-	int setupServer(int port);
-	void handleConnection(void *socket);
-	void handleGetURL(int socket);
-	void handleGetDocument(int socket);
-	void handlePutURL(int socket, RequestPacket container);
-	void handlePutDocument(int socket, RequestPacket container);
-	int* startNewConnectionThread(void *socket);
+	class Master
+	{
+		public:
+			/**
+			 * Grabs an URIElement struct from the URI Queue.
+			 * @return		URIElement struct.
+			 */
+			URIElement GetNextURIElementFromQueue();
 
-private:
+			/**
+			 * Adds a new URI element to the URI Queue.
+			 * @URIElement element
+			 */
+			void AddURIElementToQueue(URIElement element);
 
-};
+			/**
+			 * Grabs an documentElement struct from the Document Queue. Function call is blocking.
+			 * 	Waits until the Document Queue has at least one element.
+			 *
+			 * @return		documentElement struct.
+			 */
+			documentElement GetNextDocumentElementFromQueue();
 
-class RequestHandler
-{
-public:
-	RequestHandler(int clientSocket);
-};
+			/**
+			 * Adds a new document element to the Document Queue.
+			 * @documentElement element		Pointer to a documentElement struct
+			 */
+			void AddDocumentElementToQueue(documentElement* element);
 
-class URL
-{
-public:
-	std::string getURL();
-	double getRelevance();
+		private:
+			std::mutex URIQueueMutex;
+			std::mutex DocumentQueueMutex;
 
-private:
-	std::string URL;
-	double relevance;
-};
-
-class Document
-{
-public:
-	std::string getContent();
-
-private:
-	std::string content;
-};
-
-class Index
-{
-private:
-	//map<std::string,int> documentVector;
-};
-
-class Indices
-{
-
-};
-
-class Storage
-{
-public:
-	void getURLFromQueue();
-};
+			static std::vector<URIElement> URIQueue;
+			static std::vector<documentElement*> documentQueue;
+			void fillURLQueue();
+	};
 }
 
 #endif /* MASTER_HPP_ */
