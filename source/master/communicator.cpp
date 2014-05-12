@@ -73,12 +73,13 @@ namespace thywin
 		struct URIElement element;
 		element.hostDocumentRelevance = 0;
 		int sizeOfURL = (container.size);
-		char url[sizeOfURL];
-		if (recv(socket, &url, sizeof(url), 0) < 0)
+		char uri[sizeOfURL + 1];
+		if (recv(socket, &uri, sizeof(uri), 0) < 0)
 		{
 			perror("Error while receiving a URI");
 		}
-		element.URI = std::string(url);
+		uri[sizeOfURL] = '\0';
+		element.URI = std::string(uri);
 		thywin::Master master;
 		master.AddURIElementToQueue(element);
 	}
@@ -86,20 +87,20 @@ namespace thywin
 	void Communicator::handlePutDocument(int socket, ThywinPacket container)
 	{
 		int sizeOfURL = (container.size);
-		char url[sizeOfURL + 1];
-		if (recv(socket, &url, sizeof(url), 0) < 0)
+		char uri[sizeOfURL + 1];
+		if (recv(socket, &uri, sizeof(uri), 0) < 0)
 		{
 			perror("Error occured while receiving URI in put Document");
 			return;
 		}
-		url[sizeOfURL] = '\0';
+		uri[sizeOfURL] = '\0';
 		documentElement* docElement = new documentElement();
 		char c;
 		while ((recv(socket, &c, 1, 0)) > 0)
 		{
 			docElement->content.push_back(c);
 		}
-		docElement->URI = url;
+		docElement->URI = std::string(uri);
 		printf("Added new document to queue. Host URI: %s\n", docElement->URI.c_str());
 		thywin::Master master;
 		master.AddDocumentElementToQueue(docElement);
