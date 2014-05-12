@@ -70,7 +70,35 @@ namespace thywin
 		crawl(received);
 	}
 
-	void Crawler::sendToMaster(std::string uri, std::string documentName, int* wgetCommunicationPipe)
+	int Crawler::crawl(std::string uri)
+	{
+		int pid;
+		int status;
+		int wgetCommunicationPipe[2];
+		if (pipe(wgetCommunicationPipe) == -1)
+		{
+			perror("Piping failed");
+			exit(EXIT_FAILURE);
+		}
+
+		switch (pid = fork())
+		{
+			case 0:
+				startWget(wgetCommunicationPipe, uri);
+				break;
+
+			case -1:
+				perror("Can\'t create child!");
+				return -1;
+
+			default:
+				sendUriDocument(wgetCommunicationPipe, uri);
+				pid = wait(&status);
+		}
+		return 0;
+	}
+
+	void Crawler::sendUriDocument(int* wgetCommunicationPipe, std::string uri)
 	{
 		if (close(wgetCommunicationPipe[1]) == -1)
 		{
@@ -131,39 +159,6 @@ namespace thywin
 		{
 			perror("Closing socket failed");
 		}
-	}
-
-	int Crawler::crawl(std::string uri)
-	{
-		int wgetCommunicationPipe[2];
-		if (pipe(wgetCommunicationPipe) == -1)
-		{
-			perror("Piping failed");
-			exit(EXIT_FAILURE);
-		}
-
-		switch (fork())
-		{
-			case 0:
-				startWget(wgetCommunicationPipe, uri);
-				break;
-
-			case -1:
-				perror("Can\'t create child!");
-				return -1;
-
-			default:
-				sendUriDocument(wgetCommunicationPipe, uri);
-		}
-		return 0;
-	}
-
-	void Crawler::sendUriDocument(int* wgetCommunicationPipe, std::string uri)
-	{
-		std::string documentName = md5(uri);
-		sendToMaster(uri, documentName, wgetCommunicationPipe);
-
-		wait(0);
 	}
 
 	void Crawler::startWget(int* wgetCommunicationPipe, std::string uri)
