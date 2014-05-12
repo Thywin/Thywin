@@ -7,15 +7,17 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "crawler.hpp"
+#include "crawler.h"
 
 int main()
 {
-	thywin::crawler crawler;
+	const std::string ipaddress = "192.168.100.11";
 
-	for (unsigned int i = 0; i < 100; i++)
+	thywin::Crawler crawler = thywin::Crawler(ipaddress);
+
+	for (;;) // Loop forever!
 	{
-		crawler.crawlUrl();
+		crawler.CrawlUri();
 	}
 	return EXIT_SUCCESS;
 }

@@ -17,151 +17,182 @@
 #include <fstream>
 #include <sstream>
 #include "md5.h"
-#include "crawler.hpp"
+#include "crawler.h"
 
-void thywin::crawler::crawlUrl()
+namespace thywin
 {
-	struct sockaddr_in saddr;
-	int sock = socket(AF_INET, SOCK_STREAM, 0);
 
-	if (sock == -1)
+	Crawler::Crawler(std::string ipaddress)
 	{
-		perror("Socket failed");
+		this->ipaddress = ipaddress;
 	}
 
-	saddr.sin_family = AF_INET;
-	saddr.sin_port = htons(7000);
-	saddr.sin_addr.s_addr = inet_addr("192.168.100.11");
-
-	if (connect(sock, (struct sockaddr *) &saddr, sizeof(saddr)) < 0)
+	void Crawler::CrawlUri()
 	{
-		perror("Connect failed");
-	}
+		struct sockaddr_in saddr;
 
-	requestContainer getUrlMessage;
-	getUrlMessage.type = URL;
-	getUrlMessage.action = GET;
-
-	if (send(sock, (void *) &getUrlMessage, sizeof(requestContainer), 0) < 0)
-	{
-		perror("Send failed");
-	}
-
-	std::string received;
-	char buffer;
-	while (recv(sock, &buffer, sizeof(buffer), 0) > 0)
-	{
-		received.push_back(buffer);
-	}
-
-	std::cout << "size: " << received.size() << "\nBuffer: " << received
-			<< std::endl;
-	close(sock);
-
-	crawl(received);
-}
-
-void thywin::crawler::sendUrlDocument(std::string url, std::string documentName,
-		int* aiPY)
-{
-	close(aiPY[1]);
-	struct sockaddr_in saddr;
-	int sock = socket(AF_INET, SOCK_STREAM, 0);
-
-	if (sock == -1)
-	{
-		perror("Socket failed");
-	}
-
-	saddr.sin_family = AF_INET;
-	saddr.sin_port = htons(7000);
-	saddr.sin_addr.s_addr = inet_addr("192.168.100.11");
-
-	if (connect(sock, (struct sockaddr *) &saddr, sizeof(saddr)) < 0)
-	{
-		perror("Connect failed");
-	}
-
-	requestContainer sendUrlDocumentMessage;
-	sendUrlDocumentMessage.type = DOCUMENT;
-	sendUrlDocumentMessage.action = PUT;
-	sendUrlDocumentMessage.size = url.size();
-
-	std::cout << "Url: " << url << " Length: " << url.size()
-			<< " DocumentName: " << documentName << std::endl;
-
-	if (send(sock, (void *) &sendUrlDocumentMessage, sizeof(requestContainer),
-			0) < 0)
-	{
-		perror("Send failed");
-	}
-
-	const char* charurl = url.c_str();
-	if (send(sock, charurl, strlen(charurl), 0) < 0)
-	{
-		perror("Send URL failed");
-	}
-
-	int readSize = 0;
-	char c;
-	while ((readSize = read(aiPY[0], &c, sizeof(c))) > 0)
-	{
-		if (send(sock, &c, 1, 0) < 0)
+		int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		if (sock == -1)
 		{
-			perror("Send Document failed");
+			perror("Socket failed");
+		}
+
+		saddr.sin_family = AF_INET;
+		saddr.sin_port = htons(7000);
+		saddr.sin_addr.s_addr = inet_addr(ipaddress.c_str());
+
+		if (connect(sock, (struct sockaddr *) &saddr, sizeof(saddr)) == -1)
+		{
+			perror("Creating connection failed");
+		}
+
+		ThywinPacket getUriMessage;
+		getUriMessage.type = URI;
+		getUriMessage.action = GET;
+
+		if (send(sock, (void *) &getUriMessage, sizeof(ThywinPacket), NOFLAG) == -1)
+		{
+			perror("Send data failed");
+		}
+
+		std::string received;
+		char buffer;
+		while (recv(sock, &buffer, sizeof(buffer), NOFLAG) > 0)
+		{
+			received.push_back(buffer);
+		}
+
+		if (close(sock) == -1)
+		{
+			perror("Closing socket failed");
+		}
+
+		crawl(received);
+	}
+
+	void Crawler::sendToMaster(std::string uri, std::string documentName, int* wgetCommunicationPipe)
+	{
+		if (close(wgetCommunicationPipe[1]) == -1)
+		{
+			perror("Closing document pipe failed");
+		}
+
+		char c;
+		int readSize = read(wgetCommunicationPipe[0], &c, sizeof(c));
+
+		struct sockaddr_in saddr;
+		int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		if (sock == -1)
+		{
+			perror("Socket failed");
+		}
+
+		saddr.sin_family = AF_INET;
+		saddr.sin_port = htons(7000);
+		saddr.sin_addr.s_addr = inet_addr("192.168.100.11");
+
+		if (connect(sock, (struct sockaddr *) &saddr, sizeof(saddr)) == -1)
+		{
+			perror("Connect failed");
+		}
+
+		ThywinPacket sendUriDocumentMessage;
+		sendUriDocumentMessage.type = DOCUMENT;
+		sendUriDocumentMessage.action = PUT;
+		sendUriDocumentMessage.size = uri.size();
+
+		if (send(sock, (void *) &sendUriDocumentMessage, sizeof(ThywinPacket), NOFLAG) == -1)
+		{
+			perror("Send failed");
+		}
+
+		std::cout << uri << std::endl;
+
+		const char* charuri = uri.c_str();
+		if (send(sock, charuri, strlen(charuri), NOFLAG) == -1)
+		{
+			perror("Send URI failed");
+		}
+
+		do
+		{
+			if (send(sock, &c, 1, NOFLAG) == -1)
+			{
+				perror("Send Document failed");
+			}
+		} while ((readSize = read(wgetCommunicationPipe[0], &c, sizeof(c))) > 0);
+
+		if (close(wgetCommunicationPipe[0]) == -1)
+		{
+			perror("Closing document pipe failed");
+		}
+
+		if (close(sock) == -1)
+		{
+			perror("Closing socket failed");
 		}
 	}
 
-	close(aiPY[0]);
-	close(sock);
-}
-
-int thywin::crawler::crawl(std::string url)
-{
-	int aiPY[2];
-	pipe(aiPY);
-
-	switch (fork())
+	int Crawler::crawl(std::string uri)
 	{
-	case 0:
-		crawler::Child(aiPY, url);
-		break;
+		int wgetCommunicationPipe[2];
+		if (pipe(wgetCommunicationPipe) == -1)
+		{
+			perror("Piping failed");
+			exit(EXIT_FAILURE);
+		}
 
-	case -1:
-		perror("Can\'t create child!");
-		return -1;
+		switch (fork())
+		{
+			case 0:
+				startWget(wgetCommunicationPipe, uri);
+				break;
 
-	default:
-		crawler::Parent(aiPY, url);
+			case -1:
+				perror("Can\'t create child!");
+				return -1;
+
+			default:
+				sendUriDocument(wgetCommunicationPipe, uri);
+		}
+		return 0;
 	}
-	return 0;
-}
 
-void thywin::crawler::Parent(int* aiPY, std::string url)
-{
-	std::string documentName = md5(url);
-	sendUrlDocument(url, documentName, aiPY);
+	void Crawler::sendUriDocument(int* wgetCommunicationPipe, std::string uri)
+	{
+		std::string documentName = md5(uri);
+		sendToMaster(uri, documentName, wgetCommunicationPipe);
 
-	wait(0);
-}
+		wait(0);
+	}
 
-void thywin::crawler::Child(int* aiPY, std::string url)
-{
-	close(aiPY[0]);
-	close(1);
-	dup(aiPY[1]);
-	close(aiPY[1]);
+	void Crawler::startWget(int* wgetCommunicationPipe, std::string uri)
+	{
+		if (close(wgetCommunicationPipe[0]) == -1)
+		{
+			perror("Closing document pipe failed");
+		}
 
-	const char* newurl = url.c_str();
-	char* newerurl;
-	strcpy(newerurl, newurl);
+		if (close(STDOUT_FILENO) == -1)
+		{
+			perror("Closing stdout failed");
+		}
 
-	char* exec[] =
-	{ "wget", "-qO-", newerurl,
-	NULL };
+		if (dup(wgetCommunicationPipe[1]) == -1)
+		{
+			perror("Closing document pipe failed");
+		}
 
-	execvp(exec[0], exec);
-	perror("Exec error");
+		char* exec[] =
+		{ "wget", "-qO-", (char *) uri.c_str(), NULL };
 
-	exit(1);
+		if (execvp(exec[0], exec) == -1)
+		{
+			perror("Execute failed");
+			exit(EXIT_FAILURE);
+		}
+
+		exit(EXIT_SUCCESS);
+	}
+
 }
