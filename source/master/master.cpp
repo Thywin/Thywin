@@ -24,13 +24,16 @@
 
 namespace thywin
 {
-
 	std::vector<URIElement> Master::URIQueue;
 	std::vector<documentElement*> Master::documentQueue;
 
 	void Master::AddURIElementToQueue(struct URIElement element)
 	{
 		URIQueueMutex.lock();
+		printf("Adding new URI: %s\n",element.URI.c_str());
+		//for (int i = 0; i < URIQueue.size(); i ++) {
+			//printf("%s\n",URIQueue.at(i).URI.c_str());
+		//}
 		Master::URIQueue.insert(Master::URIQueue.end(), element);
 		URIQueueMutex.unlock();
 	}
@@ -101,16 +104,14 @@ namespace thywin
 	void Master::fillURLQueue()
 	{
 		struct URIElement URIElement;
-		URIElement.URI = "www.google.nl\0";
+		URIElement.URI = "http://ieeexplore.ieee.org/xpl/login.jsp?tp=&arnumber=685270&url=http%3A%2F%2Fieeexplore.ieee.org%2Fiel4%2F5611%2F15013%2F00685270.pdf%3Farnumber%3D685270\0";
 		URIElement.hostDocumentRelevance = 0;
 		URIQueue.insert(URIQueue.end(), URIElement);
-		URIElement.URI = "www.nu.nl\0";
+		URIElement.URI = "http://en.wikipedia.org/wiki/Discrete_event_simulation\0";
 		URIQueue.insert(URIQueue.end(), URIElement);
-		URIElement.URI = "stackoverflow.com\0";
+		URIElement.URI = "http://www.reliasoft.com/reno/features1.htm\0";
 		URIQueue.insert(URIQueue.end(), URIElement);
-		URIElement.URI = "http://www.thegeekstuff.com\0";
-		URIQueue.insert(URIQueue.end(), URIElement);
-		URIElement.URI = "http://www.jouwkabel.nl/nl/\0";
+		/*URIElement.URI = "http://www.jouwkabel.nl/nl/\0";
 		URIQueue.insert(URIQueue.end(), URIElement);
 		URIElement.URI = "www.facebook.com\0";
 		URIQueue.insert(URIQueue.end(), URIElement);
@@ -186,7 +187,7 @@ namespace thywin
 		URIElement.URI = "http://kickass.to/";
 		URIQueue.insert(URIQueue.end(), URIElement);
 		URIElement.URI = "http://kickass.to/game-of-thrones-s04e05-hdtv-x264-killers-ettv-t9071446.html";
-
+		*/
 	}
 
 }

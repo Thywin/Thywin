@@ -29,7 +29,7 @@ namespace thywin
 		Master master;
 		URIElement nextElement = master.GetNextURIElementFromQueue();
 		char* reply = (char *) nextElement.URI.c_str();
-		printf("Reply: %s\n", reply);
+		printf("Reply to handleGetURI: %s\n", reply);
 		if (send(socket, reply, strlen(reply), 0) < 0)
 		{
 			perror("Error with send");
@@ -47,7 +47,7 @@ namespace thywin
 			perror("Error in get document request while sending Thywin packet");
 			return;
 		}
-		printf("Sending document for URL: %s", returnElement.URI.c_str());
+		printf("Sending document for URL: %s\n", returnElement.URI.c_str());
 		if (send(socket, returnElement.URI.c_str(), returnElement.URI.size(), 0) < 0)
 		{
 			perror("Error in get document request while sending document URI");
@@ -73,6 +73,7 @@ namespace thywin
 		struct URIElement element;
 		element.hostDocumentRelevance = 0;
 		int sizeOfURL = (container.size);
+		printf("size: %i\n",container.size);
 		char uri[sizeOfURL + 1];
 		if (recv(socket, &uri, sizeof(uri), 0) < 0)
 		{
@@ -80,6 +81,8 @@ namespace thywin
 		}
 		uri[sizeOfURL] = '\0';
 		element.URI = std::string(uri);
+
+		printf("handlePutURI: %s | %s\n",element.URI.c_str(),uri);
 		thywin::Master master;
 		master.AddURIElementToQueue(element);
 	}
