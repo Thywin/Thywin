@@ -24,6 +24,9 @@
 
 namespace thywin
 {
+
+	int counterURI = 0;
+	int coutnerDocs = 0;
 	std::vector<URIElement> Master::URIQueue;
 	std::vector<documentElement> Master::documentQueue;
 
@@ -38,9 +41,8 @@ namespace thywin
 			}
 		}
 		if (!found) {
+			counterURI++;
 			Master::URIQueue.insert(Master::URIQueue.end(), element);
-		}else {
-			printf("URI already in Queue\n");
 		}
 		URIQueueMutex.unlock();
 	}
@@ -58,13 +60,14 @@ namespace thywin
 		{
 			element = Master::URIQueue.at(0);
 			Master::URIQueue.erase(URIQueue.begin());
+			counterURI --;
 		}
 		else
 		{
 			element.URI = "www.google.nl\0";
 			element.hostDocumentRelevance = 0;
 		}
-
+		printf("URI QUEUE: %i\n",counterURI);
 		URIQueueMutex.unlock();
 		return element;
 	}
@@ -81,11 +84,9 @@ namespace thywin
 			}
 		}
 		if (!found) {
+			coutnerDocs ++;
 			Master::documentQueue.insert(Master::documentQueue.end(), element);
-		} else {
-			printf("Document already in Queue\n");
 		}
-
 		// unset semaphore is empty
 		DocumentQueueMutex.unlock();
 	}
@@ -107,6 +108,7 @@ namespace thywin
 			element.content = returnElement.content;
 			element.URI = returnElement.URI;
 			Master::documentQueue.erase(Master::documentQueue.begin());
+			coutnerDocs --;
 		}
 		else
 		{
@@ -117,7 +119,7 @@ namespace thywin
 		{
 			// set semaphore is empty
 		}
-
+		printf("DOCUMENT QUEUE: %i\n",coutnerDocs);
 		DocumentQueueMutex.unlock();
 		return element;
 	}
