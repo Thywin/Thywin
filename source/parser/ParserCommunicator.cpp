@@ -63,12 +63,13 @@ Document ParserCommunicator::GetDocumentFromQueue()
 		perror("Receive failed");
 	}
 
-	char url[responsePacket.size];
+	char url[responsePacket.size + 1];
 	if (recv(masterSockets[eDocumentQueue], (void*) url, responsePacket.size, 0)
 			< 0)
 	{
 		perror("Receive failed");
 	}
+	url[responsePacket.size] = '\0';
 	printf("URL TERUGKRIJG : %s size:%d  stringsize:%d \n", url, responsePacket.size, strlen(url));
 	doc.location = std::string(url);
 
