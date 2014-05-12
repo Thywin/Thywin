@@ -13,11 +13,11 @@
 namespace thywin
 {
 
-typedef struct Document
-{
-	std::string content;
-	std::string location;
-} Document;
+	typedef struct Document
+	{
+			std::string URI;
+			std::string content;
+	} Document;
 
 } /* namespace thywin */
 

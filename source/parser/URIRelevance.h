@@ -13,11 +13,15 @@
 namespace thywin
 {
 
-typedef struct URIRelevance
-{
-	double score;
-	std::string URI;
-} URIRelevance;
+	typedef struct URIRelevance
+	{
+			double score;
+			std::string URI;
+			URIRelevance(double dScore, std::string sURI) :
+					score(dScore), URI(sURI)
+			{
+			}
+	} URIRelevance;
 
 } /* namespace thywin */
 

@@ -14,19 +14,30 @@
 namespace thywin
 {
 
-class Parser
-{
-public:
-	Parser(std::string documentQueue, std::string URLQueue,
-			std::string indexStore);
-	virtual ~Parser();
+	class Parser
+	{
+		public:
+			/*
+			 * Creates a Parser which can be used to parse documents.
+			 */
+			Parser(std::string documentQueue, std::string URLQueue, std::string indexStore);
+			virtual ~Parser();
 
-	void Run();
+			/*
+			 * Run the Parser which will run until the Stop method is called
+			 * @see Stop()
+			 */
+			void Run();
 
-private:
-	ParserCommunicator communicator;
-	bool running;
-};
+			/*
+			 * Stop the Parser only works if the parser is running
+			 * @see Run()
+			 */
+			void Stop();
+		private:
+			ParserCommunicator communicator;
+			bool running;
+	};
 
 } /* namespace thywin */
 
