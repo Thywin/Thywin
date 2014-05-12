@@ -130,7 +130,6 @@ namespace thywin
 		const char *http("http://");
 		const char *https("https://");
 		const char *www("www");
-		bannedTags.push_back("://");
 		bannedTags.push_back("mailto:");
 		bannedTags.push_back("file:");
 		bannedTags.push_back("javascript:");
@@ -138,8 +137,8 @@ namespace thywin
 		std::string::size_type httpPos = input.find(http, 0, strlen(http));
 		std::string::size_type httpsPos = input.find(https, 0, strlen(https));
 		std::string::size_type wwwPos = input.find(www, 0, strlen(www));
-		if (httpPos == string::npos && httpsPos == string::npos && wwwPos == string::npos
-				&& !(input[0] == '/' && input[1] == '/'))
+		if ((httpPos == string::npos || httpPos != 0) && (httpsPos == string::npos || httpsPos != 0)
+				&& (wwwPos == string::npos || wwwPos != 0) && !(input[0] == '/' && input[1] == '/'))
 		{
 			for (unsigned int i = 0; i < bannedTags.size(); i++)
 			{
@@ -181,6 +180,10 @@ namespace thywin
 			{
 				return host + "/" + input;
 			}
+		}
+		if (input[0] == '/' && input[1] == '/')
+		{
+			input = "http:" + input;
 		}
 		return input;
 	}
