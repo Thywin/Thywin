@@ -54,11 +54,6 @@ namespace thywin
 			/**
 			 *
 			 */
-			void sendToMaster(std::string uri, std::string documentName, int* wgetCommunicationPipe);
-
-			/**
-			 *
-			 */
 			void sendUriDocument(int* wgetCommunicationPipe, std::string uri);
 
 			/**
