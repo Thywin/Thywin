@@ -46,6 +46,7 @@ int main()
 	while (1)
 	{
 	}
+	printf("System shutdown\n");
 	return EXIT_SUCCESS;
 }
 

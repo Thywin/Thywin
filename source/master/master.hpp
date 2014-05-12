@@ -53,14 +53,14 @@ namespace thywin
 			 * Adds a new document element to the Document Queue.
 			 * @documentElement element		Pointer to a documentElement struct
 			 */
-			void AddDocumentElementToQueue(documentElement* element);
+			void AddDocumentElementToQueue(documentElement element);
 
 		private:
 			std::mutex URIQueueMutex;
 			std::mutex DocumentQueueMutex;
 
 			static std::vector<URIElement> URIQueue;
-			static std::vector<documentElement*> documentQueue;
+			static std::vector<documentElement> documentQueue;
 			void fillURLQueue();
 	};
 }

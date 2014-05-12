@@ -25,16 +25,23 @@
 namespace thywin
 {
 	std::vector<URIElement> Master::URIQueue;
-	std::vector<documentElement*> Master::documentQueue;
+	std::vector<documentElement> Master::documentQueue;
 
 	void Master::AddURIElementToQueue(struct URIElement element)
 	{
 		URIQueueMutex.lock();
-		printf("Adding new URI: %s\n",element.URI.c_str());
-		//for (int i = 0; i < URIQueue.size(); i ++) {
-			//printf("%s\n",URIQueue.at(i).URI.c_str());
-		//}
-		Master::URIQueue.insert(Master::URIQueue.end(), element);
+		int found = 0;
+		for (unsigned int i = 0; i < URIQueue.size(); i ++) {
+			if (element.URI.compare(URIQueue.at(i).URI) == 0)
+			{
+				found = 1;
+			}
+		}
+		if (!found) {
+			Master::URIQueue.insert(Master::URIQueue.end(), element);
+		}else {
+			printf("URI already in Queue\n");
+		}
 		URIQueueMutex.unlock();
 	}
 
@@ -62,29 +69,43 @@ namespace thywin
 		return element;
 	}
 
-	void Master::AddDocumentElementToQueue(struct documentElement* element)
+	void Master::AddDocumentElementToQueue(struct documentElement element)
 	{
 		DocumentQueueMutex.lock();
-		element->URI.c_str();
-		Master::documentQueue.insert(Master::documentQueue.end(), element);
+
+		int found = 0;
+		for (unsigned int i = 0; i < documentQueue.size(); i ++) {
+			if (element.URI.compare(documentQueue.at(i).URI) == 0)
+			{
+				found = 1;
+			}
+		}
+		if (!found) {
+			Master::documentQueue.insert(Master::documentQueue.end(), element);
+		} else {
+			printf("Document already in Queue\n");
+		}
+
 		// unset semaphore is empty
 		DocumentQueueMutex.unlock();
 	}
 
 	documentElement Master::GetNextDocumentElementFromQueue()
 	{
+
+		DocumentQueueMutex.lock();
 		while (Master::documentQueue.size() < 1)
 		{
 		}
 		// check semaphore is empty
-		DocumentQueueMutex.lock();
+
 		documentElement element;
-		documentElement* returnElement;
+		documentElement returnElement;
 		if (Master::documentQueue.size() > 0)
 		{
 			returnElement = Master::documentQueue.at(0);
-			element.content = returnElement->content;
-			element.URI = returnElement->URI;
+			element.content = returnElement.content;
+			element.URI = returnElement.URI;
 			Master::documentQueue.erase(Master::documentQueue.begin());
 		}
 		else

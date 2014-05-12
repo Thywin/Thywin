@@ -29,7 +29,6 @@ namespace thywin
 		Master master;
 		URIElement nextElement = master.GetNextURIElementFromQueue();
 		char* reply = (char *) nextElement.URI.c_str();
-		printf("Reply to handleGetURI: %s\n", reply);
 		if (send(socket, reply, strlen(reply), 0) < 0)
 		{
 			perror("Error with send");
@@ -47,7 +46,6 @@ namespace thywin
 			perror("Error in get document request while sending Thywin packet");
 			return;
 		}
-		printf("Sending document for URL: %s\n", returnElement.URI.c_str());
 		if (send(socket, returnElement.URI.c_str(), returnElement.URI.size(), 0) < 0)
 		{
 			perror("Error in get document request while sending document URI");
@@ -73,7 +71,6 @@ namespace thywin
 		struct URIElement element;
 		element.hostDocumentRelevance = 0;
 		int sizeOfURL = (container.size);
-		printf("size: %i\n",container.size);
 		char uri[sizeOfURL + 1];
 		if (recv(socket, &uri, sizeof(uri), 0) < 0)
 		{
@@ -81,8 +78,6 @@ namespace thywin
 		}
 		uri[sizeOfURL] = '\0';
 		element.URI = std::string(uri);
-
-		printf("handlePutURI: %s | %s\n",element.URI.c_str(),uri);
 		thywin::Master master;
 		master.AddURIElementToQueue(element);
 	}
@@ -97,14 +92,13 @@ namespace thywin
 			return;
 		}
 		uri[sizeOfURL] = '\0';
-		documentElement* docElement = new documentElement();
+		documentElement docElement;
 		char c;
 		while ((recv(socket, &c, 1, 0)) > 0)
 		{
-			docElement->content.push_back(c);
+			docElement.content.push_back(c);
 		}
-		docElement->URI = std::string(uri);
-		printf("Added new document to queue. Host URI: %s\n", docElement->URI.c_str());
+		docElement.URI = std::string(uri);
 		thywin::Master master;
 		master.AddDocumentElementToQueue(docElement);
 	}
@@ -118,7 +112,7 @@ namespace thywin
 			perror("Error while receiving container");
 			return;
 		}
-		printf("Received bytes: %i Action: %i | Type: %i\n", received, (requestPacket.action), (requestPacket.type));
+		printf("Received bytes: %i Action: %i | Type: %i | Size: %i\n", received, (requestPacket.action), (requestPacket.type), requestPacket.size);
 
 		switch (requestPacket.action)
 		{
