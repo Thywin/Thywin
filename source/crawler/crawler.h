@@ -41,24 +41,9 @@ namespace thywin
 			 */
 			void CrawlUri();
 		private:
-			/**
-			 * Ipaddress for the socket.
-			 */
 			std::string ipaddress;
-
-			/**
-			 *
-			 */
 			int crawl(std::string uri);
-
-			/**
-			 *
-			 */
 			void sendUriDocument(int* wgetCommunicationPipe, std::string uri);
-
-			/**
-			 *
-			 */
 			void startWget(int* wgetCommunicationPipe, std::string uri);
 	};
 }
