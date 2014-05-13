@@ -33,13 +33,13 @@ namespace thywin
 			 * Grabs an URIElement struct from the URI Queue.
 			 * @return		URIElement struct.
 			 */
-			URIElement GetNextURIElementFromQueue();
+			static URIElement GetNextURIElementFromQueue();
 
 			/**
 			 * Adds a new URI element to the URI Queue.
 			 * @URIElement element
 			 */
-			void AddURIElementToQueue(URIElement element);
+			static void AddURIElementToQueue(URIElement element);
 
 			/**
 			 * Grabs an documentElement struct from the Document Queue. Function call is blocking.
@@ -47,21 +47,21 @@ namespace thywin
 			 *
 			 * @return		documentElement struct.
 			 */
-			documentElement GetNextDocumentElementFromQueue();
+			static documentElement GetNextDocumentElementFromQueue();
 
 			/**
 			 * Adds a new document element to the Document Queue.
 			 * @documentElement element		Pointer to a documentElement struct
 			 */
-			void AddDocumentElementToQueue(documentElement element);
+			static void AddDocumentElementToQueue(documentElement element);
 
 		private:
-			std::mutex URIQueueMutex;
-			std::mutex DocumentQueueMutex;
 
+			static std::mutex URIQueueMutex;
+			static std::mutex DocumentQueueMutex;
 			static std::vector<URIElement> URIQueue;
 			static std::vector<documentElement> documentQueue;
-			void fillURLQueue();
+			static void fillURLQueue();
 	};
 }
 
