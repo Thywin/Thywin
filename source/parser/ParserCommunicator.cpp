@@ -85,7 +85,7 @@ namespace thywin
 		return doc;
 	}
 
-	void ParserCommunicator::StoreIndex()
+	void ParserCommunicator::StoreIndex(DocumentVector index)
 	{
 
 	}

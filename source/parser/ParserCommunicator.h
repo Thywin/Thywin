@@ -52,7 +52,7 @@ namespace thywin
 			/*
 			 * todo
 			 */
-			void StoreIndex();
+			void StoreIndex(DocumentVector index);
 
 			/*
 			 * Store an URI with the relevance of the document the URI is found in.
