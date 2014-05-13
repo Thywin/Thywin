@@ -17,6 +17,7 @@
 
 #include "Document.h"
 #include "URIRelevance.h"
+#include "DocumentVector.h"
 
 namespace thywin
 {

@@ -6,6 +6,7 @@
  */
 
 #include "ParserCommunicator.h"
+#include "DocumentVector.h"
 #include <string.h>
 
 namespace thywin
