@@ -59,7 +59,7 @@ void *awaitClient(void *socket)
 	while (1)
 	{
 		int clientDesc = accept(serverDesc, (struct sockaddr *) &client, (socklen_t*) &c);
-		printf("Connection accepted with client: %s port %i\n", inet_ntoa(client.sin_addr), ntohs(client.sin_port));
+		//printf("Connection accepted with client: %s port %i\n", inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 		communicator.HandleConnection(clientDesc);
 	}
 	return (void *) 0;
