@@ -127,12 +127,17 @@ namespace thywin
 	std::string HTMLFileParser::constructURI(std::string input, std::string host, std::string path)
 	{
 		std::vector<const char *> bannedTags;
+		std::vector<const char *> bannedExtensions;
 		const char *http("http://");
 		const char *https("https://");
 		const char *www("www");
 		bannedTags.push_back("mailto:");
 		bannedTags.push_back("file:");
 		bannedTags.push_back("javascript:");
+		bannedExtensions.push_back("pdf");
+		bannedExtensions.push_back("xml");
+		bannedExtensions.push_back("doc");
+		bannedExtensions.push_back("docx");
 
 		std::string::size_type httpPos = input.find(http, 0, strlen(http));
 		std::string::size_type httpsPos = input.find(https, 0, strlen(https));
@@ -143,6 +148,15 @@ namespace thywin
 			for (unsigned int i = 0; i < bannedTags.size(); i++)
 			{
 				std::string::size_type pos = input.find(bannedTags.at(i));
+				if (pos != string::npos)
+				{
+					return "";
+				}
+			}
+			for (unsigned int i = 0; i < bannedExtensions.size(); i++)
+			{
+				std::string extention = bannedExtensions.at(i);
+				std::string::size_type pos = input.find("." + extention, (input.size()-extention.size()-1));
 				if (pos != string::npos)
 				{
 					return "";
