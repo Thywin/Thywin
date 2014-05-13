@@ -153,15 +153,6 @@ namespace thywin
 					return "";
 				}
 			}
-			for (unsigned int i = 0; i < bannedExtensions.size(); i++)
-			{
-				std::string extention = bannedExtensions.at(i);
-				std::string::size_type pos = input.find("." + extention, (input.size()-extention.size()-1));
-				if (pos != string::npos)
-				{
-					return "";
-				}
-			}
 			if (input[0] == '#')
 			{
 				return "";
@@ -193,6 +184,16 @@ namespace thywin
 			else
 			{
 				return host + "/" + input;
+			}
+		}
+		for (unsigned int i = 0; i < bannedExtensions.size(); i++)
+		{
+			std::string extension = bannedExtensions.at(i);
+			extension = "." + extension;
+			std::string::size_type pos = input.find(extension, (input.size() - extension.size()));
+			if (pos != string::npos)
+			{
+				return "";
 			}
 		}
 		if (input[0] == '/' && input[1] == '/')
