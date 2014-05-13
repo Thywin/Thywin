@@ -26,8 +26,7 @@ namespace thywin
 {
 	void Communicator::handleGetURI(int socket)
 	{
-		Master master;
-		URIElement nextElement = master.GetNextURIElementFromQueue();
+		URIElement nextElement = Master::GetNextURIElementFromQueue();
 		char* reply = (char *) nextElement.URI.c_str();
 		if (send(socket, reply, strlen(reply), 0) < 0)
 		{
@@ -37,8 +36,7 @@ namespace thywin
 
 	void Communicator::handleGetDocument(int socket)
 	{
-		thywin::Master master;
-		documentElement returnElement = master.GetNextDocumentElementFromQueue();
+		documentElement returnElement = Master::GetNextDocumentElementFromQueue();
 		ThywinPacket container =
 		{ 2, 2, returnElement.URI.size() };
 		if (send(socket, (void *) &container, sizeof(ThywinPacket), 0) < 0)
@@ -78,8 +76,7 @@ namespace thywin
 		}
 		uri[sizeOfURL] = '\0';
 		element.URI = std::string(uri);
-		thywin::Master master;
-		master.AddURIElementToQueue(element);
+		Master::AddURIElementToQueue(element);
 	}
 
 	void Communicator::handlePutDocument(int socket, ThywinPacket container)
@@ -99,8 +96,7 @@ namespace thywin
 			docElement.content.push_back(c);
 		}
 		docElement.URI = std::string(uri);
-		thywin::Master master;
-		master.AddDocumentElementToQueue(docElement);
+		Master::AddDocumentElementToQueue(docElement);
 	}
 
 	void Communicator::HandleConnection(int socket)
