@@ -108,7 +108,7 @@ namespace thywin
 			perror("Error while receiving container");
 			return;
 		}
-		printf("Received bytes: %i Action: %i | Type: %i | Size: %i\n", received, (requestPacket.action), (requestPacket.type), requestPacket.size);
+		//printf("Received bytes: %i Action: %i | Type: %i | Size: %i\n", received, (requestPacket.action), (requestPacket.type), requestPacket.size);
 
 		switch (requestPacket.action)
 		{
@@ -136,7 +136,7 @@ namespace thywin
 			default:
 				break;
 		}
-		printf("Closed connection with client: ......\n");
+		//printf("Closed connection with client: ......\n");
 		if (close(socket) < 0)
 		{
 			perror("error on close");
