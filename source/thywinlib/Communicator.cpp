@@ -16,9 +16,6 @@
 #include <unistd.h>
 #include <iostream>
 
-const char SEP = (char) 30;
-const char EOT = (char) 4;
-
 namespace thywin
 {
 
@@ -94,12 +91,13 @@ namespace thywin
 		std::string token;
 		std::getline(receiveBuffer, token, SEP);
 		packet->Method = (PacketMethod) atoi(token.c_str());
+		
 		std::getline(receiveBuffer, token, SEP);
 		packet->Type = (PacketType) atoi(token.c_str());
-
-		//obj->Deserialize(receiveBuffer);
-		std::cout << receiveBuffer;
-
+		
+		std::getline(receiveBuffer, token, EOT);
+		obj->Deserialize(token);
+		
 		return packet;
 	}
 
