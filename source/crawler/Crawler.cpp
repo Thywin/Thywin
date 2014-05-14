@@ -1,5 +1,5 @@
 /*
- * crawler.cpp
+ * Crawler.cpp
  *
  *  Created on: 25 apr. 2014
  *      Author: Thomas, Bobby
@@ -26,14 +26,14 @@ namespace thywin
 		this->ipaddress = ipaddress;
 	}
 
-	void Crawler::CrawlUri()
+	void Crawler::CrawlURI()
 	{
 		struct sockaddr_in saddr;
 
 		int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		if (sock == -1)
 		{
-			perror("Socket failed");
+			perror("Socket creatation failed");
 		}
 
 		saddr.sin_family = AF_INET;
@@ -45,11 +45,11 @@ namespace thywin
 			perror("Creating connection failed");
 		}
 
-		ThywinPacket getUriMessage;
-		getUriMessage.type = URI;
-		getUriMessage.action = GET;
+		ThywinPacket getURIMessage;
+		getURIMessage.type = URI;
+		getURIMessage.action = GET;
 
-		if (send(sock, (void *) &getUriMessage, sizeof(ThywinPacket), NOFLAG) == -1)
+		if (send(sock, (void *) &getURIMessage, sizeof(ThywinPacket), NOFLAG) == -1)
 		{
 			perror("Send data failed");
 		}
@@ -69,7 +69,7 @@ namespace thywin
 		crawl(received);
 	}
 
-	int Crawler::crawl(std::string uri)
+	int Crawler::crawl(std::string URI)
 	{
 		int pid;
 		int status;
@@ -83,7 +83,7 @@ namespace thywin
 		switch (pid = fork())
 		{
 			case 0:
-				startWget(wgetCommunicationPipe, uri);
+				startWget(wgetCommunicationPipe, URI);
 				break;
 
 			case -1:
@@ -91,13 +91,13 @@ namespace thywin
 				return -1;
 
 			default:
-				sendUriDocument(wgetCommunicationPipe, uri);
+				sendURIDocument(wgetCommunicationPipe, URI);
 				pid = wait(&status);
 		}
 		return 0;
 	}
 
-	void Crawler::sendUriDocument(int* wgetCommunicationPipe, std::string uri)
+	void Crawler::sendURIDocument(int* wgetCommunicationPipe, std::string URI)
 	{
 		if (close(wgetCommunicationPipe[1]) == -1)
 		{
@@ -123,20 +123,20 @@ namespace thywin
 			perror("Connect failed");
 		}
 
-		ThywinPacket sendUriDocumentMessage;
-		sendUriDocumentMessage.type = DOCUMENT;
-		sendUriDocumentMessage.action = PUT;
-		sendUriDocumentMessage.size = uri.size();
+		ThywinPacket sendURIDocumentMessage;
+		sendURIDocumentMessage.type = DOCUMENT;
+		sendURIDocumentMessage.action = PUT;
+		sendURIDocumentMessage.size = URI.size();
 
-		if (send(sock, (void *) &sendUriDocumentMessage, sizeof(ThywinPacket), NOFLAG) == -1)
+		if (send(sock, (void *) &sendURIDocumentMessage, sizeof(ThywinPacket), NOFLAG) == -1)
 		{
 			perror("Send failed");
 		}
 
-		std::cout << uri << std::endl;
+		std::cout << URI << std::endl;
 
-		const char* charuri = uri.c_str();
-		if (send(sock, charuri, strlen(charuri), NOFLAG) == -1)
+		const char* charURI = URI.c_str();
+		if (send(sock, charURI, strlen(charURI), NOFLAG) == -1)
 		{
 			perror("Send URI failed");
 		}
@@ -160,7 +160,7 @@ namespace thywin
 		}
 	}
 
-	void Crawler::startWget(int* wgetCommunicationPipe, std::string uri)
+	void Crawler::startWget(int* wgetCommunicationPipe, std::string URI)
 	{
 		if (close(wgetCommunicationPipe[0]) == -1)
 		{
@@ -177,8 +177,9 @@ namespace thywin
 			perror("Closing document pipe failed");
 		}
 
+		// -qO- is ussed to download the file quiet and send it to STDOUT
 		char* exec[] =
-		{ "wget", "-qO-", (char *) uri.c_str(), NULL };
+		{ "wget", "-qO-", (char *) URI.c_str(), NULL };
 
 		if (execvp(exec[0], exec) == -1)
 		{
