@@ -22,7 +22,7 @@ namespace thywin
 		// TODO Auto-generated destructor stub
 	}
 	
-	void Logger::log(std::string message)
+	void Logger::log(logEnum logmessage, std::string message)
 	{
 		unsigned int buffersize = 50;
 		char timeString[buffersize];
@@ -30,7 +30,20 @@ namespace thywin
 		struct tm* timeinfo = localtime(&currentTime);
 		strftime(timeString, buffersize, "%F %T", timeinfo);
 		
-		logfileStream << timeString << "\t\t" << message << std::endl;
+		logfileStream << "[" << timeString << "]" << " " << getLogtype(logmessage) << ": " << message << std::endl;
+	}
+
+	std::string Logger::getLogtype(logEnum logmessage)
+	{
+		switch (logmessage)
+		{
+			case DEBUG:
+				return "DEBUG";
+			case ERROR:
+				return "ERROR";
+			default:
+				return "INFO ";
+		}
 	}
 
 } /* namespace thywin */

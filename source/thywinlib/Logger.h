@@ -14,13 +14,15 @@
 
 namespace thywin
 {
-	
+	enum logEnum { INFO = 0, DEBUG = 1, ERROR = 2 };
+
 	class Logger
 	{
 		public:
 			Logger(std::string logfileName);
 			virtual ~Logger();
-			void log(std::string message);
+			void log(logEnum logmessage, std::string message);
+			std::string getLogtype(logEnum logmessage);
 		private:
 			std::ofstream logfileStream;
 	};
