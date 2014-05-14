@@ -25,6 +25,7 @@ namespace thywin
 
 			int SendPacket(ThywinPacket packet);
 			ThywinPacket* ReceivePacket(TPObject* obj);
+			void CloseConnection();
 
 		private:
 			int connectionSocket;

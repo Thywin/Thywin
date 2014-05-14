@@ -56,8 +56,6 @@ namespace thywin
 			perror("Send failed");
 		}
 
-		close(connectionSocket);
-
 		return sendSize;
 	}
 
@@ -101,4 +99,8 @@ namespace thywin
 		return packet;
 	}
 
+	void Communicator::CloseConnection()
+	{
+		close(connectionSocket);
+	}
 } /* namespace thywin */
