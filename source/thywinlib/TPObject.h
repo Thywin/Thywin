@@ -16,7 +16,7 @@ namespace thywin
 	{
 		public:
 			virtual std::string Serialize() = 0;
-			virtual void Deserialize(std::stringstream) = 0;
+			virtual void Deserialize(std::string) = 0;
 
 			TPObject()
 			{

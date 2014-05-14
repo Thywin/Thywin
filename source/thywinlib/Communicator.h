@@ -14,16 +14,18 @@
 
 namespace thywin
 {
+	const char SEP = (char) 30;
+	const char EOT = (char) 4;
 
 	class Communicator
 	{
 		public:
 			Communicator(std::string ipaddress);
 			virtual ~Communicator();
-			
+
 			int SendPacket(ThywinPacket packet);
 			ThywinPacket* ReceivePacket(TPObject* obj);
-			
+
 		private:
 			int connectionSocket;
 	};
