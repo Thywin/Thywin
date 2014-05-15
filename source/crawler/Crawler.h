@@ -38,7 +38,7 @@ namespace thywin
 
 			/**
 			 * This function gets an URI from the master server. It then starts to crawl the URI and sends
-			 * the crawled data and the URI back to the master. Then the process
+			 * the crawled data and the URI back to the master. Then the process starts all over.
 			 */
 			void CrawlURI();
 		private:
