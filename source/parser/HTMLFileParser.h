@@ -34,7 +34,11 @@ namespace thywin
 			std::vector<std::string> ExtractURIs(std::string content, std::string source);
 
 			/**
-			 *
+			 * Returns the actual text content of a html file.
+			 * All html tags will be removed from the html content. 
+			 * 
+			 * @param content
+			 * @return 
 			 */
 			std::string ExtractText(std::string content);
 		private:
