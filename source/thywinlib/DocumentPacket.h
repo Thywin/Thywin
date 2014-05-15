@@ -7,16 +7,21 @@
 
 #ifndef DOCUMENT_H_
 #define DOCUMENT_H_
+#include "TPObject.h"
 
 namespace thywin
 {
-	typedef struct DocumentPacket
+
+	class DocumentPacket: public TPObject
 	{
+		public:
+			std::string Serialize();
+			void Deserialize(std::string);
 			int URISize;
-			const char* URI;
+			std::string URI;
 			int DocumentSize;
-			const char* Document;
-	} Document;
+			std::string Document;
+	};
 
 } /* namespace thywin */
 
