@@ -16,12 +16,12 @@ namespace thywin
 {
 	enum PacketType
 	{
-		URI = 1, Document = 2, Relevance = 3, DocumentVector = 4
+		URI = 1, DOCUMENT = 2, RELEVANCE = 3, DOCUMENTVECTOR = 4
 	};
 
 	enum PacketMethod
 	{
-		GET = 1, PUT = 2, REPONSE = 3
+		GET = 1, PUT = 2, RESPONSE = 3
 	};
 
 	typedef struct ThywinPacket
