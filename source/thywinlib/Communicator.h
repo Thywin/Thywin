@@ -16,7 +16,7 @@ namespace thywin
 {
 	const char SEP = (char) 30;
 	const char EOT = (char) 4;
-
+	const char STX = (char) 3;
 	class Communicator
 	{
 		public:
