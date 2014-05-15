@@ -7,15 +7,20 @@
 
 #ifndef URIELEMENT_H_
 #define URIELEMENT_H_
+#include "TPObject.h"
 
 namespace thywin
 {
-	typedef struct URIPacket
-	{
-			double Relevance;
-			const char* URI;
-	} Document;
 
+	class URIPacket: public TPObject
+	{
+		public:
+			double Relevance;
+			std::string URI;
+
+			std::string Serialize();
+			void Deserialize(std::string);
+	};
 } /* namespace thywin */
 
 #endif /* URIELEMENT_H_ */
