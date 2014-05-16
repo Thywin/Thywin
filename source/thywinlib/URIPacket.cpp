@@ -21,7 +21,7 @@ namespace thywin
 		return stream.str();
 	}
 
-	void URIPacket::Deserialize(std::string input)
+	void URIPacket::Deserialize(const std::string& input)
 	{
 		std::stringstream stream;
 		stream << input;
@@ -32,7 +32,7 @@ namespace thywin
 
 		std::getline(stream, URI, STX);
 
-		printf("deserialize: %s | %f\n",URI.c_str(), Relevance);
+		printf("deserialize: %s | %f\n", URI.c_str(), Relevance);
 	}
 
 }

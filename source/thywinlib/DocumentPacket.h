@@ -40,7 +40,7 @@ namespace thywin
 			 * Deserializes a string to a DocumentPacket. Fills the URI and Document with the content from the string.
 			 *
 			 */
-			void Deserialize(std::string);
+			void Deserialize(const std::string& input);
 	};
 
 } /* namespace thywin */

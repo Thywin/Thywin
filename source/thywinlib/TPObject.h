@@ -28,7 +28,7 @@ namespace thywin
 			 * Virtual method to deserialize a String to a TPObject which was sent over a socket.
 			 * @input the string that represents the serialized object
 			 */
-			virtual void Deserialize(std::string input) = 0;
+			virtual void Deserialize(const std::string& input) = 0;
 
 			/**
 			 * Empty constructor

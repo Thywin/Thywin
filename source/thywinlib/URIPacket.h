@@ -30,7 +30,7 @@ namespace thywin
 			 * Deserialize a string to an URIPacket
 			 * @param input serialized URIPacket that will be deserialized to a URIPacket
 			 */
-			void Deserialize(std::string input);
+			void Deserialize(const std::string& input);
 	};
 } /* namespace thywin */
 
