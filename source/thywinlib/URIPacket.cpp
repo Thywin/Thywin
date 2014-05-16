@@ -10,6 +10,7 @@
 #include "Communicator.h"
 #include <stdlib.h>
 #include "URIPacket.h"
+#include <stdio.h>
 
 namespace thywin
 {
@@ -27,9 +28,11 @@ namespace thywin
 
 		std::string token;
 		std::getline(stream, token, STX);
-		Relevance = atoi(token.c_str());
+		Relevance = atof(token.c_str());
 
 		std::getline(stream, URI, STX);
+
+		printf("deserialize: %s | %f\n",URI.c_str(), Relevance);
 	}
 
 }
