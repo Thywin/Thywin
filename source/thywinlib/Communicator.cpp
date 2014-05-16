@@ -45,12 +45,12 @@ namespace thywin
 	int Communicator::SendPacket(const ThywinPacket& packet)
 	{
 		std::stringstream data;
-		data << packet.Method << SEP << packet.Type << SEP;
+		data << packet.Method << TP_HEADER_SEPERATOR << packet.Type << TP_HEADER_SEPERATOR;
 		if (packet.Content != NULL)
 		{
 			data << packet.Content->Serialize();
 		}
-		data << EOT;
+		data << TP_END_OF_PACKET;
 
 		const char* realdata = data.str().c_str();
 
@@ -73,7 +73,7 @@ namespace thywin
 		{
 			receiveSize = recv(connectionSocket, &c, 1, 0);
 			receiveBuffer << c;
-		} while (receiveSize > 0 && c != EOT);
+		} while (receiveSize > 0 && c != TP_END_OF_PACKET);
 
 		if (receiveSize < 0)
 		{
@@ -88,13 +88,13 @@ namespace thywin
 		}
 
 		std::string token;
-		std::getline(receiveBuffer, token, SEP);
+		std::getline(receiveBuffer, token, TP_HEADER_SEPERATOR);
 		packet->Method = (PacketMethod) atoi(token.c_str());
 
-		std::getline(receiveBuffer, token, SEP);
+		std::getline(receiveBuffer, token, TP_HEADER_SEPERATOR);
 		packet->Type = (PacketType) atoi(token.c_str());
 
-		std::getline(receiveBuffer, token, EOT);
+		std::getline(receiveBuffer, token, TP_END_OF_PACKET);
 		obj->Deserialize(token);
 
 		return packet;
