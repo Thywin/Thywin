@@ -7,24 +7,16 @@
 
 #ifndef MASTER_HPP_
 #define MASTER_HPP_
-#include <string>
+#include <mutex>
+#include "URIPacket.h"
+#include "DocumentPacket.h"
+#include <memory>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sstream>
-#include <mutex>
+
 
 namespace thywin
 {
-	struct URIElement
-	{
-			std::string URI;
-			int hostDocumentRelevance;
-	};
-	struct documentElement
-	{
-			std::string URI;
-			std::string content;
-	};
 
 	class Master
 	{
@@ -33,13 +25,13 @@ namespace thywin
 			 * Grabs an URIElement struct from the URI Queue.
 			 * @return		URIElement struct.
 			 */
-			static URIElement GetNextURIElementFromQueue();
+			static std::shared_ptr<URIPacket> GetNextURIElementFromQueue();
 
 			/**
 			 * Adds a new URI element to the URI Queue.
 			 * @URIElement element
 			 */
-			static void AddURIElementToQueue(URIElement element);
+			static void AddURIElementToQueue(std::shared_ptr<URIPacket> element);
 
 			/**
 			 * Grabs an documentElement struct from the Document Queue. Function call is blocking.
@@ -47,20 +39,20 @@ namespace thywin
 			 *
 			 * @return		documentElement struct.
 			 */
-			static documentElement GetNextDocumentElementFromQueue();
+			static std::shared_ptr<DocumentPacket> GetNextDocumentElementFromQueue();
 
 			/**
 			 * Adds a new document element to the Document Queue.
 			 * @documentElement element		Pointer to a documentElement struct
 			 */
-			static void AddDocumentElementToQueue(documentElement element);
+			static void AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element);
 
 		private:
 
 			static std::mutex URIQueueMutex;
 			static std::mutex DocumentQueueMutex;
-			static std::vector<URIElement> URIQueue;
-			static std::vector<documentElement> documentQueue;
+			static std::vector<std::shared_ptr<URIPacket>> URIQueue;
+			static std::vector<std::shared_ptr<DocumentPacket>> documentQueue;
 			static void fillURLQueue();
 	};
 }
