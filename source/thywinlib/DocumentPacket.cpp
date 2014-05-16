@@ -24,7 +24,7 @@ namespace thywin
 	std::string DocumentPacket::Serialize()
 	{
 		std::stringstream stream;
-		stream << URI << STX << Document << STX;
+		stream << URI << TP_CONTENT_SEPERATOR << Document << TP_CONTENT_SEPERATOR;
 		return stream.str();
 	}
 
@@ -34,7 +34,7 @@ namespace thywin
 		stream << input;
 
 		std::string token;
-		std::getline(stream, URI, STX);
-		std::getline(stream, Document, STX);
+		std::getline(stream, URI, TP_CONTENT_SEPERATOR);
+		std::getline(stream, Document, TP_CONTENT_SEPERATOR);
 	}
 }

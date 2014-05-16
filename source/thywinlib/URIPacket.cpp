@@ -17,7 +17,7 @@ namespace thywin
 	std::string URIPacket::Serialize()
 	{
 		std::stringstream stream;
-		stream << Relevance << STX << URI << STX;
+		stream << Relevance << TP_CONTENT_SEPERATOR << URI << TP_CONTENT_SEPERATOR;
 		return stream.str();
 	}
 
@@ -27,10 +27,10 @@ namespace thywin
 		stream << input;
 
 		std::string token;
-		std::getline(stream, token, STX);
+		std::getline(stream, token, TP_CONTENT_SEPERATOR);
 		Relevance = atof(token.c_str());
 
-		std::getline(stream, URI, STX);
+		std::getline(stream, URI, TP_CONTENT_SEPERATOR);
 
 		printf("deserialize: %s | %f\n", URI.c_str(), Relevance);
 	}

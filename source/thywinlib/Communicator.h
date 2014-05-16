@@ -16,24 +16,24 @@ namespace thywin
 {
 	/**
 	 * A special character used for serialization.
-	 * SEP is used to divide between values in a @ThywinPacket.
+	 * TP_HEADER_SEPERATOR is used to divide between values in a @ThywinPacket.
 	 * Should not be used in content!
 	 */
-	const char SEP = (char) 30;
+	const char TP_HEADER_SEPERATOR = (char) 30;
 
 	/**
 	 * Special character used for serialization.
-	 * EOT is used to mark the end of a ThywinPacket.
+	 * TP_END_OF_PACKET is used to mark the end of a ThywinPacket.
 	 * Should not be used in content!
 	 */
-	const char EOT = (char) 4;
+	const char TP_END_OF_PACKET = (char) 4;
 
 	/**
-	 * STX is a special character used for serialization.
-	 * STX Is used to divide values within the @Content of a @ThywinPacket.
+	 * TP_CONTENT_SEPERATOR is a special character used for serialization.
+	 * TP_CONTENT_SEPERATOR Is used to divide values within the @Content of a @ThywinPacket.
 	 * Expected to be used after each separate value within a struct or class, including the last value.
 	 */
-	const char STX = (char) 3;
+	const char TP_CONTENT_SEPERATOR = (char) 3;
 
 	/**
 	 * Communication class for connecting with a server.
