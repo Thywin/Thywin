@@ -9,7 +9,8 @@
 #define THYWINPACKET_H_
 
 #include <sstream>
-
+#include <iostream>
+#include <memory>
 #include "TPObject.h"
 
 namespace thywin
@@ -24,12 +25,12 @@ namespace thywin
 		GET = 1, PUT = 2, RESPONSE = 3
 	};
 
-	typedef struct ThywinPacket
+	struct ThywinPacket
 	{
 			PacketMethod Method;
 			PacketType Type;
-			TPObject* Content;
-	} ThywinPacket;
+			std::shared_ptr<TPObject> Content;
+	};
 
 } /* namespace thywin */
 
