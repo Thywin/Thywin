@@ -43,9 +43,9 @@ namespace thywin
 			void CrawlURI();
 		private:
 			std::string ipaddress;
-			int crawl(std::string URI);
-			void sendURIDocument(int* wgetCommunicationPipe, std::string URI);
-			void startWget(int* wgetCommunicationPipe, std::string URI);
+			int crawl(const std::string& URI);
+			void sendURIDocument(int* pagePipe, const std::string& URI);
+			void startCurl(int* pagePipe, const std::string& URI);
 	};
 }
 #endif /* CRAWLER_HPP_ */

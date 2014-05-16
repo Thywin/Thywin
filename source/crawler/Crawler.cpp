@@ -17,6 +17,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 #include "crawler.h"
 
 namespace thywin
@@ -31,8 +32,8 @@ namespace thywin
 	{
 		struct sockaddr_in saddr;
 
-		int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-		if (sock == -1)
+		int socketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		if (socketFD == -1)
 		{
 			perror("Socket creatation failed");
 		}
@@ -41,28 +42,30 @@ namespace thywin
 		saddr.sin_port = htons(7000);
 		saddr.sin_addr.s_addr = inet_addr(ipaddress.c_str());
 
-		if (connect(sock, (struct sockaddr *) &saddr, sizeof(saddr)) == -1)
+		if (connect(socketFD, (struct sockaddr *) &saddr, sizeof(saddr)) == -1)
 		{
 			perror("Creating connection failed");
+			return;
 		}
 
 		ThywinPacket getURIMessage;
 		getURIMessage.type = URI;
 		getURIMessage.action = GET;
 
-		if (send(sock, (void *) &getURIMessage, sizeof(ThywinPacket), NOFLAG) == -1)
+		if (send(socketFD, (void *) &getURIMessage, sizeof(ThywinPacket), NOFLAG) == -1)
 		{
 			perror("Send data failed");
+			return;
 		}
 
 		std::string received;
 		char buffer;
-		while (recv(sock, &buffer, sizeof(buffer), NOFLAG) > 0)
+		while (recv(socketFD, &buffer, sizeof(buffer), NOFLAG) > 0)
 		{
 			received.push_back(buffer);
 		}
 
-		if (close(sock) == -1)
+		if (close(socketFD) == -1)
 		{
 			perror("Closing socket failed");
 		}
@@ -70,56 +73,80 @@ namespace thywin
 		crawl(received);
 	}
 
-	int Crawler::crawl(std::string URI)
+	int Crawler::crawl(const std::string& URI)
 	{
-		int pid;
-		int status;
-		int wgetCommunicationPipe[2];
-		if (pipe(wgetCommunicationPipe) == -1)
+		int pagePipe[2];
+		if (pipe(pagePipe) == -1)
 		{
 			perror("Piping failed");
 			exit(EXIT_FAILURE);
 		}
 
-		switch (pid = fork())
+		int processID = -1;
+		int status = 0;
+		switch (processID = fork())
 		{
 			case 0:
-				startWget(wgetCommunicationPipe, URI);
+				startCurl(pagePipe, URI);
 				break;
 
 			case -1:
 				perror("Can\'t create child!");
-				return -1;
+				return -1; // Exception van maken
 
 			default:
-				sendURIDocument(wgetCommunicationPipe, URI);
-				pid = wait(&status);
+				processID = wait(&status);
+				sendURIDocument(pagePipe, URI);
+
 		}
 		return 0;
 	}
 
-	void Crawler::sendURIDocument(int* wgetCommunicationPipe, std::string URI)
+	void Crawler::sendURIDocument(int* pagePipe, const std::string& URI)
 	{
-		if (close(wgetCommunicationPipe[1]) == -1)
+		if (close(pagePipe[1]) == -1)
 		{
 			perror("Closing document pipe failed");
 		}
 
-		char c;
-		int readSize = read(wgetCommunicationPipe[0], &c, sizeof(c));
+		char buffer;
+		int readSize = read(pagePipe[0], &buffer, sizeof(buffer));
+
+		std::string document = "";
+		do
+		{
+			document.push_back(buffer);
+		} while ((readSize = read(pagePipe[0], &buffer, sizeof(buffer))) > 0);
+
+		std::string::size_type headerend = document.find("\r\n\r\n");
+		std::string head = document.substr(0, headerend);
+		std::transform(head.begin(), head.end(), head.begin(), ::tolower);
+		std::string body = "";
+
+		std::string::size_type content_type_html = head.find("content-type: text/html");
+		if (content_type_html != std::string::npos)
+		{
+			body = document.substr(headerend, document.size());
+			std::cout << "Valid link: " << URI << std::endl;
+		}
+		else
+		{
+			std::cout << "Invalid link: " << URI << std::endl;
+			return;
+		}
 
 		struct sockaddr_in saddr;
-		int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-		if (sock == -1)
+		int socketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		if (socketFD == -1)
 		{
 			perror("Socket failed");
 		}
 
 		saddr.sin_family = AF_INET;
 		saddr.sin_port = htons(7000);
-		saddr.sin_addr.s_addr = inet_addr("192.168.100.11");
+		saddr.sin_addr.s_addr = inet_addr(ipaddress.c_str());
 
-		if (connect(sock, (struct sockaddr *) &saddr, sizeof(saddr)) == -1)
+		if (connect(socketFD, (struct sockaddr *) &saddr, sizeof(saddr)) == -1)
 		{
 			perror("Connect failed");
 		}
@@ -129,7 +156,7 @@ namespace thywin
 		sendURIDocumentMessage.action = PUT;
 		sendURIDocumentMessage.size = URI.size();
 
-		if (send(sock, (void *) &sendURIDocumentMessage, sizeof(ThywinPacket), NOFLAG) == -1)
+		if (send(socketFD, (void *) &sendURIDocumentMessage, sizeof(ThywinPacket), NOFLAG) == -1)
 		{
 			perror("Send failed");
 		}
@@ -137,50 +164,48 @@ namespace thywin
 		std::cout << URI << std::endl;
 
 		const char* charURI = URI.c_str();
-		if (send(sock, charURI, strlen(charURI), NOFLAG) == -1)
+		if (send(socketFD, charURI, strlen(charURI), NOFLAG) == -1)
 		{
 			perror("Send URI failed");
 		}
 
-		do
+		if (send(socketFD, body.c_str(), body.size(), NOFLAG) == -1)
 		{
-			if (send(sock, &c, 1, NOFLAG) == -1)
-			{
-				perror("Send Document failed");
-			}
-		} while ((readSize = read(wgetCommunicationPipe[0], &c, sizeof(c))) > 0);
+			perror("Sending document failed");
+		}
 
-		if (close(wgetCommunicationPipe[0]) == -1)
+		if (close(pagePipe[0]) == -1)
 		{
 			perror("Closing document pipe failed");
 		}
 
-		if (close(sock) == -1)
+		if (close(socketFD) == -1)
 		{
 			perror("Closing socket failed");
 		}
 	}
 
-	void Crawler::startWget(int* wgetCommunicationPipe, std::string URI)
+	void Crawler::startCurl(int* pageBodyPipe, const std::string& URI)
 	{
-		if (close(wgetCommunicationPipe[0]) == -1)
+
+		if (close(pageBodyPipe[0]) == -1)
 		{
-			perror("Closing document pipe failed");
+			perror("Closing head pipe failed");
 		}
 
-		if (close(STDOUT_FILENO) == -1)
+		if (dup2(pageBodyPipe[1], STDOUT_FILENO) == -1)
 		{
-			perror("Closing stdout failed");
+			perror("Error dupping stderr");
+			exit(EXIT_FAILURE);
 		}
 
-		if (dup(wgetCommunicationPipe[1]) == -1)
+		if (close(STDERR_FILENO) == -1)
 		{
-			perror("Closing document pipe failed");
+			perror("Closing stderr failed");
 		}
 
-		// -qO- is ussed to download the file quiet and send it to STDOUT
 		char* exec[] =
-		{ "wget", "-qO-", (char *) URI.c_str(), NULL };
+		{ "curl", "-i", (char *) URI.c_str(), NULL };
 
 		if (execvp(exec[0], exec) == -1)
 		{
