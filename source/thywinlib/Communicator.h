@@ -67,7 +67,7 @@ namespace thywin
 			 * @return ThywinPacket. Shared pointer to a ThywinPacket,
 			 * containing the entire response from the connected server
 			 */
-			std::shared_ptr<ThywinPacket> ReceivePacket(std::shared_ptr<TPObject> contentObject);
+			std::shared_ptr<ThywinPacket> ReceivePacket(std::shared_ptr<ThywinPacketContent> contentObject);
 
 		private:
 			int connectionSocket;

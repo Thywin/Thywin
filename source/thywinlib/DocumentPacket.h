@@ -8,7 +8,7 @@
 
 #ifndef DOCUMENT_H_
 #define DOCUMENT_H_
-#include "TPObject.h"
+#include "ThywinPacketContent.h"
 
 namespace thywin
 {
@@ -18,7 +18,7 @@ namespace thywin
 	 * Has build in functionality to serialize and deserialize for
 	 * sending across the network between clients and server.
 	 */
-	class DocumentPacket: public TPObject
+	class DocumentPacket: public ThywinPacketContent
 	{
 		public:
 			/**
