@@ -18,10 +18,10 @@ namespace thywin
 	
 	void Logger::log(const logEnum& logmessage, const std::string& message)
 	{
-		char timeString[TIMESTRINGSIZE];
+		char timeString[TIME_STRING_SIZE];
 		time_t currentTime = time(NULL);
 		struct tm* timeComponents = localtime(&currentTime);
-		strftime(timeString, TIMESTRINGSIZE, "%F %T", timeComponents);
+		strftime(timeString, TIME_STRING_SIZE, "%F %T", timeComponents);
 		
 		logfileStream << "[" << timeString << "]" << " " << getLogtype(logmessage) << ": " << message << std::endl;
 	}
