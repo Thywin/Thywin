@@ -43,7 +43,7 @@ namespace thywin
 			 * @param documentVector The DocumentVector that will be compared.
 			 * @return The similarity between the two DocumentVectors, a double with a value between 0 and 1 (both inclusive)
 			 */
-			double CalculateSimilarity(DocumentVector* documentVector);
+			double CalculateSimilarity(DocumentVector& documentVector);
 
 			/**
 			 * Computes the magnitude (length) of this DocumentVector.
@@ -55,7 +55,7 @@ namespace thywin
 			 * Computes the dot product between the DocumentVector it is called upon and the DocumentVector passed as argument.
 			 * @return The dot product between the two DocumentVectors, this value will be 0 or greater.
 			 */
-			double DotProduct(DocumentVector* documentVector);
+			double DotProduct(DocumentVector& documentVector);
 	};
 
 } /* namespace thywin */
