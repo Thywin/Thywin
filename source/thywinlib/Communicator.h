@@ -24,7 +24,7 @@ namespace thywin
 			virtual ~Communicator();
 
 			int SendPacket(ThywinPacket packet);
-			ThywinPacket* ReceivePacket(TPObject* obj);
+			std::shared_ptr<ThywinPacket> ReceivePacket(std::shared_ptr<TPObject> obj);
 			void CloseConnection();
 
 		private:
