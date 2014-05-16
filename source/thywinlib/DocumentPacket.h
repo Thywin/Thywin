@@ -2,7 +2,8 @@
  * Document.h
  *
  *  Created on: May 13, 2014
- *      Author: damonk
+ *      Author: Thomas Kooi
+ *	 	 	 	Imre Woudstra
  */
 
 #ifndef DOCUMENT_H_

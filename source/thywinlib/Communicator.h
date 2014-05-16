@@ -2,7 +2,8 @@
  * Communicator.h
  *
  *  Created on: May 13, 2014
- *      Author: damonk
+ *      Author: Thomas Kooi
+ *      		Imre Woudstra
  */
 
 #ifndef COMMUNICATOR_H_
@@ -48,7 +49,7 @@ namespace thywin
 			 *
 			 * 	Creates an new object with a connection set up to the given IP.
 			 */
-			Communicator(std::string& ipaddress);
+			Communicator(const std::string& ipaddress);
 			virtual ~Communicator();
 
 			/**

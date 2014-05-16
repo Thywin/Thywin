@@ -2,7 +2,8 @@
  * Communicator.cpp
  *
  *  Created on: May 13, 2014
- *      Author: damonk
+ *      Author: Thomas Kooi
+ *      		Imre Woudstra
  */
 
 #include "Communicator.h"
@@ -19,7 +20,7 @@
 namespace thywin
 {
 
-	Communicator::Communicator(std::string& ipaddress)
+	Communicator::Communicator(const std::string& ipaddress)
 	{
 		struct sockaddr_in sockAddr;
 		sockAddr.sin_addr.s_addr = inet_addr(ipaddress.c_str());
