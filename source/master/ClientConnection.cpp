@@ -103,6 +103,7 @@ namespace thywin
 			handlingConnection = true;
 			while (handlingConnection)
 			{
+				printf("waiting for new packet\n");
 				ThywinPacket returnPacket = ReceivePacket();
 				if (connection)
 				{
@@ -123,17 +124,19 @@ namespace thywin
 	}
 	int ClientConnection::SendPacket(ThywinPacket packet)
 	{
-		printf("Sending packet\n");
+
 		std::stringstream data;
 		data << packet.Method << TP_HEADER_SEPERATOR << packet.Type << TP_HEADER_SEPERATOR;
 		if (packet.Content != NULL)
 		{
 			data << packet.Content->Serialize();
+		} else {
+			printf("CONTENT FOUND WAS NULL\n");
 		}
 		data << TP_END_OF_PACKET;
 		const char* realdata = data.str().c_str();
-		printf("Sending data: %s\n", realdata);
-		int sendSize = send(clientSocket, realdata, strlen(realdata), 0);
+		printf("Sending packet of size: %i\n", data.str().size());
+		int sendSize = send(clientSocket, realdata, data.str().size(), 0);
 		if (sendSize < 0)
 		{
 			perror("Send failed");
@@ -169,15 +172,13 @@ namespace thywin
 			std::cout << "client closed the connection" << std::endl;
 			return returnPacket;
 		}
-
 		std::string token;
 		std::getline(receiveBuffer, token, TP_HEADER_SEPERATOR);
 		returnPacket.Method = (PacketMethod) atoi(token.c_str());
-
 		std::getline(receiveBuffer, token, TP_HEADER_SEPERATOR);
 		returnPacket.Type = (PacketType) atoi(token.c_str());
-
 		std::getline(receiveBuffer, token, TP_HEADER_SEPERATOR);
+
 		if (returnPacket.Method == PUT)
 		{
 			switch (returnPacket.Type)
@@ -198,7 +199,6 @@ namespace thywin
 				}
 				case RELEVANCE:
 				{
-
 					break;
 				}
 				case DOCUMENTVECTOR:
@@ -208,8 +208,7 @@ namespace thywin
 			}
 		}
 
-		printf("Received packet: METHOD %i TYPE %i\nCONTENT: %s\n", returnPacket.Method, returnPacket.Type,
-				token.c_str());
+		printf("Received packet: METHOD %i TYPE %i\n", returnPacket.Method, returnPacket.Type);
 		return returnPacket;
 	}
 } /* namespace thywin */

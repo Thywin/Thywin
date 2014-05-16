@@ -39,12 +39,7 @@ namespace thywin
 	{
 		printf("AddURIElementToQueue\n");
 		Master::URIQueueMutex.lock();
-
-		printf("Adding new element to URI Queue: %s, %f\n", element->URI.c_str(), element->Relevance);
-		counterURI++;
 		Master::URIQueue.insert(Master::URIQueue.end(), element);
-
-
 		Master::URIQueueMutex.unlock();
 	}
 
@@ -62,7 +57,6 @@ namespace thywin
 		{
 			element = Master::URIQueue.at(0);
 			Master::URIQueue.erase(URIQueue.begin());
-			counterURI--;
 		}
 		else
 		{
@@ -71,7 +65,7 @@ namespace thywin
 			el->Relevance = 0;
 			element = el;
 		}
-		printf("URI QUEUE: %i\n", counterURI);
+		printf("URI QUEUE: %i\n", Master::URIQueue.size());
 		Master::URIQueueMutex.unlock();
 		return element;
 	}
@@ -95,26 +89,21 @@ namespace thywin
 		Master::DocumentQueueMutex.lock();
 		// check semaphore is empty
 
-		std::shared_ptr<DocumentPacket> element;
-		std::shared_ptr<DocumentPacket> returnElement;
+		std::shared_ptr<DocumentPacket> element = NULL;
 		if (Master::documentQueue.size() > 0)
 		{
-			returnElement = Master::documentQueue.at(0);
-			element->Document = returnElement->Document;
-			element->URI = returnElement->URI;
+			element = Master::documentQueue.at(0);
 			Master::documentQueue.erase(Master::documentQueue.begin());
 			counterDocs--;
 		}
 		else
 		{
-			//element.content = std::string();
-			//element.URI = std::string();
 		}
 		if (documentQueue.size() < 1)
 		{
 			// set semaphore is empty
 		}
-		printf("DOCUMENT QUEUE: %i\n", counterDocs);
+		printf("DOCUMENT QUEUE: %i\n", Master::documentQueue.size());
 		Master::DocumentQueueMutex.unlock();
 		return element;
 	}
@@ -128,10 +117,16 @@ namespace thywin
 		URIElement->Relevance = 0.5;
 		URIQueue.insert(URIQueue.end(), URIElement);
 
-		//URIElement.URI = "http://en.wikipedia.org/wiki/Discrete_event_simulation\0";
-		//URIQueue.insert(URIQueue.end(), URIElement);
-		//URIElement.URI = "http://www.reliasoft.com/reno/features1.htm\0";
-		//URIQueue.insert(URIQueue.end(), URIElement);
+		std::shared_ptr<URIPacket> otherElement(new URIPacket);
+		otherElement->URI = "http://en.wikipedia.org/wiki/Discrete_event_simulation\0";
+		otherElement->Relevance = 0.01;
+		URIQueue.insert(URIQueue.end(), otherElement);
+
+		std::shared_ptr<URIPacket> anotherElement(new URIPacket);
+		anotherElement->URI = "http://www.reliasoft.com/reno/features1.htm\0";
+		anotherElement->Relevance = 0.01;
+		URIQueue.insert(URIQueue.end(), anotherElement);
+
 	}
 
 }
