@@ -24,7 +24,7 @@ namespace thywin
 			 * Set up the server on port, if the server has not been set up yet
 			 * @port:		Valid port number. Can be any number between # and #.
 			 */
-			void SetUp(int port);
+			int SetUp(const int& port);
 
 			/**
 			 * Start to listen on port from SetUp. Function is blocking.

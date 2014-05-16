@@ -9,11 +9,18 @@
 #include <stdlib.h>
 #include "Server.h"
 
-int main()
+int main(int argc, char* argv[])
 {
-	thywin::Server srv;
-	srv.SetUp(7500);
-	srv.Listen();
-	printf("Server shutting down\n");
-	return (EXIT_SUCCESS);
+	if (argc < 2) {
+		printf("No Port given");
+		return(EXIT_FAILURE);
+	} else {
+		thywin::Server srv;
+		const int portNumber = atoi(argv[1]);
+		srv.SetUp(portNumber);
+		srv.Listen();
+		printf("Server shutting down\n");
+		return(EXIT_SUCCESS);
+	}
 }
+
