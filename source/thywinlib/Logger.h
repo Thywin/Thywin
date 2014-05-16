@@ -14,19 +14,34 @@
 
 namespace thywin
 {
+
 	enum logEnum
 	{
-		INFO = 0, DEBUG = 1, ERROR = 2
+		INFO = 0, DEBUG = 1, ERROR = 2, WARNING = 3
 	};
+
+	const short TIMESTRINGSIZE = 50;
 
 	class Logger
 	{
 		public:
-			Logger(std::string logfileName);
-			virtual ~Logger();
-			void log(logEnum logmessage, std::string message);
-			std::string getLogtype(logEnum logmessage);
+			/**
+			 * This is the constructor. It creates a Logger and uses the
+			 * specified filename to store the logs.
+			 *
+			 * @param logfileName The logfile
+			 */
+			Logger(const std::string& logfileName);
+
+			/**
+			 * Log a message to the logfile.
+			 *
+			 * @param logmessage The logtype based on the logEnum.
+			 * @param message The logmessage
+			 */
+			void log(const logEnum& logmessage, const std::string& message);
 		private:
+			std::string getLogtype(const logEnum& logmessage);
 			std::ofstream logfileStream;
 	};
 
