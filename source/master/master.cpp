@@ -28,8 +28,10 @@ namespace thywin
 {
 	int counterURI = 0;
 	int counterDocs = 0;
+
 	std::vector<std::shared_ptr<URIPacket>> Master::URIQueue;
 	std::vector<std::shared_ptr<DocumentPacket>> Master::documentQueue;
+
 	std::mutex Master::URIQueueMutex;
 	std::mutex Master::DocumentQueueMutex;
 
@@ -42,12 +44,14 @@ namespace thywin
 		counterURI++;
 		Master::URIQueue.insert(Master::URIQueue.end(), element);
 
+
 		Master::URIQueueMutex.unlock();
 	}
 
 	std::shared_ptr<URIPacket> Master::GetNextURIElementFromQueue()
 	{
 		Master::URIQueueMutex.lock();
+
 		std::shared_ptr<URIPacket> element;
 		if (Master::URIQueue.size() == 0)
 		{
@@ -117,6 +121,7 @@ namespace thywin
 
 	void Master::fillURLQueue()
 	{
+
 		std::shared_ptr<URIPacket> URIElement(new URIPacket);
 		URIElement->URI =
 				"http://ieeexplore.ieee.org/xpl/login.jsp?tp=&arnumber=685270&url=http%3A%2F%2Fieeexplore.ieee.org%2Fiel4%2F5611%2F15013%2F00685270.pdf%3Farnumber%3D685270\0";

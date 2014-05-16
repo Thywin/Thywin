@@ -10,7 +10,7 @@
 #include "Communicator.h"
 #include "URIPacket.h"
 #include "DocumentPacket.h"
-#include "TPObject.h"
+#include "ThywinPacketContent.h"
 #include <memory>
 
 namespace thywin
@@ -46,14 +46,14 @@ namespace thywin
 			 * Used as a layer between the Client Connection and Queue
 			 * @Content:	shared_ptr<TPObject>, expected to be an URIPacket
 			 */
-			void HandlePutURI(std::shared_ptr<TPObject> Content);
+			void HandlePutURI(std::shared_ptr<ThywinPacketContent> Content);
 
 			/**
 			 * Wrapper for putting in new Documents into the Document queue.
 			 * Used as a layer between the Client Connection and Queue
 			 * @Content:	shared_ptr<TPObject>, expected to be an DocumentPacket
 			 */
-			void HandlePutDocument(std::shared_ptr<TPObject> Content);
+			void HandlePutDocument(std::shared_ptr<ThywinPacketContent> Content);
 	};
 
 }

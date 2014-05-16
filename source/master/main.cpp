@@ -17,4 +17,3 @@ int main()
 	printf("Server shutting down\n");
 	return (EXIT_SUCCESS);
 }
-

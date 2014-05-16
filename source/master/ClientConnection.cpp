@@ -75,10 +75,10 @@ namespace thywin
 				communicator.HandlePutDocument(packet.Content);
 				break;
 			case RELEVANCE:
-				//MasterCommunicator::HandlePutRelevance(packet);
+				//MasterCommunicator::HandlePutRelevance(packet);	// to be implemented later
 				break;
 			case DOCUMENTVECTOR:
-				//MasterCommunicator::HandlePutDocumentVector(packet);
+				//MasterCommunicator::HandlePutDocumentVector(packet);	// to be implemented later
 				break;
 		}
 	}
@@ -125,12 +125,12 @@ namespace thywin
 	{
 		printf("Sending packet\n");
 		std::stringstream data;
-		data << packet.Method << SEP << packet.Type << SEP;
+		data << packet.Method << TP_HEADER_SEPERATOR << packet.Type << TP_HEADER_SEPERATOR;
 		if (packet.Content != NULL)
 		{
 			data << packet.Content->Serialize();
 		}
-		data << EOT;
+		data << TP_END_OF_PACKET;
 		const char* realdata = data.str().c_str();
 		printf("Sending data: %s\n", realdata);
 		int sendSize = send(clientSocket, realdata, strlen(realdata), 0);
@@ -145,15 +145,15 @@ namespace thywin
 	{
 		ThywinPacket returnPacket;
 		std::stringstream receiveBuffer;
-		const char SEP = (char) 30; // cannot find it in .h files??
-		const char EOT = (char) 4;
+		const char TP_HEADER_SEPERATOR = (char) 30; // cannot find it in .h files??
+		const char TP_END_OF_PACKET = (char) 4;
 		char c;
 		int receiveSize;
 		do
 		{
 			receiveSize = recv(clientSocket, &c, 1, 0);
 			receiveBuffer << c;
-		} while (receiveSize > 0 && c != EOT);
+		} while (receiveSize > 0 && c != TP_END_OF_PACKET);
 		returnPacket.Method = GET;
 		returnPacket.Type = URI;
 		returnPacket.Content = NULL;
@@ -171,13 +171,13 @@ namespace thywin
 		}
 
 		std::string token;
-		std::getline(receiveBuffer, token, SEP);
+		std::getline(receiveBuffer, token, TP_HEADER_SEPERATOR);
 		returnPacket.Method = (PacketMethod) atoi(token.c_str());
 
-		std::getline(receiveBuffer, token, SEP);
+		std::getline(receiveBuffer, token, TP_HEADER_SEPERATOR);
 		returnPacket.Type = (PacketType) atoi(token.c_str());
 
-		std::getline(receiveBuffer, token, EOT);
+		std::getline(receiveBuffer, token, TP_HEADER_SEPERATOR);
 		if (returnPacket.Method == PUT)
 		{
 			switch (returnPacket.Type)

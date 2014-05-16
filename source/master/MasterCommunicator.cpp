@@ -47,13 +47,13 @@ namespace thywin
 		return packet;
 	}
 
-	void MasterCommunicator::HandlePutURI(std::shared_ptr<TPObject> content)
+	void MasterCommunicator::HandlePutURI(std::shared_ptr<ThywinPacketContent> content)
 	{
 		std::shared_ptr<URIPacket> packet = std::dynamic_pointer_cast<URIPacket>(content);
 		Master::AddURIElementToQueue(packet);
 	}
 
-	void MasterCommunicator::HandlePutDocument(std::shared_ptr<TPObject> content)
+	void MasterCommunicator::HandlePutDocument(std::shared_ptr<ThywinPacketContent> content)
 	{
 		std::shared_ptr<DocumentPacket> packet = std::dynamic_pointer_cast<DocumentPacket>(content);
 		Master::AddDocumentElementToQueue(packet);

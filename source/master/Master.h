@@ -50,6 +50,7 @@ namespace thywin
 
 			static std::mutex URIQueueMutex;
 			static std::mutex DocumentQueueMutex;
+
 			static std::vector<std::shared_ptr<URIPacket>> URIQueue;
 			static std::vector<std::shared_ptr<DocumentPacket>> documentQueue;
 			static void fillURLQueue();
