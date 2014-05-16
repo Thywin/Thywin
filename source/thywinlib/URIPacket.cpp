@@ -26,9 +26,9 @@ namespace thywin
 		std::stringstream stream;
 		stream << input;
 
-		std::string token;
-		std::getline(stream, token, TP_CONTENT_SEPERATOR);
-		Relevance = atof(token.c_str());
+		std::string extractedValue;
+		std::getline(stream, extractedValue, TP_CONTENT_SEPERATOR);
+		Relevance = atof(extractedValue.c_str());
 
 		std::getline(stream, URI, TP_CONTENT_SEPERATOR);
 
