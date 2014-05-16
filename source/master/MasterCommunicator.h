@@ -2,7 +2,7 @@
  * communicator.hpp
  *
  *  Created on: 10 mei 2014
- *      Author: Thomas
+ *      Author: Thomas Kooi
  */
 
 #ifndef COMMUNICATOR_HPP_

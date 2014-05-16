@@ -2,7 +2,7 @@
  * ClientConnection.h
  *
  *  Created on: 14 mei 2014
- *      Author: Thomas
+ *      Author: Thomas Kooi
  */
 
 #ifndef CLIENTCONNECTION_H_

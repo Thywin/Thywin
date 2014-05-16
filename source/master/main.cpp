@@ -2,7 +2,7 @@
  * main.cpp
  *
  *  Created on: 13 mei 2014
- *      Author: Thomas
+ *      Author: Thomas Kooi
  */
 
 #include <stdio.h>
@@ -15,6 +15,6 @@ int main()
 	srv.SetUp(7500);
 	srv.Listen();
 	printf("Server shutting down\n");
-	return(EXIT_SUCCESS);
+	return (EXIT_SUCCESS);
 }
 

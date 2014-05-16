@@ -2,7 +2,7 @@
  * main.cpp
  *
  *  Created on: 23 apr. 2014
- *      Author: Thomas
+ *      Author: Thomas Kooi
  */
 
 #include <string>
@@ -38,9 +38,9 @@ namespace thywin
 		printf("AddURIElementToQueue\n");
 		Master::URIQueueMutex.lock();
 
-			printf("Adding new element to URI Queue: %s, %f\n", element->URI.c_str(), element->Relevance);
-			counterURI++;
-			Master::URIQueue.insert(Master::URIQueue.end(), element);
+		printf("Adding new element to URI Queue: %s, %f\n", element->URI.c_str(), element->Relevance);
+		counterURI++;
+		Master::URIQueue.insert(Master::URIQueue.end(), element);
 
 		Master::URIQueueMutex.unlock();
 	}
@@ -76,8 +76,8 @@ namespace thywin
 	{
 		Master::DocumentQueueMutex.lock();
 
-			counterDocs++;
-			Master::documentQueue.insert(Master::documentQueue.end(), element);
+		counterDocs++;
+		Master::documentQueue.insert(Master::documentQueue.end(), element);
 
 		// unset semaphore is empty
 		Master::DocumentQueueMutex.unlock();
@@ -122,7 +122,6 @@ namespace thywin
 				"http://ieeexplore.ieee.org/xpl/login.jsp?tp=&arnumber=685270&url=http%3A%2F%2Fieeexplore.ieee.org%2Fiel4%2F5611%2F15013%2F00685270.pdf%3Farnumber%3D685270\0";
 		URIElement->Relevance = 0.5;
 		URIQueue.insert(URIQueue.end(), URIElement);
-
 
 		//URIElement.URI = "http://en.wikipedia.org/wiki/Discrete_event_simulation\0";
 		//URIQueue.insert(URIQueue.end(), URIElement);

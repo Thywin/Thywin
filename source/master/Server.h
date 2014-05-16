@@ -2,7 +2,7 @@
  * Server.h
  *
  *  Created on: 13 mei 2014
- *      Author: Thomas
+ *      Author: Thomas Kooi
  */
 
 #ifndef SERVER_H_

@@ -2,7 +2,7 @@
  * Server.cpp
  *
  *  Created on: 13 mei 2014
- *      Author: Thomas
+ *      Author: Thomas Kooi
  */
 #include <pthread.h>
 #include <stdio.h>
@@ -40,7 +40,8 @@ namespace thywin
 	
 	Server::~Server()
 	{
-		if (serverSocket != -1) {
+		if (serverSocket != -1)
+		{
 			close(serverSocket);
 		}
 	}
@@ -56,7 +57,8 @@ namespace thywin
 		server.sin_addr.s_addr = INADDR_ANY;
 		server.sin_port = htons(port);
 		int on = 1;
-		if (setsockopt(serverDesc, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
+		if (setsockopt(serverDesc, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
+		{
 			perror("Failed to set up server socket");
 			return;
 		}

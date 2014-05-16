@@ -2,7 +2,7 @@
  * master.hpp
  *
  *  Created on: 7 mei 2014
- *      Author: Thomas
+ *      Author: Thomas Kooi
  */
 
 #ifndef MASTER_HPP_
@@ -13,7 +13,6 @@
 #include <memory>
 #include <stdio.h>
 #include <stdlib.h>
-
 
 namespace thywin
 {

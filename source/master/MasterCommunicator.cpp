@@ -2,7 +2,7 @@
  * communicator.cpp
  *
  *  Created on: 10 mei 2014
- *      Author: Thomas
+ *      Author: Thomas Kooi
  */
 
 #include <string>
