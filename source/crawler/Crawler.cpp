@@ -23,9 +23,10 @@
 namespace thywin
 {
 
-	Crawler::Crawler(std::string ipaddress)
+	Crawler::Crawler(std::string ipaddress, int port)
 	{
 		this->ipaddress = ipaddress;
+		this->port = port;
 	}
 
 	void Crawler::CrawlURI()
@@ -39,7 +40,7 @@ namespace thywin
 		}
 
 		saddr.sin_family = AF_INET;
-		saddr.sin_port = htons(7000);
+		saddr.sin_port = htons(port);
 		saddr.sin_addr.s_addr = inet_addr(ipaddress.c_str());
 
 		if (connect(socketFD, (struct sockaddr *) &saddr, sizeof(saddr)) == -1)
@@ -60,8 +61,15 @@ namespace thywin
 
 		std::string received;
 		char buffer;
-		while (recv(socketFD, &buffer, sizeof(buffer), NOFLAG) > 0)
+		int receiveSize;
+		while ((receiveSize = recv(socketFD, &buffer, sizeof(buffer), NOFLAG) > 0))
 		{
+			if (receiveSize == -1)
+			{
+				perror("Receive failed");
+				close(socketFD);
+				exit(EXIT_FAILURE);
+			}
 			received.push_back(buffer);
 		}
 
@@ -82,9 +90,8 @@ namespace thywin
 			exit(EXIT_FAILURE);
 		}
 
-		int processID = -1;
-		int status = 0;
-		switch (processID = fork())
+		int processID = fork();
+		switch (processID)
 		{
 			case 0:
 				startCurl(pagePipe, URI);
@@ -95,7 +102,7 @@ namespace thywin
 				return -1; // Exception van maken
 
 			default:
-				processID = wait(&status);
+				processID = wait(NULL);
 				sendURIDocument(pagePipe, URI);
 
 		}
@@ -112,7 +119,7 @@ namespace thywin
 		char buffer;
 		int readSize = read(pagePipe[0], &buffer, sizeof(buffer));
 
-		std::string document = "";
+		std::string document;
 		do
 		{
 			document.push_back(buffer);
@@ -123,7 +130,9 @@ namespace thywin
 		std::transform(head.begin(), head.end(), head.begin(), ::tolower);
 		std::string body = "";
 
-		std::string::size_type content_type_html = head.find("content-type: text/html");
+		const std::string content_type = "content-type: text/html";
+
+		std::string::size_type content_type_html = head.find(content_type);
 		if (content_type_html != std::string::npos)
 		{
 			body = document.substr(headerend, document.size());
@@ -143,7 +152,7 @@ namespace thywin
 		}
 
 		saddr.sin_family = AF_INET;
-		saddr.sin_port = htons(7000);
+		saddr.sin_port = htons(port);
 		saddr.sin_addr.s_addr = inet_addr(ipaddress.c_str());
 
 		if (connect(socketFD, (struct sockaddr *) &saddr, sizeof(saddr)) == -1)

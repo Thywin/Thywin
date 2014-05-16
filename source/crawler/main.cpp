@@ -28,7 +28,8 @@ int main(int argc, char** argv)
 	}
 
 	const std::string ipaddress = "192.168.100.11";
-	Crawler crawler = Crawler(ipaddress);
+	const int port = 7000;
+	Crawler crawler = Crawler(ipaddress, port);
 
 	for (int i = 0; i < numberOfClients - 1; i++)
 	{
