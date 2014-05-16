@@ -18,7 +18,13 @@ namespace thywin
 	class URIPacket: public ThywinPacketContent
 	{
 		public:
+			/**
+			 * double that represents the relevance of the URI  
+			 */
 			double Relevance;
+			/**
+			 * String containing a URI, location of a document on the web.
+			 */
 			std::string URI;
 
 			/**
