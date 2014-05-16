@@ -15,24 +15,16 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "Document.h"
-#include "URIRelevance.h"
+#include "DocumentPacket.h"
+#include "URIPacket.h"
 #include "DocumentVector.h"
+#include "Communicator.h"
 
 namespace thywin
 {
-	const short URL = 1;
-	const short DOCUMENT = 2;
-	const short GET = 1;
-	const short PUT = 2;
-
-	typedef struct RequestPacket
-	{
-			short type;
-			short action;
-			unsigned int size;
-	} RequestPacket;
-
+	/**
+	 * 
+	 */
 	class ParserCommunicator
 	{
 		public:
@@ -48,7 +40,7 @@ namespace thywin
 			/*
 			 * Get a document from the Document Queue 
 			 */
-			Document GetDocumentFromQueue();
+			DocumentPacket GetDocumentFromQueue();
 
 			/*
 			 * todo
@@ -58,21 +50,15 @@ namespace thywin
 			/*
 			 * Store an URI with the relevance of the document the URI is found in.
 			 */
-			void StoreExpectedURIRelevance(URIRelevance uriRelevance);
+			void StoreExpectedURIRelevance(URIPacket uriPacket);
 
 			/*
 			 * Store the actual relevance of a URI.
 			 */
-			void StoreActualURIRelevance(URIRelevance uriRelevance);
+			void StoreActualURIRelevance(URIPacket uriPacket);
 
 		private:
-
-			enum
-			{
-				eDocumentQueue = 0, eURLQueue = 1, eIndexStore = 2
-			};
-			int masterSockets[3];
-			struct sockaddr_in masterSockAddrs[3];
+			Communicator communicator;
 	};
 
 } /* namespace thywin */

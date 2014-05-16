@@ -32,20 +32,23 @@ namespace thywin
 		running = true;
 		while (running)
 		{
-			Document doc = communicator.GetDocumentFromQueue();
+			DocumentPacket documentFromQueue = communicator.GetDocumentFromQueue();
 
-			std::vector<std::string> URIs = parser.ExtractURIs(doc.content, doc.URI);
+			std::vector<std::string> URIs = parser.ExtractURIs(documentFromQueue.Document, documentFromQueue.URI);
 			std::cout << URIs.size() << " URI's found" << std::endl;
 
-			std::string text = parser.ExtractText(doc.content);
+			std::string text = parser.ExtractText(documentFromQueue.Document);
 
 			DocumentVector docVector(text);
-			double relevance = docVector.CalculateSimilarity(&subject);
+			double relevance = docVector.CalculateSimilarity(subject);
 			std::cout << relevance << " URI relevance" << std::endl;
 
 			for (unsigned int i = 0; i < URIs.size(); i++)
 			{
-				communicator.StoreExpectedURIRelevance(URIRelevance(relevance, URIs.at(i)));
+				URIPacket uriPacket;
+				uriPacket.Relevance = relevance;
+				uriPacket.URI = URIs.at(i);
+				communicator.StoreExpectedURIRelevance(uriPacket);
 			}
 		}
 	}
