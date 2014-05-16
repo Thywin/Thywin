@@ -2,7 +2,7 @@
  * URIPacket.cpp
  *
  *  Created on: 15 mei 2014
- *      Author: Thomas
+ *      Author: Thomas Kooi
  */
 
 #include <string>
