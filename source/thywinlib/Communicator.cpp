@@ -71,7 +71,7 @@ namespace thywin
 		return sendSize;
 	}
 
-	std::shared_ptr<ThywinPacket> Communicator::ReceivePacket(std::shared_ptr<TPObject> contentObject)
+	std::shared_ptr<ThywinPacket> Communicator::ReceivePacket(std::shared_ptr<ThywinPacketContent> contentObject)
 	{
 		std::shared_ptr<ThywinPacket> packet(new ThywinPacket);
 		std::stringstream receiveStream;

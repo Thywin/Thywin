@@ -1,13 +1,13 @@
 /*
- * TPObject.h
+ * ThywinPacketContent.h
  *
  *  Created on: May 13, 2014
  *      Author: Thomas Kooi
  *      		Imre Woudstra
  */
 
-#ifndef TPOBJECT_H_
-#define TPOBJECT_H_
+#ifndef THYWINPACKETCONTENT_H_
+#define THYWINPACKETCONTENT_H_
 
 #include <sstream>
 
@@ -16,7 +16,7 @@ namespace thywin
 	/**
 	 * A class that implements TPObject can be sent over a socket via the Serialize and Deserialize methods
 	 */
-	class TPObject
+	class ThywinPacketContent
 	{
 		public:
 			/**
@@ -34,18 +34,18 @@ namespace thywin
 			/**
 			 * Empty constructor
 			 */
-			TPObject()
+			ThywinPacketContent()
 			{
 			}
 
 			/**
 			 * Empty destructor
 			 */
-			virtual ~TPObject()
+			virtual ~ThywinPacketContent()
 			{
 			}
 	};
 
 } /* namespace thywin */
 
-#endif /* TPOBJECT_H_ */
+#endif /* THYWINPACKETCONTENT_H_ */

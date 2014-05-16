@@ -12,7 +12,7 @@
 #include <sstream>
 #include <iostream>
 #include <memory>
-#include "TPObject.h"
+#include "ThywinPacketContent.h"
 
 namespace thywin
 {
@@ -51,6 +51,7 @@ namespace thywin
 	 */
 	struct ThywinPacket
 	{
+		public:
 			/**
 			 * Contains the method of the ThywinPacket. @PacketMethod
 			 */
@@ -65,7 +66,7 @@ namespace thywin
 			 * Shared pointer to the content of the packet. This is the message/information that will be send across.
 			 * When using the @PacketMethod GET, Content can be of value NULL.
 			 */
-			std::shared_ptr<TPObject> Content;
+			std::shared_ptr<ThywinPacketContent> Content;
 	};
 
 } /* namespace thywin */
