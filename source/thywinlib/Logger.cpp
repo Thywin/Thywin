@@ -6,43 +6,38 @@
  */
 
 #include "Logger.h"
-
 #include <ctime>
 
 namespace thywin
 {
 	
-	Logger::Logger(std::string logfileName)
+	Logger::Logger(const std::string& logfileName)
 	{
 		logfileStream.open(logfileName.c_str(), std::ofstream::out | std::ofstream::app);
 	}
 	
-	Logger::~Logger()
+	void Logger::log(const logEnum& logmessage, const std::string& message)
 	{
-		// TODO Auto-generated destructor stub
-	}
-	
-	void Logger::log(logEnum logmessage, std::string message)
-	{
-		unsigned int buffersize = 50;
-		char timeString[buffersize];
+		char timeString[TIMESTRINGSIZE];
 		time_t currentTime = time(NULL);
-		struct tm* timeinfo = localtime(&currentTime);
-		strftime(timeString, buffersize, "%F %T", timeinfo);
+		struct tm* timeComponents = localtime(&currentTime);
+		strftime(timeString, TIMESTRINGSIZE, "%F %T", timeComponents);
 		
 		logfileStream << "[" << timeString << "]" << " " << getLogtype(logmessage) << ": " << message << std::endl;
 	}
 
-	std::string Logger::getLogtype(logEnum logmessage)
+	std::string Logger::getLogtype(const logEnum& logmessage)
 	{
 		switch (logmessage)
 		{
 			case DEBUG:
-				return "DEBUG";
+				return "DEBUG  "; // Extra space for alignment
 			case ERROR:
-				return "ERROR";
+				return "ERROR  "; // Extra space for alignment
+			case WARNING:
+				return "WARNING";
 			default:
-				return "INFO ";
+				return "INFO   "; // Extra space for alignment
 		}
 	}
 
