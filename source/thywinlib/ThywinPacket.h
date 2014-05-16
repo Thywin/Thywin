@@ -17,30 +17,33 @@
 namespace thywin
 {
 	/**
-	 * @GET			Request content of the given type @PacketType
-	 * @PUT			Send a put message of the given type @PacketType
-	 * @RESPONSE	Reply to a GET request. Expected to be of same @PacketType as the GET request
-	 *
 	 * Defines the type of Method from a message between client and server.
 	 * Can be any of the above listed. RESPONSE is a reply on a GET message.
 	 */
 	enum PacketMethod
 	{
-		GET = 1, PUT = 2, RESPONSE = 3
+		/** Request content of the given type @PacketType */
+		GET = 1,
+		/** Send a put message of the given type @PacketType */
+		PUT = 2,
+		/** Reply to a GET request. Expected to be of same @PacketType as the GET request */
+		RESPONSE = 3
 	};
 
-	/**
-	 * @URI				Uniform resource identifier
-	 * @DOCUMENT		A Document or content of a web page
-	 * @RELEVANCE
-	 * @DOCUMENTVECTOR
-	 *
+	/*
 	 * PacketType is the type of a ThywinPacket when send across the network between client and server.
 	 * The type identifies the content send within the package.
 	 */
 	enum PacketType
 	{
-		URI = 1, DOCUMENT = 2, RELEVANCE = 3, DOCUMENTVECTOR = 4
+		/** Uniform resource identifier */
+		URI = 1,
+		/** A Document or content of a web page */
+		DOCUMENT = 2,
+		/** */
+		RELEVANCE = 3,
+		/** */
+		DOCUMENTVECTOR = 4
 	};
 
 	/**
