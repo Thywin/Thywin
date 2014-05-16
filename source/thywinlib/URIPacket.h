@@ -8,14 +8,14 @@
 
 #ifndef URIELEMENT_H_
 #define URIELEMENT_H_
-#include "TPObject.h"
+#include "ThywinPacketContent.h"
 
 namespace thywin
 {
 	/**
 	 * An URIPacket is a packet which contains a URI and the Relevance of that URI.
 	 */
-	class URIPacket: public TPObject
+	class URIPacket: public ThywinPacketContent
 	{
 		public:
 			double Relevance;
