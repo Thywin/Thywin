@@ -44,37 +44,30 @@ namespace thywin
 	{
 		public:
 			/**
-			 * @ipaddress	std::string containing a valid IP address of a server
-			 * 				 that the communicator needs to connect to
-			 *
-			 * 	Creates an new object with a connection set up to the given IP.
+			 * Creates a new object with a connection set up to the given IP.
+			 * @param ipaddress std::string containing a valid IP address of a server
+			 * that the communicator needs to connect to
+			 * @param serverPort port of the server that the communicator needs to connect to.
 			 */
-			Communicator(const std::string& ipaddress);
+			Communicator(const std::string& ipaddress, const int& serverPort);
 			virtual ~Communicator();
 
 			/**
-			 * @packet		ThywinPacket. Automatically serializes the TPObject content.
-			 * 				 Content can be NULL when sending a GET request
-			 *
 			 * Send a ThywinPacket to the connected server. Handles serialization of the packet.
+			 * @param packet ThywinPacket. Automatically serializes the TPObject content.
+			 * Content can be NULL when sending a GET request
 			 */
 			int SendPacket(const ThywinPacket& packet);
 
 			/**
-			 * @obj			TPObject. Shared pointer to the TPObject that will contain the content
-			 * 				 from the RESPONSE reply from a GET request
-			 * @return		ThywinPacket. Shared pointer to a ThywinPacket,
-			 * 				 containing the entire response from the connected server
-			 *
 			 * Needs to be called after a GET request. Handles deserialization of TPObject.
 			 * Function will wait until the entire reponse from the connected server has come through.
+			 * @param contentObject	TPObject. Shared pointer to the TPObject that will contain the content
+			 * from the RESPONSE reply from a GET request
+			 * @return ThywinPacket. Shared pointer to a ThywinPacket,
+			 * containing the entire response from the connected server
 			 */
-			std::shared_ptr<ThywinPacket> ReceivePacket(std::shared_ptr<TPObject> obj);
-
-			/**
-			 * Closes the connection & socket with the server.
-			 */
-			void CloseConnection();
+			std::shared_ptr<ThywinPacket> ReceivePacket(std::shared_ptr<TPObject> contentObject);
 
 		private:
 			int connectionSocket;

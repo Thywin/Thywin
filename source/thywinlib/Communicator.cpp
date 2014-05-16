@@ -20,27 +20,33 @@
 namespace thywin
 {
 
-	Communicator::Communicator(const std::string& ipaddress)
+	Communicator::Communicator(const std::string& ipaddress, const int& serverPort)
 	{
 		struct sockaddr_in sockAddr;
 		sockAddr.sin_addr.s_addr = inet_addr(ipaddress.c_str());
 		sockAddr.sin_family = AF_INET;
-		sockAddr.sin_port = htons(7500);
+		sockAddr.sin_port = htons(serverPort);
 		connectionSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		if (connectionSocket == -1)
 		{
-			perror("Socket failed");
+			perror("Socket creation failed");
 			exit(EXIT_FAILURE);
 		}
 
 		if (connect(connectionSocket, (struct sockaddr*) &sockAddr, sizeof(sockAddr)) < 0)
 		{
 			perror("Connect failed");
+			exit(EXIT_FAILURE);
 		}
 	}
 
 	Communicator::~Communicator()
 	{
+		if (close(connectionSocket) < 0)
+		{
+			perror("Close connection failed");
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	int Communicator::SendPacket(const ThywinPacket& packet)
@@ -59,50 +65,47 @@ namespace thywin
 		if (sendSize < 0)
 		{
 			perror("Send failed");
+			exit(EXIT_FAILURE);
 		}
 
 		return sendSize;
 	}
 
-	std::shared_ptr<ThywinPacket> Communicator::ReceivePacket(std::shared_ptr<TPObject> obj)
+	std::shared_ptr<ThywinPacket> Communicator::ReceivePacket(std::shared_ptr<TPObject> contentObject)
 	{
 		std::shared_ptr<ThywinPacket> packet(new ThywinPacket);
-		std::stringstream receiveBuffer;
-		char c;
+		std::stringstream receiveStream;
+		char receiveBuffer;
 		int receiveSize;
 		do
 		{
-			receiveSize = recv(connectionSocket, &c, 1, 0);
-			receiveBuffer << c;
-		} while (receiveSize > 0 && c != TP_END_OF_PACKET);
+			receiveSize = recv(connectionSocket, &receiveBuffer, sizeof(char), 0);
+			receiveStream << receiveBuffer;
+		} while (receiveSize > 0 && receiveBuffer != TP_END_OF_PACKET);
 
 		if (receiveSize < 0)
 		{
 			perror("Receive failed");
+			exit(EXIT_SUCCESS);
 		}
 		else if (receiveSize == 0)
 		{
-			//connection closed;
 			close(connectionSocket);
 			std::cout << "Master closed the connection" << std::endl;
 			exit(EXIT_SUCCESS);
 		}
+		//no else because the code just continues the previous if's terminate the program.
 
-		std::string token;
-		std::getline(receiveBuffer, token, TP_HEADER_SEPERATOR);
-		packet->Method = (PacketMethod) atoi(token.c_str());
+		std::string extractedValue;
+		std::getline(receiveStream, extractedValue, TP_HEADER_SEPERATOR);
+		packet->Method = (PacketMethod) atoi(extractedValue.c_str());
 
-		std::getline(receiveBuffer, token, TP_HEADER_SEPERATOR);
-		packet->Type = (PacketType) atoi(token.c_str());
+		std::getline(receiveStream, extractedValue, TP_HEADER_SEPERATOR);
+		packet->Type = (PacketType) atoi(extractedValue.c_str());
 
-		std::getline(receiveBuffer, token, TP_END_OF_PACKET);
-		obj->Deserialize(token);
+		std::getline(receiveStream, extractedValue, TP_END_OF_PACKET);
+		contentObject->Deserialize(extractedValue);
 
 		return packet;
-	}
-
-	void Communicator::CloseConnection()
-	{
-		close(connectionSocket);
 	}
 } /* namespace thywin */
