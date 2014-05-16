@@ -56,9 +56,9 @@ namespace thywin
 	{
 	}
 	
-	double DocumentVector::CalculateSimilarity(DocumentVector* documentVector)
+	double DocumentVector::CalculateSimilarity(DocumentVector& documentVector)
 	{
-		double magnitude = this->GetMagnitude() * documentVector->GetMagnitude();
+		double magnitude = this->GetMagnitude() * documentVector.GetMagnitude();
 		if (magnitude == 0)
 		{
 			return 0;
@@ -76,26 +76,21 @@ namespace thywin
 		return std::sqrt(magnitude);
 	}
 	
-	double DocumentVector::DotProduct(DocumentVector* documentVector)
+	double DocumentVector::DotProduct(DocumentVector& documentVector)
 	{
 		double dotProduct = 0;
-		DocumentVector* largestDocumentVector = NULL;
-		DocumentVector* smallestDocumentVector = NULL;
-		if (this->size() > documentVector->size())
+		DocumentVector& largestDocumentVector = documentVector;
+		DocumentVector& smallestDocumentVector = *this;
+		if (this->size() > documentVector.size())
 		{
-			largestDocumentVector = this;
+			largestDocumentVector = *this;
 			smallestDocumentVector = documentVector;
 		}
-		else
-		{
-			largestDocumentVector = documentVector;
-			smallestDocumentVector = this;
-		}
 		
-		for (DocumentVector::iterator i = smallestDocumentVector->begin(); i != smallestDocumentVector->end(); i++)
+		for (DocumentVector::iterator i = documentVector.begin(); i != documentVector.end(); i++)
 		{
-			DocumentVector::iterator searchResult = largestDocumentVector->find(i->first);
-			if (searchResult != largestDocumentVector->end())
+			DocumentVector::iterator searchResult = this->find(i->first);
+			if (searchResult != this->end())
 			{
 				dotProduct += i->second * searchResult->second;
 			}
