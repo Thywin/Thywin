@@ -19,66 +19,35 @@
 #include <sstream>
 #include <algorithm>
 #include "crawler.h"
+#include "Communicator.h"
+#include "ThywinPacket.h"
+#include "URIPacket.h"
+#include "DocumentPacket.h"
+#include <Memory>
 
 namespace thywin
 {
 
-	Crawler::Crawler(std::string ipaddress, int port)
+	Crawler::Crawler(const std::string& ipaddress, const int& port) :
+			communication(ipaddress, port)
 	{
-		this->ipaddress = ipaddress;
-		this->port = port;
 	}
 
 	void Crawler::CrawlURI()
 	{
-		struct sockaddr_in saddr;
+		ThywinPacket packet;
+		packet.Type = URI;
+		packet.Method = GET;
+		packet.Content = NULL;
+		communication.SendPacket(packet);
+		std::shared_ptr<URIPacket> uriPacket(new URIPacket);
+		std::shared_ptr<ThywinPacket> receivedPacket(new ThywinPacket);
+		receivedPacket = communication.ReceivePacket(uriPacket);
 
-		int socketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-		if (socketFD == -1)
+		if (receivedPacket->Type == URI && receivedPacket->Method == RESPONSE)
 		{
-			perror("Socket creatation failed");
+			crawl(uriPacket->URI);
 		}
-
-		saddr.sin_family = AF_INET;
-		saddr.sin_port = htons(port);
-		saddr.sin_addr.s_addr = inet_addr(ipaddress.c_str());
-
-		if (connect(socketFD, (struct sockaddr *) &saddr, sizeof(saddr)) == -1)
-		{
-			perror("Creating connection failed");
-			return;
-		}
-
-		ThywinPacket getURIMessage;
-		getURIMessage.type = URI;
-		getURIMessage.action = GET;
-
-		if (send(socketFD, (void *) &getURIMessage, sizeof(ThywinPacket), NOFLAG) == -1)
-		{
-			perror("Send data failed");
-			return;
-		}
-
-		std::string received;
-		char buffer;
-		int receiveSize;
-		while ((receiveSize = recv(socketFD, &buffer, sizeof(buffer), NOFLAG) > 0))
-		{
-			if (receiveSize == -1)
-			{
-				perror("Receive failed");
-				close(socketFD);
-				exit(EXIT_FAILURE);
-			}
-			received.push_back(buffer);
-		}
-
-		if (close(socketFD) == -1)
-		{
-			perror("Closing socket failed");
-		}
-
-		crawl(received);
 	}
 
 	int Crawler::crawl(const std::string& URI)
@@ -109,7 +78,7 @@ namespace thywin
 		return 0;
 	}
 
-	void Crawler::sendURIDocument(int* pagePipe, const std::string& URI)
+	void Crawler::sendURIDocument(int* pagePipe, const std::string& CrawledURI)
 	{
 		if (close(pagePipe[1]) == -1)
 		{
@@ -136,65 +105,31 @@ namespace thywin
 		if (content_type_html != std::string::npos)
 		{
 			body = document.substr(headerend, document.size());
-			std::cout << "Valid link: " << URI << std::endl;
+			std::cout << "Valid link: " << CrawledURI << std::endl;
 		}
 		else
 		{
-			std::cout << "Invalid link: " << URI << std::endl;
+			std::cout << "Invalid link: " << CrawledURI << std::endl;
 			return;
 		}
 
-		struct sockaddr_in saddr;
-		int socketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-		if (socketFD == -1)
-		{
-			perror("Socket failed");
-		}
-
-		saddr.sin_family = AF_INET;
-		saddr.sin_port = htons(port);
-		saddr.sin_addr.s_addr = inet_addr(ipaddress.c_str());
-
-		if (connect(socketFD, (struct sockaddr *) &saddr, sizeof(saddr)) == -1)
-		{
-			perror("Connect failed");
-		}
-
-		ThywinPacket sendURIDocumentMessage;
-		sendURIDocumentMessage.type = DOCUMENT;
-		sendURIDocumentMessage.action = PUT;
-		sendURIDocumentMessage.size = URI.size();
-
-		if (send(socketFD, (void *) &sendURIDocumentMessage, sizeof(ThywinPacket), NOFLAG) == -1)
-		{
-			perror("Send failed");
-		}
-
-		std::cout << URI << std::endl;
-
-		const char* charURI = URI.c_str();
-		if (send(socketFD, charURI, strlen(charURI), NOFLAG) == -1)
-		{
-			perror("Send URI failed");
-		}
-
-		if (send(socketFD, body.c_str(), body.size(), NOFLAG) == -1)
-		{
-			perror("Sending document failed");
-		}
+		ThywinPacket packet;
+		packet.Type = DOCUMENT;
+		packet.Method = PUT;
+		packet.Content = NULL;
+		std::shared_ptr<DocumentPacket> documentPacket(new DocumentPacket);
+		documentPacket->Document = body;
+		documentPacket->URI = CrawledURI;
+		communication.SendPacket(packet);
 
 		if (close(pagePipe[0]) == -1)
 		{
 			perror("Closing document pipe failed");
 		}
 
-		if (close(socketFD) == -1)
-		{
-			perror("Closing socket failed");
-		}
 	}
 
-	void Crawler::startCurl(int* pageBodyPipe, const std::string& URI)
+	void Crawler::startCurl(int* pageBodyPipe, const std::string& CrawledURI)
 	{
 
 		if (close(pageBodyPipe[0]) == -1)
@@ -214,7 +149,7 @@ namespace thywin
 		}
 
 		char* exec[] =
-		{ "curl", "-i", (char *) URI.c_str(), NULL };
+		{ "curl", "-i", (char *) CrawledURI.c_str(), NULL };
 
 		if (execvp(exec[0], exec) == -1)
 		{
