@@ -10,6 +10,7 @@
 #include "Communicator.h"
 #include <stdlib.h>
 #include "DocumentPacket.h"
+#include <stdexcept>
 
 namespace thywin
 {
@@ -23,6 +24,9 @@ namespace thywin
 
 	void DocumentPacket::Deserialize(const std::string& input)
 	{
+		if (input.empty()) {
+			throw std::invalid_argument("Input argument is empty");
+		}
 		std::stringstream stream;
 		stream << input;
 
