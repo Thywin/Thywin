@@ -42,7 +42,6 @@ namespace thywin
 		URI = 1, DOCUMENT = 2, RELEVANCE = 3, DOCUMENTVECTOR = 4
 	};
 
-
 	/**
 	 * Struct for sending over messages between clients and servers.
 	 */

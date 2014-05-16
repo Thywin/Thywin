@@ -28,7 +28,7 @@ namespace thywin
 		return stream.str();
 	}
 
-	void DocumentPacket::Deserialize(std::string input)
+	void DocumentPacket::Deserialize(const std::string& input)
 	{
 		std::stringstream stream;
 		stream << input;

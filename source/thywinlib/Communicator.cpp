@@ -19,7 +19,7 @@
 namespace thywin
 {
 
-	Communicator::Communicator(std::string ipaddress)
+	Communicator::Communicator(std::string& ipaddress)
 	{
 		struct sockaddr_in sockAddr;
 		sockAddr.sin_addr.s_addr = inet_addr(ipaddress.c_str());
@@ -42,7 +42,7 @@ namespace thywin
 	{
 	}
 
-	int Communicator::SendPacket(ThywinPacket packet)
+	int Communicator::SendPacket(const ThywinPacket& packet)
 	{
 		std::stringstream data;
 		data << packet.Method << SEP << packet.Type << SEP;
