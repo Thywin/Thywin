@@ -35,7 +35,6 @@ namespace thywin
 	 */
 	const char STX = (char) 3;
 
-
 	/**
 	 * Communication class for connecting with a server.
 	 * Handles receiving and sending of ThywinPackets as well as (de)serialization of it's contents.
@@ -49,7 +48,7 @@ namespace thywin
 			 *
 			 * 	Creates an new object with a connection set up to the given IP.
 			 */
-			Communicator(std::string ipaddress);
+			Communicator(std::string& ipaddress);
 			virtual ~Communicator();
 
 			/**
@@ -58,7 +57,7 @@ namespace thywin
 			 *
 			 * Send a ThywinPacket to the connected server. Handles serialization of the packet.
 			 */
-			int SendPacket(ThywinPacket packet);
+			int SendPacket(const ThywinPacket& packet);
 
 			/**
 			 * @obj			TPObject. Shared pointer to the TPObject that will contain the content

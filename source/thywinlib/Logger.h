@@ -14,7 +14,10 @@
 
 namespace thywin
 {
-	enum logEnum { INFO = 0, DEBUG = 1, ERROR = 2 };
+	enum logEnum
+	{
+		INFO = 0, DEBUG = 1, ERROR = 2
+	};
 
 	class Logger
 	{
