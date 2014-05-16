@@ -20,7 +20,7 @@ namespace thywin
 		INFO = 0, DEBUG = 1, ERROR = 2, WARNING = 3
 	};
 
-	const short TIMESTRINGSIZE = 50;
+	const short TIME_STRING_SIZE = 50;
 
 	class Logger
 	{
