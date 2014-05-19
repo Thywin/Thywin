@@ -32,7 +32,15 @@ namespace thywin
 			 * @param logfileName The logfile
 			 */
 			Logger(const std::string& logfileName);
+
+			/**
+			 * Default destructor
+			 */
 			virtual ~Logger();
+
+			/**
+			 * Default copy constructor
+			 */
 			Logger(const Logger& other);
 
 			/**
