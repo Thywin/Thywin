@@ -2,7 +2,7 @@
  * main.hpp
  *
  *  Created on: 25 apr. 2014
- *      Author: Thomas, Bobby
+ *      Author: Thomas Kooi, Bobby Bouwmann
  */
 
 #include <stdlib.h>

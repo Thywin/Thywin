@@ -2,7 +2,7 @@
  * Crawler.cpp
  *
  *  Created on: 25 apr. 2014
- *      Author: Thomas, Bobby
+ *      Author: Thomas Kooi, Bobby Bouwmann
  */
 
 #include <cstdio>
@@ -99,10 +99,12 @@ namespace thywin
 		int readSize = read(pagePipe[0], &buffer, sizeof(buffer));
 
 		std::string document;
-		do
+
+		while (readSize > 0)
 		{
 			document.push_back(buffer);
-		} while ((readSize = read(pagePipe[0], &buffer, sizeof(buffer))) > 0);
+			readSize = read(pagePipe[0], &buffer, sizeof(buffer));
+		}
 
 		std::string::size_type headerend = document.find("\r\n\r\n");
 		std::string head = document.substr(0, headerend);

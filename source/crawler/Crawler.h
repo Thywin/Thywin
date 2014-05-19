@@ -2,7 +2,7 @@
  * Crawler.hpp
  *
  *  Created on: 25 apr. 2014
- *      Author: Thomas, Bobby
+ *      Author: Thomas Kooi, Bobby Bouwmann
  */
 
 #ifndef CRAWLER_HPP_
@@ -15,7 +15,6 @@
 
 namespace thywin
 {
-
 	const short NOFLAG = 0;
 
 	class Crawler
