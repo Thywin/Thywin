@@ -1,9 +1,9 @@
 /*
-* Logger.h
-*
-*  Created on: 14 mei 2014
-*      Author: Erwin, Bobby
-*/
+ * Logger.h
+ *
+ *  Created on: 14 mei 2014
+ *      Author: Erwin, Bobby
+ */
 
 #ifndef LOGGER_H_
 #define LOGGER_H_
@@ -24,27 +24,27 @@ namespace thywin
 
 	class Logger
 	{
-	public:
-		/**
-		* This is the constructor. It creates a Logger and uses the
-		* specified filename to store the logs.
-		*
-		* @param logfileName The logfile
-		*/
-		Logger(const std::string logfileName);
-		virtual ~Logger();
-		Logger(const Logger& other);
+		public:
+			/**
+			 * This is the constructor. It creates a Logger and uses the
+			 * specified filename to store the logs.
+			 *
+			 * @param logfileName The logfile
+			 */
+			Logger(const std::string& logfileName);
+			virtual ~Logger();
+			Logger(const Logger& other);
 
-		/**
-		* Log a message to the logfile.
-		*
-		* @param logmessage The logtype based on the logEnum.
-		* @param message The logmessage
-		*/
-		void log(const logEnum& logmessage, const std::string& message);
-	private:
-		std::string getLogtype(const logEnum& logmessage);
-		std::ofstream logfileStream;
+			/**
+			 * Log a message to the logfile.
+			 *
+			 * @param logmessage The logtype based on the logEnum.
+			 * @param message The logmessage
+			 */
+			void Log(const logEnum& logmessage, const std::string& message);
+		private:
+			std::ofstream logfileStream;
+			std::string getLogtype(const logEnum& logmessage);
 	};
 
 } /* namespace thywin */
