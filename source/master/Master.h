@@ -10,6 +10,7 @@
 #include <mutex>
 #include "URIPacket.h"
 #include "DocumentPacket.h"
+#include "DatabaseHandler.h"
 #include <memory>
 #include <stdio.h>
 #include <stdlib.h>

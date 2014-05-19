@@ -14,6 +14,7 @@
 #include "URIPacket.h"
 #include "DocumentPacket.h"
 #include <semaphore.h>
+#include "DatabaseHandler.h"
 
 namespace thywin
 {
@@ -23,12 +24,11 @@ namespace thywin
 	std::mutex Master::URIQueueMutex;
 	std::mutex Master::DocumentQueueMutex;
 	sem_t Master::documentQueueNotEmpty;
-	DatabaseHandler DBConnection;
+	DatabaseHandler Master::DBConnection("192.168.100.13", 5432);
 
 	void Master::InitializeMaster() {
 		//sem_init(&uriQueueIsEmpty,0,0);
 		sem_init(&documentQueueNotEmpty,0,0);
-		DBConnection = DatabaseHandler("192.168.100.13", 5432);
 		DBConnection.Connect();
 	}
 	void Master::AddURIElementToQueue(std::shared_ptr<URIPacket> element)
