@@ -27,9 +27,9 @@ namespace thywin
 			 * The source argument contains the URI of the page where the content came from.
 			 * The returned URI are constructed according to the source that is given with the content.
 			 *
-			 * @param	content	a string containing the code of a page
-			 * @param	source	the URI of the page
-			 * @return			the list of the URI found in the content
+			 * @param content a string containing the code of a page
+			 * @param source the URI of the page
+			 * @return the list of the URI found in the content
 			 */
 			std::vector<std::string> ExtractURIs(std::string content, std::string source);
 
@@ -37,8 +37,8 @@ namespace thywin
 			 * Returns the actual text content of a html file.
 			 * All html tags will be removed from the html content. 
 			 * 
-			 * @param content
-			 * @return 
+			 * @param content a string containing the html content of an URI
+			 * @return the content with all html tags removed.
 			 */
 			std::string ExtractText(std::string content);
 		private:
