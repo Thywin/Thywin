@@ -2,7 +2,7 @@
  * Communicator.h
  *
  *  Created on: May 8, 2014
- *      Author: damonk
+ *      Author: Imre Woudstra
  */
 
 #ifndef PARSERCOMMUNICATOR_H_
