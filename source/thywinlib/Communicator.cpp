@@ -16,7 +16,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <iostream>
-#include <stdexcept>
 
 namespace thywin
 {
@@ -31,14 +30,12 @@ namespace thywin
 		if (connectionSocket == -1)
 		{
 			perror("Socket creation failed");
-			throw std::runtime_error("Socket creation failed");
 			exit(EXIT_FAILURE);
 		}
 
 		if (connect(connectionSocket, (struct sockaddr*) &sockAddr, sizeof(sockAddr)) < 0)
 		{
 			perror("Connect failed");
-			throw std::runtime_error("Connect failed");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -48,7 +45,6 @@ namespace thywin
 		if (close(connectionSocket) < 0)
 		{
 			perror("Close connection failed");
-			throw std::runtime_error("Close connection failed");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -69,7 +65,6 @@ namespace thywin
 		if (sendSize < 0)
 		{
 			perror("Send failed");
-			throw std::runtime_error("Send failed");
 			exit(EXIT_FAILURE);
 		}
 
@@ -91,7 +86,6 @@ namespace thywin
 		if (receiveSize < 0)
 		{
 			perror("Receive failed");
-			throw std::runtime_error("Receive failed");
 			exit(EXIT_SUCCESS);
 		}
 		else if (receiveSize == 0)
