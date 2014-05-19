@@ -86,13 +86,8 @@ namespace thywin
 		{
 			element = Master::documentQueue.at(0);
 			Master::documentQueue.erase(Master::documentQueue.begin());
+			printf("Document: %s\n",element->URI.c_str());
 		}
-
-		if (Master::documentQueue.size()>0)
-		{
-			sem_post(&documentQueueNotEmpty);
-		}
-
 		printf("DOCUMENT Queue: %i\n", Master::documentQueue.size());
 		Master::DocumentQueueMutex.unlock();
 		return element;
