@@ -21,7 +21,7 @@ namespace thywin
 			DatabaseHandler(std::string ipaddress, int givenPort);
 			void Connect();
 			void DeleteURIFrom(std::string URI, std::string table, bool all);
-			void AddURIToList(std::string URI, double relevance);
+			void AddURIToList(std::shared_ptr<URIPacket> element);
 			void AddURIToQueue(std::string URI);
 			void AddDocumentToQueue(std::string URI, std::string content);
 			void AddWordcountToIndex(std::string URI, std::string word, int count);

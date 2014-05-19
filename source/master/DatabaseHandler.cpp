@@ -105,12 +105,12 @@ namespace thywin
 		handleNonRowReturningQuery(query);
 	}
 
-	void DatabaseHandler::AddURIToList(std::string URI, double relevance)
+	void DatabaseHandler::AddURIToList(std::shared_ptr<URIPacket> element)
 	{
 		std::ostringstream ossRelevance;
-		ossRelevance << relevance;
+		ossRelevance << element->Relevance;
 		std::string sRelevance = ossRelevance.str();
-		std::string query = "INSERT INTO uris (uri, relevance) VALUES ('" + URI + "'," + sRelevance + ")";
+		std::string query = "INSERT INTO uris (uri, relevance) VALUES ('" + element->URI + "'," + sRelevance + ")";
 		handleNonRowReturningQuery(query);
 	}
 
@@ -262,26 +262,26 @@ namespace thywin
 			SQLCHAR message[1024];
 			if (SQL_SUCCESS == SQLGetDiagRec(SQL_HANDLE_STMT, statementHandle, 1, sqlstate, NULL, message, 1024, NULL))
 			{
-				std::cout << "Message: " << message << " SQLSTATE: " << sqlstate << std::endl;
 				std::string sqlStateString((char *) sqlstate);
 				std::string::size_type statePos = sqlStateString.find("23505");
 				if (statePos == std::string::npos)
 				{
+					std::cout << "Message: " << message << " SQLSTATE: " << sqlstate << std::endl;
 					Disconnect();
 					return;
 				}
 			}
 		}
-		else
-		{
-			SQLLEN affectedRows;
-
-			if (SQL_SUCCESS == SQLRowCount(statementHandle, &affectedRows))
-			{
-				std::string row = affectedRows == 1 ? "row" : "rows";
-				std::cout << affectedRows << " " << row << " affected." << std::endl;
-			}
-		}
+//		else
+//		{
+//			SQLLEN affectedRows;
+//
+//			if (SQL_SUCCESS == SQLRowCount(statementHandle, &affectedRows))
+//			{
+//				std::string row = affectedRows == 1 ? "row" : "rows";
+//				std::cout << affectedRows << " " << row << " affected." << std::endl;
+//			}
+//		}
 	}
 
 	bool DatabaseHandler::executeQuery(std::string SQLQuery)

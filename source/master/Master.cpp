@@ -23,15 +23,20 @@ namespace thywin
 	std::mutex Master::URIQueueMutex;
 	std::mutex Master::DocumentQueueMutex;
 	sem_t Master::documentQueueNotEmpty;
+	DatabaseHandler DBConnection;
 
 	void Master::InitializeMaster() {
 		//sem_init(&uriQueueIsEmpty,0,0);
 		sem_init(&documentQueueNotEmpty,0,0);
+		DBConnection = DatabaseHandler("192.168.100.13", 5432);
+		DBConnection.Connect();
 	}
 	void Master::AddURIElementToQueue(std::shared_ptr<URIPacket> element)
 	{
 		Master::URIQueueMutex.lock();
 		Master::URIQueue.insert(Master::URIQueue.end(), element);
+		DBConnection.AddURIToList(element);
+		//DBConnection.AddURIToQueue(element->URI);
 		Master::URIQueueMutex.unlock();
 	}
 
