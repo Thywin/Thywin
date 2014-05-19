@@ -24,7 +24,6 @@ local.properties
 *.obj
 
 # Compiled Dynamic libraries
-*.so
 *.dylib
 *.dll
 
