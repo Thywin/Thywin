@@ -11,6 +11,7 @@
 #include <iostream>
 #include "crawler.h"
 #include "Communicator.h"
+#include "Logger.h"
 
 using namespace thywin;
 
@@ -34,10 +35,9 @@ int main(int argc, char** argv)
 	const std::string ipaddress = "192.168.100.13";
 	const int port = 7500;
 
-	std::string message = "Starting the crawler with";
-	message << "ip: " << ipaddress << " and ";
-	message << "port: " << port;
-	logger.Log(INFO, message);
+	std::stringstream message;
+	message << "Starting the crawler with " << "ip: " << ipaddress << " and " << "port: " << port;
+	logger.Log(INFO, message.str().c_str());
 
 	for (int i = 0; i < NUMBER_OF_CLIENTS - 1; i++)
 	{
