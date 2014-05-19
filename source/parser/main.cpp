@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv)
 {
-	thywin::Parser parser("192.168.100.11", "192.168.100.11", "192.168.100.11");
+	thywin::Parser parser("192.168.100.13", "192.168.100.13", "192.168.100.13");
 	parser.Run();
 
 	return EXIT_SUCCESS;
