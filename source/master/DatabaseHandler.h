@@ -31,6 +31,7 @@ namespace thywin
 			std::vector<std::string> RetrieveAndDeleteURIFromQueue();
 			std::vector<std::string> RetrieveDocumentFromQueue();
 			std::vector<std::string> RetrieveAndDeleteDocumentFromQueue();
+			bool IsQueueEmpty(std::string queue);
 			void Disconnect();
 		private:
 			void handleNonRowReturningQuery(std::string query);
