@@ -57,7 +57,7 @@ namespace thywin
 		}
 		catch (const std::bad_alloc& e)
 		{
-			logger.log(ERROR, e.what());
+			logger.Log(ERROR, e.what());
 		}
 	}
 
@@ -134,7 +134,7 @@ namespace thywin
 			}
 			catch(const std::exception& e)
 			{
-				logger.log(ERROR, e.what());
+				logger.Log(ERROR, e.what());
 			}
 		}
 		else
