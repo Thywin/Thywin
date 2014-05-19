@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 		NUMBER_OF_CLIENTS = atoi(argv[1]);
 	}
 
-	const std::string ipaddress = "192.168.100.11";
+	const std::string ipaddress = "192.168.100.13";
 	const int port = 7500;
 
 	std::string message = "Starting the crawler with";
