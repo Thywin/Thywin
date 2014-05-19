@@ -2,8 +2,8 @@
  * main.hpp
  *
  *  Created on: 25 apr. 2014
- *      Author: Thomas Kooi,
- *      Author: Bobby Bouwmann
+ *      Author: Thomas Kooi
+ *      Auhtor: Bobby Bouwmann
  */
 
 #include <stdlib.h>
@@ -11,7 +11,6 @@
 #include <iostream>
 #include "crawler.h"
 #include "Communicator.h"
-#include "Logger.h"
 
 using namespace thywin;
 
@@ -36,8 +35,8 @@ int main(int argc, char** argv)
 	const int port = 7500;
 
 	std::stringstream message;
-	message << "Starting the crawler with " << "ip: " << ipaddress << " and " << "port: " << port;
-	logger.Log(INFO, message.str().c_str());
+	message << "Starting to crawl using ip: " << ipaddress << " and " << port;
+	logger.Log(INFO, message.str());
 
 	for (int i = 0; i < NUMBER_OF_CLIENTS - 1; i++)
 	{

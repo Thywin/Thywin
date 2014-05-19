@@ -2,7 +2,8 @@
  * Crawler.cpp
  *
  *  Created on: 25 apr. 2014
- *      Author: Thomas Kooi, Bobby Bouwmann
+ *      Author: Thomas Kooi
+ *      Author: Bobby Bouwmann
  */
 
 #include <cstdio>
@@ -116,7 +117,10 @@ namespace thywin
 		if (content_type_html != std::string::npos)
 		{
 			body = document.substr(headerend, document.size());
-			std::cout << "Valid link: " << CrawledURI << std::endl;
+
+			std::stringstream message;
+			message << "Valid link " << CrawledURI;
+			logger.Log(INFO, message.str());
 
 			try
 			{
@@ -138,7 +142,9 @@ namespace thywin
 		}
 		else
 		{
-			std::cout << "Invalid link: " << CrawledURI << std::endl;
+			std::stringstream message;
+			message << "Invalid link " << CrawledURI;
+			logger.Log(INFO, message.str());
 		}
 
 		if (close(pagePipe[0]) == -1)

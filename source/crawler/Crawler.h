@@ -2,7 +2,8 @@
  * Crawler.hpp
  *
  *  Created on: 25 apr. 2014
- *      Author: Thomas Kooi, Bobby Bouwmann
+ *      Author: Thomas Kooi
+ *      Author: Bobby Bouwmann
  */
 
 #ifndef CRAWLER_HPP_
