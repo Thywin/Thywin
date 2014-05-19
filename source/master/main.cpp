@@ -15,6 +15,7 @@ int main(int argc, char* argv[])
 		printf("No Port given");
 		return(EXIT_FAILURE);
 	} else {
+		thywin::Master::InitializeMaster();
 		thywin::Server srv;
 		const int portNumber = atoi(argv[1]);
 		srv.SetUp(portNumber);
