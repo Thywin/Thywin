@@ -14,22 +14,26 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string>
+#include <stdexcept>
+#include <errno.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <Memory>
 #include "crawler.h"
 #include "Communicator.h"
 #include "ThywinPacket.h"
 #include "URIPacket.h"
 #include "DocumentPacket.h"
-#include <Memory>
+#include "Logger.h"
 
 namespace thywin
 {
+	const std::string logfile = "log";
 
 	Crawler::Crawler(const std::string& ipaddress, const int& port) :
-			communication(ipaddress, port)
+			communication(ipaddress, port), logger(logfile)
 	{
 	}
 
@@ -40,13 +44,20 @@ namespace thywin
 		packet.Method = GET;
 		packet.Content = NULL;
 		communication.SendPacket(packet);
-		std::shared_ptr<URIPacket> uriPacket(new URIPacket);
-		std::shared_ptr<ThywinPacket> receivedPacket(new ThywinPacket);
-		receivedPacket = communication.ReceivePacket(uriPacket);
-
-		if (receivedPacket->Type == URI && receivedPacket->Method == RESPONSE)
+		try
 		{
-			crawl(uriPacket->URI);
+			std::shared_ptr<URIPacket> uriPacket(new URIPacket);
+			std::shared_ptr<ThywinPacket> receivedPacket(new ThywinPacket);
+			receivedPacket = communication.ReceivePacket(uriPacket);
+
+			if (receivedPacket->Type == URI && receivedPacket->Method == RESPONSE)
+			{
+				crawl(uriPacket->URI);
+			}
+		}
+		catch (const std::bad_alloc& e)
+		{
+			logger.log(ERROR, e.what());
 		}
 	}
 
@@ -73,7 +84,6 @@ namespace thywin
 			default:
 				processID = wait(NULL);
 				sendURIDocument(pagePipe, URI);
-
 		}
 		return 0;
 	}
@@ -106,27 +116,34 @@ namespace thywin
 		{
 			body = document.substr(headerend, document.size());
 			std::cout << "Valid link: " << CrawledURI << std::endl;
+
+			try
+			{
+				std::shared_ptr<DocumentPacket> documentPacket(new DocumentPacket);
+				documentPacket->Document = body;
+				documentPacket->URI = CrawledURI;
+
+				ThywinPacket packet;
+				packet.Type = DOCUMENT;
+				packet.Method = PUT;
+				packet.Content = documentPacket;
+
+				communication.SendPacket(packet);
+			}
+			catch(const std::exception& e)
+			{
+				logger.log(ERROR, e.what());
+			}
 		}
 		else
 		{
 			std::cout << "Invalid link: " << CrawledURI << std::endl;
-			return;
 		}
-
-		ThywinPacket packet;
-		packet.Type = DOCUMENT;
-		packet.Method = PUT;
-		packet.Content = NULL;
-		std::shared_ptr<DocumentPacket> documentPacket(new DocumentPacket);
-		documentPacket->Document = body;
-		documentPacket->URI = CrawledURI;
-		communication.SendPacket(packet);
 
 		if (close(pagePipe[0]) == -1)
 		{
 			perror("Closing document pipe failed");
 		}
-
 	}
 
 	void Crawler::startCurl(int* pageBodyPipe, const std::string& CrawledURI)
@@ -159,5 +176,4 @@ namespace thywin
 
 		exit(EXIT_SUCCESS);
 	}
-
 }

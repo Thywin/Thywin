@@ -11,6 +11,7 @@
 
 #include <string>
 #include "Communicator.h"
+#include "Logger.h"
 
 namespace thywin
 {
@@ -19,7 +20,6 @@ namespace thywin
 
 	class Crawler
 	{
-
 		public:
 			/**
 			 * Constructor of the crawler. The constructor creates a Crawler object and sets the ipaddress for
@@ -37,6 +37,8 @@ namespace thywin
 			int crawl(const std::string& URI);
 			void sendURIDocument(int* pagePipe, const std::string& URI);
 			void startCurl(int* pagePipe, const std::string& URI);
+			Logger logger;
 	};
 }
+
 #endif /* CRAWLER_HPP_ */

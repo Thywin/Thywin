@@ -30,7 +30,6 @@ int main(int argc, char** argv)
 
 	const std::string ipaddress = "192.168.100.11";
 	const int port = 7500;
-	Crawler crawler = Crawler(ipaddress, port);
 
 	for (int i = 0; i < NUMBER_OF_CLIENTS - 1; i++)
 	{
@@ -46,7 +45,9 @@ int main(int argc, char** argv)
 		}
 	}
 
+	Crawler crawler = Crawler(ipaddress, port);
 	bool running = true;
+
 	while (running)
 	{
 		crawler.CrawlURI();
