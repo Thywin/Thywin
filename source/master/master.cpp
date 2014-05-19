@@ -13,6 +13,7 @@
 #include "MasterCommunicator.h"
 #include "URIPacket.h"
 #include "DocumentPacket.h"
+#include <semaphore.h>
 
 namespace thywin
 {
@@ -21,7 +22,12 @@ namespace thywin
 
 	std::mutex Master::URIQueueMutex;
 	std::mutex Master::DocumentQueueMutex;
+	sem_t Master::documentQueueNotEmpty;
 
+	void Master::InitializeMaster() {
+		//sem_init(&uriQueueIsEmpty,0,0);
+		sem_init(&documentQueueNotEmpty,0,0);
+	}
 	void Master::AddURIElementToQueue(std::shared_ptr<URIPacket> element)
 	{
 		Master::URIQueueMutex.lock();
@@ -59,16 +65,14 @@ namespace thywin
 	{
 		Master::DocumentQueueMutex.lock();
 		Master::documentQueue.insert(Master::documentQueue.end(), element);
-
+		sem_post(&documentQueueNotEmpty);
 		// unset semaphore is empty
 		Master::DocumentQueueMutex.unlock();
 	}
 
 	std::shared_ptr<DocumentPacket> Master::GetNextDocumentElementFromQueue()
 	{
-		while (Master::documentQueue.size() < 1)
-		{
-		}
+		sem_wait(&documentQueueNotEmpty);
 		Master::DocumentQueueMutex.lock();
 		// check semaphore is empty
 
@@ -79,9 +83,9 @@ namespace thywin
 			Master::documentQueue.erase(Master::documentQueue.begin());
 		}
 
-		if (documentQueue.size() < 1)
+		if (documentQueue.size()>0)
 		{
-			// set semaphore is empty
+			sem_post(&documentQueueNotEmpty);
 		}
 
 		printf("DOCUMENT Queue: %i\n", Master::documentQueue.size());

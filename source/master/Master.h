@@ -13,6 +13,8 @@
 #include <memory>
 #include <stdio.h>
 #include <stdlib.h>
+#include <semaphore.h>
+
 
 namespace thywin
 {
@@ -20,6 +22,13 @@ namespace thywin
 	class Master
 	{
 		public:
+
+			/**
+			 * Initializes the master & semaphores for the Queues.
+			 *
+			 */
+			static void InitializeMaster();
+
 			/**
 			 * Grabs an URIElement struct from the URI Queue.
 			 * @return		URIElement struct.
@@ -50,6 +59,7 @@ namespace thywin
 
 			static std::mutex URIQueueMutex;
 			static std::mutex DocumentQueueMutex;
+			static sem_t documentQueueNotEmpty;
 
 			static std::vector<std::shared_ptr<URIPacket>> URIQueue;
 			static std::vector<std::shared_ptr<DocumentPacket>> documentQueue;
