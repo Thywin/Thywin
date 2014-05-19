@@ -2,7 +2,7 @@
  * DocumentVector.cpp
  *
  *  Created on: 8 mei 2014
- *      Author: Erwin
+ *      Author: Erwin Janssen
  */
 
 #include "DocumentVector.h"
@@ -63,7 +63,10 @@ namespace thywin
 		{
 			return 0;
 		}
-		return this->DotProduct(documentVector) / magnitude;
+		else
+		{
+			return this->DotProduct(documentVector) / magnitude;
+		}
 	}
 	
 	double DocumentVector::GetMagnitude()
@@ -79,20 +82,12 @@ namespace thywin
 	double DocumentVector::DotProduct(DocumentVector& documentVector)
 	{
 		double dotProduct = 0;
-		DocumentVector& largestDocumentVector = documentVector;
-		DocumentVector& smallestDocumentVector = *this;
-		if (this->size() > documentVector.size())
-		{
-			largestDocumentVector = *this;
-			smallestDocumentVector = documentVector;
-		}
-		
 		for (DocumentVector::iterator i = documentVector.begin(); i != documentVector.end(); i++)
 		{
 			DocumentVector::iterator searchResult = this->find(i->first);
 			if (searchResult != this->end())
 			{
-				dotProduct += i->second * searchResult->second;
+				dotProduct += (i->second) * (searchResult->second);
 			}
 		}
 		return dotProduct;

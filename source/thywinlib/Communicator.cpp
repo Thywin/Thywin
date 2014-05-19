@@ -59,9 +59,7 @@ namespace thywin
 		}
 		data << TP_END_OF_PACKET;
 
-		const char* realdata = data.str().c_str();
-
-		int sendSize = send(connectionSocket, realdata, strlen(realdata), 0);
+		int sendSize = send(connectionSocket,(char*) data.str().c_str(), data.str().size(), 0);
 		if (sendSize < 0)
 		{
 			perror("Send failed");

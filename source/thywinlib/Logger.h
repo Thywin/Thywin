@@ -2,7 +2,8 @@
  * Logger.h
  *
  *  Created on: 14 mei 2014
- *      Author: Erwin
+ *      Author: Bobby Bouwmann
+ *      Author: Erwin Janssen
  */
 
 #ifndef LOGGER_H_
@@ -34,15 +35,25 @@ namespace thywin
 			Logger(const std::string& logfileName);
 
 			/**
+			 * Default destructor
+			 */
+			virtual ~Logger();
+
+			/**
+			 * Default copy constructor
+			 */
+			Logger(const Logger& logger);
+
+			/**
 			 * Log a message to the logfile.
 			 *
 			 * @param logmessage The logtype based on the logEnum.
 			 * @param message The logmessage
 			 */
-			void log(const logEnum& logmessage, const std::string& message);
+			void Log(const logEnum& logmessage, const std::string& message);
 		private:
-			std::string getLogtype(const logEnum& logmessage);
 			std::ofstream logfileStream;
+			std::string getLogtype(const logEnum& logmessage);
 	};
 
 } /* namespace thywin */

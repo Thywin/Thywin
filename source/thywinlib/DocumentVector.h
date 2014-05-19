@@ -2,7 +2,7 @@
  * DocumentVector.h
  *
  *  Created on: 8 mei 2014
- *      Author: Erwin
+ *      Author: Erwin Janssen
  */
 
 #ifndef DOCUMENTVECTOR_H_
