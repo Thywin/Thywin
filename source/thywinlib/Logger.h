@@ -2,7 +2,8 @@
  * Logger.h
  *
  *  Created on: 14 mei 2014
- *      Author: Erwin, Bobby
+ *      Author: Bobby Bouwmann
+ *      Author: Erwin Janssen
  */
 
 #ifndef LOGGER_H_
