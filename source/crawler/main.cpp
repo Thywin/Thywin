@@ -2,7 +2,8 @@
  * main.hpp
  *
  *  Created on: 25 apr. 2014
- *      Author: Thomas Kooi, Bobby Bouwmann
+ *      Author: Thomas Kooi,
+ *      Author: Bobby Bouwmann
  */
 
 #include <stdlib.h>
@@ -15,6 +16,8 @@ using namespace thywin;
 
 int main(int argc, char** argv)
 {
+	Logger logger = Logger("log");
+
 	int NUMBER_OF_CLIENTS = 10;
 
 	if (argc > 2)
@@ -30,6 +33,11 @@ int main(int argc, char** argv)
 
 	const std::string ipaddress = "192.168.100.11";
 	const int port = 7500;
+
+	std::string message = "Starting the crawler with";
+	message << "ip: " << ipaddress << " and ";
+	message << "port: " << port;
+	logger.Log(INFO, message);
 
 	for (int i = 0; i < NUMBER_OF_CLIENTS - 1; i++)
 	{
