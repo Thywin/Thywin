@@ -33,10 +33,10 @@ namespace thywin
 			void CrawlURI();
 		private:
 			Communicator communication;
+			Logger logger;
 			int crawl(const std::string& URI);
 			void sendURIDocument(int* pagePipe, const std::string& URI);
 			void startCurl(int* pagePipe, const std::string& URI);
-			Logger logger;
 	};
 }
 

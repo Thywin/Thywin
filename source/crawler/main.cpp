@@ -41,14 +41,13 @@ int main(int argc, char** argv)
 		}
 		else if (processID == 0)
 		{
-			break;
+			break; // exit loop as child
 		}
 	}
 
 	Crawler crawler = Crawler(ipaddress, port);
-	bool running = true;
 
-	while (running)
+	while (true)
 	{
 		crawler.CrawlURI();
 	}

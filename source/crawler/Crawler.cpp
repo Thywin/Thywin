@@ -170,12 +170,8 @@ namespace thywin
 		char* exec[] =
 		{ "curl", "-i", (char *) CrawledURI.c_str(), NULL };
 
-		if (execvp(exec[0], exec) == -1)
-		{
-			perror("Execute failed");
-			exit(EXIT_FAILURE);
-		}
-
-		exit(EXIT_SUCCESS);
+		execvp(exec[0], exec);
+		perror("Execute failed");
+		exit(EXIT_FAILURE);
 	}
 }
