@@ -6,19 +6,9 @@
  */
 
 #include <string>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <sstream>
-#include <iostream>
 #include <vector>
-#include <string.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
 #include <mutex>
-#include <fstream>
+#include <errno.h>
 #include "Master.h"
 #include "MasterCommunicator.h"
 #include "URIPacket.h"
@@ -26,9 +16,6 @@
 
 namespace thywin
 {
-	int counterURI = 0;
-	int counterDocs = 0;
-
 	std::vector<std::shared_ptr<URIPacket>> Master::URIQueue;
 	std::vector<std::shared_ptr<DocumentPacket>> Master::documentQueue;
 
@@ -37,7 +24,6 @@ namespace thywin
 
 	void Master::AddURIElementToQueue(std::shared_ptr<URIPacket> element)
 	{
-		printf("AddURIElementToQueue\n");
 		Master::URIQueueMutex.lock();
 		Master::URIQueue.insert(Master::URIQueue.end(), element);
 		Master::URIQueueMutex.unlock();
@@ -46,7 +32,6 @@ namespace thywin
 	std::shared_ptr<URIPacket> Master::GetNextURIElementFromQueue()
 	{
 		Master::URIQueueMutex.lock();
-
 		std::shared_ptr<URIPacket> element;
 		if (Master::URIQueue.size() == 0)
 		{
@@ -60,12 +45,12 @@ namespace thywin
 		}
 		else
 		{
-			std::shared_ptr<URIPacket> el(new URIPacket);
-			el->URI = "www.google.nl\0";
-			el->Relevance = 0;
-			element = el;
+			std::shared_ptr<URIPacket> backupURIElement(new URIPacket);
+			backupURIElement->URI = "www.google.nl\0";
+			backupURIElement->Relevance = 0;
+			element = backupURIElement;
 		}
-		printf("URI QUEUE: %i\n", Master::URIQueue.size());
+		printf("URI Queue: %i\n", Master::URIQueue.size());
 		Master::URIQueueMutex.unlock();
 		return element;
 	}
@@ -73,8 +58,6 @@ namespace thywin
 	void Master::AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element)
 	{
 		Master::DocumentQueueMutex.lock();
-
-		counterDocs++;
 		Master::documentQueue.insert(Master::documentQueue.end(), element);
 
 		// unset semaphore is empty
@@ -94,23 +77,20 @@ namespace thywin
 		{
 			element = Master::documentQueue.at(0);
 			Master::documentQueue.erase(Master::documentQueue.begin());
-			counterDocs--;
 		}
-		else
-		{
-		}
+
 		if (documentQueue.size() < 1)
 		{
 			// set semaphore is empty
 		}
-		printf("DOCUMENT QUEUE: %i\n", Master::documentQueue.size());
+
+		printf("DOCUMENT Queue: %i\n", Master::documentQueue.size());
 		Master::DocumentQueueMutex.unlock();
 		return element;
 	}
 
 	void Master::fillURLQueue()
 	{
-
 		std::shared_ptr<URIPacket> URIElement(new URIPacket);
 		URIElement->URI =
 				"http://ieeexplore.ieee.org/xpl/login.jsp?tp=&arnumber=685270&url=http%3A%2F%2Fieeexplore.ieee.org%2Fiel4%2F5611%2F15013%2F00685270.pdf%3Farnumber%3D685270\0";
@@ -126,7 +106,6 @@ namespace thywin
 		anotherElement->URI = "http://www.reliasoft.com/reno/features1.htm\0";
 		anotherElement->Relevance = 0.01;
 		URIQueue.insert(URIQueue.end(), anotherElement);
-
 	}
 
 }

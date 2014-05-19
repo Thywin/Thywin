@@ -18,6 +18,8 @@
 #include <iostream>
 #include <memory>
 #include <string.h>
+#include <errno.h>
+#include <stdexcept>
 
 namespace thywin
 {
@@ -30,19 +32,20 @@ namespace thywin
 	
 	ClientConnection::~ClientConnection()
 	{
-		if (connection)
+		try
 		{
-			handlingConnection = false;
-			close(clientSocket);
+			CloseConnection();
+		}
+		catch (std::runtime_error& e)
+		{
+			printf("Connection already closed: %s\n", e.what());
 		}
 	}
 
-	void ClientConnection::HandleGetRequests(ThywinPacket packet)
+	void ClientConnection::HandleGetRequest(ThywinPacket packet)
 	{
-		printf("Handling a GET request\n");
 		ThywinPacket returnPacket;
 		returnPacket.Method = RESPONSE;
-		MasterCommunicator communicator;
 		switch (packet.Type)
 		{
 			case URI:
@@ -58,14 +61,19 @@ namespace thywin
 				//returnPacket = MasterCommunicator::HandleGetDocumentVector(); // to be implemented later
 				break;
 		}
-		SendPacket(returnPacket);
+
+		try
+		{
+			SendPacket(returnPacket);
+		}
+		catch (std::runtime_error& e)
+		{
+			printf("Error while sending return packet: %s\n", e.what());
+		}
 	}
 
-	void ClientConnection::HandlePutRequests(ThywinPacket packet)
+	void ClientConnection::HandlePutRequest(ThywinPacket packet)
 	{
-		printf("Handling a PUT request\n");
-		MasterCommunicator communicator;
-
 		switch (packet.Type)
 		{
 			case URI:
@@ -90,10 +98,17 @@ namespace thywin
 
 	void ClientConnection::CloseConnection()
 	{
-		printf("Closing Connection\n");
-		handlingConnection = false;
-		close(clientSocket);
-		connection = false;
+		if (connection)
+		{
+			printf("Closing Connection\n");
+			handlingConnection = false;
+			connection = false;
+
+			if (close(clientSocket) < 0)
+			{
+				throw std::runtime_error(std::string(strerror(errno)));
+			}
+		}
 	}
 
 	void ClientConnection::HandleConnection()
@@ -107,30 +122,22 @@ namespace thywin
 				ThywinPacket returnPacket = ReceivePacket();
 				if (connection)
 				{
-					switch (returnPacket.Method)
-					{
-						case GET:
-							HandleGetRequests(returnPacket);
-							break;
-						case PUT:
-							HandlePutRequests(returnPacket);
-							break;
-						case RESPONSE:
-							break;
-					}
+					handleReceivedThywinPacket(returnPacket);
 				}
 			}
 		}
 	}
+
 	int ClientConnection::SendPacket(ThywinPacket packet)
 	{
-
 		std::stringstream data;
 		data << packet.Method << TP_HEADER_SEPERATOR << packet.Type << TP_HEADER_SEPERATOR;
 		if (packet.Content != NULL)
 		{
 			data << packet.Content->Serialize();
-		} else {
+		}
+		else
+		{
 			printf("CONTENT FOUND WAS NULL\n");
 		}
 		data << TP_END_OF_PACKET;
@@ -139,76 +146,134 @@ namespace thywin
 		int sendSize = send(clientSocket, realdata, data.str().size(), 0);
 		if (sendSize < 0)
 		{
-			perror("Send failed");
+			throw std::runtime_error(std::string(strerror(errno)));
 		}
 		printf("Sending completed\n");
 		return sendSize;
 	}
+
 	ThywinPacket ClientConnection::ReceivePacket()
 	{
-		ThywinPacket returnPacket;
 		std::stringstream receiveBuffer;
-		const char TP_HEADER_SEPERATOR = (char) 30; // cannot find it in .h files??
-		const char TP_END_OF_PACKET = (char) 4;
-		char c;
+		char characterReceiveBuffer;
 		int receiveSize;
 		do
 		{
-			receiveSize = recv(clientSocket, &c, 1, 0);
-			receiveBuffer << c;
-		} while (receiveSize > 0 && c != TP_END_OF_PACKET);
-		returnPacket.Method = GET;
-		returnPacket.Type = URI;
-		returnPacket.Content = NULL;
-		if (receiveSize < 0)
-		{
-			perror("Receive failed");
-			CloseConnection();
-			return returnPacket;
-		}
-		else if (receiveSize == 0)
-		{
-			CloseConnection();
-			std::cout << "client closed the connection" << std::endl;
-			return returnPacket;
-		}
-		std::string token;
-		std::getline(receiveBuffer, token, TP_HEADER_SEPERATOR);
-		returnPacket.Method = (PacketMethod) atoi(token.c_str());
-		std::getline(receiveBuffer, token, TP_HEADER_SEPERATOR);
-		returnPacket.Type = (PacketType) atoi(token.c_str());
-		std::getline(receiveBuffer, token, TP_HEADER_SEPERATOR);
+			receiveSize = recv(clientSocket, &characterReceiveBuffer, 1, 0);
+			receiveBuffer << characterReceiveBuffer;
+		} while (receiveSize > 0 && characterReceiveBuffer != TP_END_OF_PACKET);
 
-		if (returnPacket.Method == PUT)
-		{
-			switch (returnPacket.Type)
-			{
-				case URI:
-				{
-					std::shared_ptr<URIPacket> uriPacket(new URIPacket);
-					uriPacket->Deserialize(token);
-					returnPacket.Content = uriPacket;
-					break;
-				}
-				case DOCUMENT:
-				{
-					std::shared_ptr<DocumentPacket> docPacket(new DocumentPacket);
-					docPacket->Deserialize(token);
-					returnPacket.Content = docPacket;
-					break;
-				}
-				case RELEVANCE:
-				{
-					break;
-				}
-				case DOCUMENTVECTOR:
-				{
-					break;
-				}
-			}
-		}
-
+		checkReceiveSize(receiveSize);
+		ThywinPacket returnPacket = createThywinPacket(receiveBuffer);
 		printf("Received packet: METHOD %i TYPE %i\n", returnPacket.Method, returnPacket.Type);
 		return returnPacket;
 	}
+
+	void ClientConnection::fillThywinPacket(ThywinPacket& packet, std::stringstream& buffer)
+	{
+		std::string valueForPacket;
+		std::getline(buffer, valueForPacket, TP_HEADER_SEPERATOR);
+		packet.Method = (PacketMethod) atoi(valueForPacket.c_str());
+
+		std::getline(buffer, valueForPacket, TP_HEADER_SEPERATOR);
+		packet.Type = (PacketType) atoi(valueForPacket.c_str());
+
+		if (packet.Method == PUT)
+		{
+			std::getline(buffer, valueForPacket, TP_HEADER_SEPERATOR);
+			deserializePutObject(packet, valueForPacket);
+		}
+	}
+
+	void ClientConnection::deserializePutObject(ThywinPacket& packet, std::string serializedObject)
+	{
+		if (packet.Method != PUT)
+		{
+			throw std::invalid_argument(std::string("Called deserialize object for a non PUT packet"));
+		}
+		switch (packet.Type)
+		{
+			case URI:
+			{
+				std::shared_ptr<URIPacket> uriPacket(new URIPacket);
+				uriPacket->Deserialize(serializedObject);
+				packet.Content = uriPacket;
+				break;
+			}
+			case DOCUMENT:
+			{
+				std::shared_ptr<DocumentPacket> docPacket(new DocumentPacket);
+				docPacket->Deserialize(serializedObject);
+				packet.Content = docPacket;
+				break;
+			}
+			case RELEVANCE:
+			{
+				break;
+			}
+			case DOCUMENTVECTOR:
+			{
+				break;
+			}
+			default:
+			{
+
+			}
+		}
+	}
+
+	void ClientConnection::handleReceivedThywinPacket(const ThywinPacket& packet)
+	{
+		switch (packet.Method)
+		{
+			case GET:
+				HandleGetRequest(packet);
+				break;
+			case PUT:
+				HandlePutRequest(packet);
+				break;
+			case RESPONSE:
+				break;
+		}
+	}
+
+	ThywinPacket ClientConnection::createThywinPacket(std::stringstream& receiveBuffer)
+	{
+		ThywinPacket returnPacket;
+		returnPacket.Method = GET;
+		returnPacket.Type = URI;
+		returnPacket.Content = NULL;
+		fillThywinPacket(returnPacket, receiveBuffer);
+		return returnPacket;
+	}
+
+	void ClientConnection::checkReceiveSize(const int& receiveSize)
+	{
+		if (receiveSize < 0)
+		{
+			std::string errorMessage(strerror(errno));
+			try
+			{
+				CloseConnection();
+			}
+			catch (std::runtime_error& e)
+			{
+				printf("Error while attempting to close connection: %s\n", e.what());
+			}
+			throw std::runtime_error(errorMessage);
+		}
+		else if (receiveSize == 0)
+		{
+			try
+			{
+				CloseConnection();
+				std::cout << "client closed the connection" << std::endl;
+			}
+			catch (std::runtime_error& e)
+			{
+				printf("Error while attempting to close connection: %s\n", e.what());
+			}
+		} // There are no other cases that would need to be handled
+	}
+
 } /* namespace thywin */

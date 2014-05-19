@@ -8,6 +8,7 @@
 #ifndef CLIENTCONNECTION_H_
 #define CLIENTCONNECTION_H_
 #include "Communicator.h"
+#include "MasterCommunicator.h"
 #include <sstream>
 
 namespace thywin
@@ -50,11 +51,17 @@ namespace thywin
 			bool handlingConnection;
 			bool connection;
 			std::string lastPacketContent;
+			MasterCommunicator communicator;
 
 			ThywinPacket ReceivePacket();
 			int SendPacket(ThywinPacket sendPacket);
-			void HandleGetRequests(ThywinPacket packet);
-			void HandlePutRequests(ThywinPacket packet);
+			void HandleGetRequest(ThywinPacket packet);
+			void HandlePutRequest(ThywinPacket packet);
+			void deserializePutObject(ThywinPacket& packet, std::string serializedObject);
+			void fillThywinPacket(ThywinPacket& packet, std::stringstream& buffer);
+			void handleReceivedThywinPacket(const ThywinPacket& packet);
+			void checkReceiveSize(const int& receiveSize);
+			ThywinPacket createThywinPacket(std::stringstream& receiveBuffer);
 	};
 
 } /* namespace thywin */
