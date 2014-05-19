@@ -11,7 +11,7 @@
 namespace thywin
 {
 
-	Logger::Logger(const std::string logfileName)
+	Logger::Logger(const std::string& logfileName)
 	{
 		logfileStream.open(logfileName.c_str(), std::ofstream::out | std::ofstream::app);
 	}
@@ -24,7 +24,7 @@ namespace thywin
 	{
 	}
 
-	void Logger::log(const logEnum& logmessage, const std::string& message)
+	void Logger::Log(const logEnum& logmessage, const std::string& message)
 	{
 		char timeString[TIME_STRING_SIZE];
 		time_t currentTime = time(NULL);
@@ -39,13 +39,13 @@ namespace thywin
 		switch (logmessage)
 		{
 			case DEBUG:
-				return "DEBUG  "; // Extra space for alignment
+				return "  DEBUG"; // Extra spaces for alignment
 			case ERROR:
-				return "ERROR  "; // Extra space for alignment
+				return "  ERROR"; // Extra spaces for alignment
 			case WARNING:
 				return "WARNING";
 			default:
-				return "INFO   "; // Extra space for alignment
+				return "   INFO"; // Extra spaces for alignment
 		}
 	}
 
