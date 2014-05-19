@@ -86,6 +86,8 @@ namespace thywin
 			default:
 				break;
 		}
+
+		std::cout << "Connected!" << std::endl;
 	}
 
 	void DatabaseHandler::DeleteURIFrom(std::string URI, std::string table, bool all)
@@ -260,26 +262,26 @@ namespace thywin
 			SQLCHAR message[1024];
 			if (SQL_SUCCESS == SQLGetDiagRec(SQL_HANDLE_STMT, statementHandle, 1, sqlstate, NULL, message, 1024, NULL))
 			{
+				std::cout << "Message: " << message << " SQLSTATE: " << sqlstate << std::endl;
 				std::string sqlStateString((char *) sqlstate);
 				std::string::size_type statePos = sqlStateString.find("23505");
 				if (statePos == std::string::npos)
 				{
-					std::cout << "Message: " << message << " SQLSTATE: " << sqlstate << std::endl;
 					Disconnect();
 					return;
 				}
 			}
 		}
-//		else
-//		{
-//			SQLLEN affectedRows;
-//
-//			if (SQL_SUCCESS == SQLRowCount(statementHandle, &affectedRows))
-//			{
-//				std::string row = affectedRows == 1 ? "row" : "rows";
-//				std::cout << affectedRows << " " << row << " affected." << std::endl;
-//			}
-//		}
+		else
+		{
+			SQLLEN affectedRows;
+
+			if (SQL_SUCCESS == SQLRowCount(statementHandle, &affectedRows))
+			{
+				std::string row = affectedRows == 1 ? "row" : "rows";
+				std::cout << affectedRows << " " << row << " affected." << std::endl;
+			}
+		}
 	}
 
 	bool DatabaseHandler::executeQuery(std::string SQLQuery)
@@ -323,6 +325,7 @@ namespace thywin
 			SQLFreeHandle(SQL_HANDLE_DBC, connectionHandle);
 			SQLFreeHandle(SQL_HANDLE_ENV, environmentHandle);
 			connected = false;
+			std::cout << "Disconnected" << std::endl;
 		}
 
 	}

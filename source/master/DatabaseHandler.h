@@ -11,6 +11,8 @@
 #include <string>
 #include <sqltypes.h>
 #include <vector>
+#include <memory>
+#include "URIPacket.h"
 
 namespace thywin
 {
