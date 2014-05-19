@@ -20,6 +20,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdexcept>
+#include <pthread.h>
 
 namespace thywin
 {
@@ -98,7 +99,7 @@ namespace thywin
 
 	void ClientConnection::CloseConnection()
 	{
-		if (connection)
+		if (hasConnection())
 		{
 			printf("Closing Connection\n");
 			handlingConnection = false;
@@ -108,6 +109,7 @@ namespace thywin
 			{
 				throw std::runtime_error(std::string(strerror(errno)));
 			}
+			pthread_exit(NULL);
 		}
 	}
 

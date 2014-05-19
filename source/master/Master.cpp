@@ -43,7 +43,7 @@ namespace thywin
 	std::shared_ptr<URIPacket> Master::GetNextURIElementFromQueue()
 	{
 		Master::URIQueueMutex.lock();
-		std::shared_ptr<URIPacket> element;
+		std::shared_ptr<URIPacket> element = NULL;
 		if (Master::URIQueue.size() == 0)
 		{
 			Master::fillURLQueue(); // Temporary queue filling for debug purposes
@@ -88,7 +88,7 @@ namespace thywin
 			Master::documentQueue.erase(Master::documentQueue.begin());
 		}
 
-		if (documentQueue.size()>0)
+		if (Master::documentQueue.size()>0)
 		{
 			sem_post(&documentQueueNotEmpty);
 		}
