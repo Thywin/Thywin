@@ -41,7 +41,7 @@ namespace thywin
 			/**
 			 * Default copy constructor
 			 */
-			Logger(const Logger& other);
+			Logger(const Logger& logger);
 
 			/**
 			 * Log a message to the logfile.
