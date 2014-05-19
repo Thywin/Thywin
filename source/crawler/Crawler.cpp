@@ -49,7 +49,6 @@ namespace thywin
 			std::shared_ptr<URIPacket> uriPacket(new URIPacket);
 			std::shared_ptr<ThywinPacket> receivedPacket(new ThywinPacket);
 			receivedPacket = communication.ReceivePacket(uriPacket);
-
 			if (receivedPacket->Type == URI && receivedPacket->Method == RESPONSE)
 			{
 				crawl(uriPacket->URI);
@@ -82,7 +81,7 @@ namespace thywin
 				return -1; // Exception van maken
 
 			default:
-				processID = wait(NULL);
+				//processID = wait(NULL);
 				sendURIDocument(pagePipe, URI);
 		}
 		return 0;
@@ -132,7 +131,7 @@ namespace thywin
 
 				communication.SendPacket(packet);
 			}
-			catch(const std::exception& e)
+			catch (const std::exception& e)
 			{
 				logger.Log(ERROR, e.what());
 			}
