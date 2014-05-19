@@ -243,19 +243,13 @@ namespace thywin
 
 	bool DatabaseHandler::IsQueueEmpty(std::string queue)
 	{
-		std::string query = "SELECT uri_id FROM " + queue + "LIMIT 1";
+		std::string query = "SELECT uri_id FROM " + queue + " LIMIT 1";
 		if (executeQuery(query))
 		{
-			int rowCount;
 			if (SQLFetch(statementHandle) == SQL_SUCCESS)
-			{
-				rowCount++;
-			}
-			if (rowCount >= 1)
 			{
 				return false;
 			}
-			return true;
 		}
 		return true;
 	}
