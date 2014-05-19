@@ -16,6 +16,7 @@ namespace thywin
 	ParserCommunicator::ParserCommunicator(std::string documentQueue, std::string URLQueue, std::string indexStore) :
 			communicator(documentQueue, 7500)
 	{
+		std::cout << "Connected to the master will now start parsing!" << std::endl;
 	}
 
 	ParserCommunicator::~ParserCommunicator()
@@ -43,7 +44,7 @@ namespace thywin
 
 	void ParserCommunicator::StoreExpectedURIRelevance(URIPacket uriRelevance)
 	{
-		std::shared_ptr<URIPacket> uriPacket(&uriRelevance);
+		std::shared_ptr<URIPacket> uriPacket(new URIPacket(uriRelevance));
 		
 		ThywinPacket thywinPacket;
 		thywinPacket.Method = PUT;
@@ -55,7 +56,7 @@ namespace thywin
 
 	void ParserCommunicator::StoreActualURIRelevance(URIPacket uriRelevance)
 	{
-		std::shared_ptr<URIPacket> uriPacket(&uriRelevance);
+		std::shared_ptr<URIPacket> uriPacket(new URIPacket(uriRelevance));
 		
 		ThywinPacket thywinPacket;
 		thywinPacket.Method = PUT;
