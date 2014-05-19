@@ -20,7 +20,7 @@ namespace thywin
 	{
 	}
 
-	Logger::Logger(const Logger& other)
+	Logger::Logger(const Logger& logger)
 	{
 	}
 
