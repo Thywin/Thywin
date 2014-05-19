@@ -2,7 +2,8 @@
  * Logger.cpp
  *
  *  Created on: 14 mei 2014
- *      Author: Erwin, Bobby
+ *      Author: Bobby Bouwmann
+ *      Author: Erwin Janssen
  */
 
 #include "Logger.h"
