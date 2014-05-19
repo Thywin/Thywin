@@ -61,7 +61,7 @@ namespace thywin
 
 		const char* realdata = data.str().c_str();
 
-		int sendSize = send(connectionSocket, realdata, strlen(realdata), 0);
+		int sendSize = send(connectionSocket, realdata, data.str().size(), 0);
 		if (sendSize < 0)
 		{
 			perror("Send failed");
