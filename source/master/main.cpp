@@ -21,6 +21,7 @@ int main(int argc, char* argv[])
 		srv.SetUp(portNumber);
 		srv.Listen();
 		printf("Server shutting down\n");
+		thywin::Master::DBConnection.Disconnect();
 		return(EXIT_SUCCESS);
 	}
 }

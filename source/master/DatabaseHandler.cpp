@@ -86,8 +86,6 @@ namespace thywin
 			default:
 				break;
 		}
-
-		std::cout << "Connected!" << std::endl;
 	}
 
 	void DatabaseHandler::DeleteURIFrom(std::string URI, std::string table, bool all)
@@ -325,7 +323,6 @@ namespace thywin
 			SQLFreeHandle(SQL_HANDLE_DBC, connectionHandle);
 			SQLFreeHandle(SQL_HANDLE_ENV, environmentHandle);
 			connected = false;
-			std::cout << "Disconnected" << std::endl;
 		}
 
 	}
