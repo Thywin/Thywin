@@ -194,7 +194,7 @@ namespace thywin
 			}
 			if (rowCount >= 1)
 			{
-				result->URI = uri;
+				result->URI = std::string(uri);
 				result->Relevance = priority;
 			}
 		}
@@ -263,7 +263,7 @@ namespace thywin
 	bool DatabaseHandler::IsQueueEmpty(std::string queue)
 	{
 		SQLHANDLE stmtHndl;
-		std::string query = "SELECT uri_id FROM " + queue + "LIMIT 1";
+		std::string query = "SELECT uri_id FROM " + queue + " LIMIT 1";
 		if (executeQuery(query, stmtHndl))
 		{
 			if (SQLFetch(stmtHndl) == SQL_SUCCESS)

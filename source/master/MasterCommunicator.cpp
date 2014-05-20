@@ -41,7 +41,6 @@ namespace thywin
 		ThywinPacket packet;
 		packet.Method = RESPONSE;
 		packet.Type = URI;
-
 		packet.Content = Master::GetNextDocumentElementFromQueue();
 		return packet;
 	}
