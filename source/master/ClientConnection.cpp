@@ -24,7 +24,7 @@
 
 namespace thywin
 {
-	ClientConnection::ClientConnection(int client)
+	ClientConnection::ClientConnection(const int& client)
 	{
 		clientSocket = client;
 		handlingConnection = false;
@@ -140,7 +140,7 @@ namespace thywin
 		}
 		else
 		{
-			printf("CONTENT FOUND WAS NULL\n");
+			printf("Content is NULL\n");
 		}
 		data << TP_END_OF_PACKET;
 		const char* realdata = data.str().c_str();

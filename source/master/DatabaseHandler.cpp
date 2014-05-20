@@ -266,7 +266,6 @@ namespace thywin
 		std::string query = "SELECT uri_id FROM " + queue + "LIMIT 1";
 		if (executeQuery(query, stmtHndl))
 		{
-			int rowCount;
 			if (SQLFetch(stmtHndl) == SQL_SUCCESS)
 			{
 				return false;
