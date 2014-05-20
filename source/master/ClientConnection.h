@@ -19,10 +19,9 @@ namespace thywin
 		public:
 			/**
 			 * Creates a connection class for handling the connection from client to Master Server.
-			 * @Client:		Socket Descriptor for the client connection. Has to be a live connection
-			 *
+			 * @param Client Socket Descriptor for the client connection. Has to be a live connection
 			 */
-			ClientConnection(int client);
+			ClientConnection(const int& client);
 
 			/**
 			 * Default destructor. Closes the connection with the client if still alive
@@ -36,18 +35,18 @@ namespace thywin
 			void HandleConnection();
 
 			/**
-			 * Closes the connection with the client
+			 * Closes the connection & socket with the client..
 			 */
 			void CloseConnection();
 
 			/**
 			 * Check whatever or not there is a connection established. Does not mean the connection is being handled!
-			 * @Return:		True on connection, false if connection is closed.
+			 * @Return True on connection, false if connection is closed.
 			 */
 			bool hasConnection();
 
 		private:
-			int clientSocket;
+			const int& clientSocket;
 			bool handlingConnection;
 			bool connection;
 			std::string lastPacketContent;

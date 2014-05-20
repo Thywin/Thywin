@@ -20,9 +20,6 @@
 
 namespace thywin
 {
-//	std::vector<std::shared_ptr<URIPacket>> Master::URIQueue;
-//	std::vector<std::shared_ptr<DocumentPacket>> Master::documentQueue;
-
 	std::mutex Master::URIQueueMutex;
 	std::mutex Master::DocumentQueueMutex;
 	sem_t Master::documentQueueNotEmpty;

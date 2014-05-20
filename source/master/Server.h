@@ -14,6 +14,7 @@ namespace thywin
 	class Server
 	{
 		public:
+
 			/**
 			 * Creates the server object
 			 */
@@ -22,7 +23,7 @@ namespace thywin
 
 			/**
 			 * Set up the server on port, if the server has not been set up yet
-			 * @port:		Valid port number. Can be any number between # and #.
+			 * @param port Valid port number. Can be any number between # and #.
 			 */
 			int SetUp(const int& port);
 

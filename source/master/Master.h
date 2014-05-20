@@ -25,50 +25,46 @@ namespace thywin
 		public:
 
 			/**
-			 * Handle for the database connection.
+			 * Database connection object. Used get URIs or documents from the Database.
 			 */
 			static DatabaseHandler DBConnection;
 
 			/**
 			 * Initializes the master & semaphores for the Queues.
-			 *
 			 */
 			static void InitializeMaster();
 
 			/**
 			 * Grabs an URIElement struct from the URI Queue.
-			 * @return		URIElement struct.
+			 * @return shared pointer to URIPacket
 			 */
 			static std::shared_ptr<URIPacket> GetNextURIElementFromQueue();
 
 			/**
 			 * Adds a new URI element to the URI Queue.
-			 * @URIElement element
+			 * @param URIElement
 			 */
 			static void AddURIElementToQueue(std::shared_ptr<URIPacket> element);
 
 			/**
 			 * Grabs an documentElement struct from the Document Queue. Function call is blocking.
-			 * 	Waits until the Document Queue has at least one element.
+			 * Waits until the Document Queue has at least one element.
 			 *
-			 * @return		documentElement struct.
+			 * @return shared pointer to DocumentPacket
 			 */
 			static std::shared_ptr<DocumentPacket> GetNextDocumentElementFromQueue();
 
 			/**
 			 * Adds a new document element to the Document Queue.
-			 * @documentElement element		Pointer to a documentElement struct
+			 * @param documentElement Pointer to a documentElement struct
 			 */
 			static void AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element);
 
 		private:
-
 			static std::mutex URIQueueMutex;
 			static std::mutex DocumentQueueMutex;
 			static sem_t documentQueueNotEmpty;
 
-//			static std::vector<std::shared_ptr<URIPacket>> URIQueue;
-//			static std::vector<std::shared_ptr<DocumentPacket>> documentQueue;
 			static void fillURLQueue();
 	};
 }
