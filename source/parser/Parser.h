@@ -10,6 +10,7 @@
 
 #include <string>
 #include "ParserCommunicator.h"
+#include "Logger.h"
 
 namespace thywin
 {
@@ -35,6 +36,7 @@ namespace thywin
 			 */
 			void Stop();
 		private:
+			Logger logger;
 			ParserCommunicator communicator;
 			bool running;
 	};

@@ -19,6 +19,7 @@
 #include "URIPacket.h"
 #include "DocumentVector.h"
 #include "Communicator.h"
+#include "Logger.h"
 
 namespace thywin
 {
@@ -58,6 +59,7 @@ namespace thywin
 			void StoreActualURIRelevance(URIPacket uriPacket);
 
 		private:
+			Logger logger;
 			Communicator communicator;
 	};
 
