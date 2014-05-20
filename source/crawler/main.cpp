@@ -9,6 +9,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <stdexcept>
+#include <errno.h>
+#include <string.h>
 #include "crawler.h"
 #include "Communicator.h"
 
@@ -34,21 +37,26 @@ int main(int argc, char** argv)
 	const std::string ipaddress = "192.168.100.13";
 	const int port = 7500;
 
-	std::stringstream message;
-	message << "Starting to crawl using ip: " << ipaddress << " and " << port;
-	logger.Log(INFO, message.str());
+	logger.Log(INFO, "Starting to crawl using ip: " + std::string(ipaddress));
 
 	for (int i = 0; i < NUMBER_OF_CLIENTS - 1; i++)
 	{
-		pid_t processID = fork();
-		if (processID == -1)
+		try
 		{
-			perror("Preforking failed");
-			exit(EXIT_FAILURE);
+			pid_t processID = fork();
+			if (processID == -1)
+			{
+				throw std::runtime_error(std::string(strerror(errno)));
+			}
+			else if (processID == 0)
+			{
+				break; // exit loop as child
+			}
 		}
-		else if (processID == 0)
+		catch(std::exception& e)
 		{
-			break; // exit loop as child
+			logger.Log(ERROR, "Crawler main, forking failed: " + std::string(e.what()));
+			exit(EXIT_FAILURE);
 		}
 	}
 

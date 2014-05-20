@@ -37,6 +37,7 @@ namespace thywin
 			Logger logger;
 			int crawl(const std::string& URI);
 			void sendURIDocument(int* pagePipe, const std::string& URI);
+			void createSendPacket(const std::string& document, const std::string::size_type& headerend, const std::string& crawledURI);
 			void startCurl(int* pagePipe, const std::string& URI);
 	};
 }
