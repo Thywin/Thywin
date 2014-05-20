@@ -32,6 +32,7 @@ namespace thywin
 			std::shared_ptr<URIPacket> RetrieveAndDeleteURIFromQueue();
 			std::shared_ptr<DocumentPacket> RetrieveDocumentFromQueue();
 			std::shared_ptr<DocumentPacket> RetrieveAndDeleteDocumentFromQueue();
+			int GetRowCount(std::string queue);
 			bool IsQueueEmpty(std::string queue);
 			void Disconnect(SQLHANDLE& stmtHndl);
 			void Disconnect();
@@ -40,6 +41,8 @@ namespace thywin
 			bool executeQuery(std::string query, SQLHANDLE& stmtHndl);
 			bool connectionCheck();
 			void show_error(unsigned int handletype, const SQLHANDLE& handle);
+			SQLHANDLE createStatementHandler();
+			void releaseStatementHandler(SQLHANDLE& handler);
 	};
 
 } /* namespace thywin */

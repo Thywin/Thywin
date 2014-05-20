@@ -27,8 +27,10 @@ namespace thywin
 
 	void Master::InitializeMaster()
 	{
-		sem_init(&documentQueueNotEmpty, 0, 0);
 		DBConnection.Connect();
+		sem_init(&documentQueueNotEmpty, 0, DBConnection.GetRowCount("document_queue"));
+		printf("Current document Queue size: %i\n",DBConnection.GetRowCount("document_queue"));
+		printf("Current uri Queue size: %i\n",DBConnection.GetRowCount("uri_queue"));
 	}
 
 	void Master::AddURIElementToQueue(std::shared_ptr<URIPacket> element)
@@ -55,6 +57,7 @@ namespace thywin
 	void Master::AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element)
 	{
 		Master::DocumentQueueMutex.lock();
+		printf("AddDocumentElementToQueue\n");
 		DBConnection.AddDocumentToQueue(element);
 		sem_post(&documentQueueNotEmpty);
 		Master::DocumentQueueMutex.unlock();
@@ -89,6 +92,12 @@ namespace thywin
 		anotherElement->Relevance = 0.01;
 		DBConnection.AddURIToList(anotherElement);
 		DBConnection.AddURIToQueue(anotherElement->URI);
+
+		std::shared_ptr<URIPacket> newelemente(new URIPacket);
+		newelemente->URI = "http://msdn.microsoft.com/en-us/library/ms710963%28v=vs.85%29.aspx\0";
+		newelemente->Relevance = 0.01;
+		DBConnection.AddURIToList(newelemente);
+		DBConnection.AddURIToQueue(newelemente->URI);
 	}
 
 }

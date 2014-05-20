@@ -107,7 +107,7 @@ namespace thywin
 
 			if (close(clientSocket) < 0)
 			{
-				throw std::runtime_error(std::string(strerror(errno)));
+				// who cares?
 			}
 			pthread_exit(NULL);
 		}
