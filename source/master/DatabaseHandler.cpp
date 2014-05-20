@@ -130,7 +130,7 @@ namespace thywin
 		}
 		//std::string query = "INSERT INTO document_queue VALUES ((SELECT uri_id FROM uris WHERE uri = '" + URI + "'), '"
 		//		+ content + "')";
-		char* statement = "INSERT INTO document_queue VALUES ((SELECT uri_id FROM uris WHERE uri = '?'), '?')";
+		char* statement = (char*)"INSERT INTO document_queue VALUES ((SELECT uri_id FROM uris WHERE uri = '?'), '?')";
 		if (SQL_SUCCESS != SQLPrepare(stmtHndl, (SQLCHAR *) statement, strlen(statement)))
 		{
 			show_error(SQL_HANDLE_STMT, stmtHndl);
@@ -181,7 +181,7 @@ namespace thywin
 		result->URI = "";
 		result->Relevance = 0;
 
-		if (executeQuery(query))
+		if (executeQuery(query,stmtHndl))
 		{
 			char uri[1024];
 			double priority;
@@ -222,7 +222,7 @@ namespace thywin
 		result->URI = "";
 		result->Document = "";
 
-		if (executeQuery(query))
+		if (executeQuery(query,stmtHndl))
 		{
 			char uri[1024];
 			std::string content;

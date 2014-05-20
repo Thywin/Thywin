@@ -24,7 +24,7 @@
 
 namespace thywin
 {
-	ClientConnection::ClientConnection(const int& client)
+	ClientConnection::ClientConnection(int& client)
 	{
 		clientSocket = client;
 		handlingConnection = false;
