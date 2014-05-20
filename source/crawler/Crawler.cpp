@@ -31,13 +31,14 @@ namespace thywin
 
 	void Crawler::CrawlURI()
 	{
-		ThywinPacket packet;
-		packet.Type = URI;
-		packet.Method = GET;
-		packet.Content = NULL;
-		communication.SendPacket(packet);
 		try
 		{
+			ThywinPacket packet;
+			packet.Type = URI;
+			packet.Method = GET;
+			packet.Content = NULL;
+			communication.SendPacket(packet);
+
 			std::shared_ptr<URIPacket> uriPacket(new URIPacket);
 			std::shared_ptr<ThywinPacket> receivedPacket(new ThywinPacket);
 			receivedPacket = communication.ReceivePacket(uriPacket);
@@ -46,18 +47,17 @@ namespace thywin
 				crawl(uriPacket->URI);
 			}
 		}
-		catch (const std::bad_alloc& e)
+		catch (std::bad_alloc& e)
 		{
 			logger.Log(ERROR, "Crawler CrawlUri, Creating new URIPacket/ThywinPacket failed: " + std::string(e.what()));
 		}
-		catch (const std::exception& e)
+		catch (std::exception& e)
 		{
 			logger.Log(ERROR, "Crawler crawl, " + std::string(e.what()));
-			exit(EXIT_FAILURE);
 		}
 	}
 
-	int Crawler::crawl(const std::string& URI)
+	void Crawler::crawl(const std::string& URI)
 	{
 		int pagePipe[2];
 		if (pipe(pagePipe) == -1)
@@ -69,49 +69,55 @@ namespace thywin
 		switch (processID)
 		{
 			case 0:
-				try
+				if (close(pagePipe[0]) == -1)
 				{
-					startCurl(pagePipe, URI);
+					throw std::runtime_error(std::string("failed to close pipe[0]: ") + strerror(errno));
 				}
-				catch (const std::exception& e)
-				{
-					logger.Log(ERROR, "Crawler startCurl, " + std::string(e.what()));
-				}
+				startCurl(pagePipe[1], URI);
 				break;
 
 			case -1:
 				throw std::runtime_error(std::string("failing to fork process: ") + strerror(errno));
 
 			default:
-				try
+				if (close(pagePipe[1]) == -1)
 				{
-					sendURIDocument(pagePipe, URI);
+					throw std::runtime_error(std::string("failed to close pipe[1]: ") + strerror(errno));
 				}
-				catch (const std::exception& e)
-				{
-					logger.Log(ERROR, "Crawler startCurl, " + std::string(e.what()));
-				}
+				sendURIDocument(pagePipe[0], URI);
 		}
-
-		return EXIT_SUCCESS;
 	}
 
-	void Crawler::sendURIDocument(int* pagePipe, const std::string& crawledURI)
+	void Crawler::startCurl(int pagePipeWrite, const std::string& crawledURI)
 	{
-		if (close(pagePipe[1]) == -1)
+		if (dup2(pagePipeWrite, STDOUT_FILENO) == -1)
 		{
-			throw std::runtime_error(std::string("failed to close pipe[1]: ") + strerror(errno));
+			throw std::runtime_error(std::string("failing to dup: ") + strerror(errno));
 		}
 
+		if (close(STDERR_FILENO) == -1)
+		{
+			throw std::runtime_error(std::string("failing to close stderr: ") + strerror(errno));
+		}
+
+		char* exec[] =
+		{ "curl", "-i", (char *) crawledURI.c_str(), NULL };
+
+		execvp(exec[0], exec);
+		throw std::runtime_error(std::string("failing to execute with execvp: ") + strerror(errno));
+	}
+
+	void Crawler::sendURIDocument(int pagePipeRead, const std::string& crawledURI)
+	{
 		char buffer;
-		int readSize = read(pagePipe[0], &buffer, sizeof(buffer));
+		int readSize = read(pagePipeRead, &buffer, sizeof(buffer));
 
 		std::string document;
 
 		while (readSize > 0)
 		{
 			document.push_back(buffer);
-			readSize = read(pagePipe[0], &buffer, sizeof(buffer));
+			readSize = read(pagePipeRead, &buffer, sizeof(buffer));
 		}
 
 		std::string::size_type headerend = document.find("\r\n\r\n");
@@ -123,28 +129,21 @@ namespace thywin
 		std::string::size_type content_type_html = head.find(content_type);
 		if (content_type_html != std::string::npos)
 		{
-			try
-			{
-				createSendPacket(document, headerend, crawledURI);
-			}
-			catch (const std::exception& e)
-			{
-				logger.Log(ERROR,
-						"Crawler createSendPacket, Creating new DocumentPacket failed: " + std::string(e.what()));
-			}
+			createSendPacket(document, headerend, crawledURI);
 		}
 		else
 		{
 			logger.Log(INFO, "Invalid link: " + std::string(crawledURI));
 		}
 
-		if (close(pagePipe[0]) == -1)
+		if (close(pagePipeRead) == -1)
 		{
 			throw std::runtime_error(std::string("failed to close pipe[0]: ") + strerror(errno));
 		}
 	}
 
-	void Crawler::createSendPacket(const std::string& document, const std::string::size_type& headerend, const std::string& crawledURI)
+	void Crawler::createSendPacket(const std::string& document, const std::string::size_type& headerend,
+			const std::string& crawledURI)
 	{
 		std::string body = document.substr(headerend, document.size());
 
@@ -160,30 +159,5 @@ namespace thywin
 		packet.Content = documentPacket;
 
 		communication.SendPacket(packet);
-	}
-
-	void Crawler::startCurl(int* pageBodyPipe, const std::string& CrawledURI)
-	{
-		if (close(pageBodyPipe[0]) == -1)
-		{
-			throw std::runtime_error(std::string("failed to close pipe[0]: ") + strerror(errno));
-		}
-
-		if (dup2(pageBodyPipe[1], STDOUT_FILENO) == -1)
-		{
-			throw std::runtime_error(std::string("failing to dup: ") + strerror(errno));
-		}
-
-		if (close(STDERR_FILENO) == -1)
-		{
-			throw std::runtime_error(std::string("failing to close stderr: ") + strerror(errno));
-		}
-
-		char* exec[] =
-		{ "curl", "-i", (char *) CrawledURI.c_str(), NULL };
-
-		execvp(exec[0], exec);
-		throw std::runtime_error(std::string("failing to execute with execvp: ") + strerror(errno));
-		exit(EXIT_FAILURE);
 	}
 }

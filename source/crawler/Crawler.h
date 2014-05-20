@@ -35,10 +35,17 @@ namespace thywin
 		private:
 			Communicator communication;
 			Logger logger;
-			int crawl(const std::string& URI);
-			void sendURIDocument(int* pagePipe, const std::string& URI);
+			void crawl(const std::string& URI);
+			/**
+			 * Use Curl to download a page and write to the page pipe
+			 */
+			void startCurl(int pagePipeWrite, const std::string& crawledURI);
+			/**
+			 * Read from the page pipe and send the data to the master
+			 */
+			void sendURIDocument(int pagePipeRead, const std::string& crawledURI);
 			void createSendPacket(const std::string& document, const std::string::size_type& headerend, const std::string& crawledURI);
-			void startCurl(int* pagePipe, const std::string& URI);
+
 	};
 }
 

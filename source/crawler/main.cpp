@@ -21,28 +21,29 @@ int main(int argc, char** argv)
 {
 	Logger logger = Logger("log");
 
-	int NUMBER_OF_CLIENTS = 10;
-
-	if (argc > 2)
+	try
 	{
-		std::cout << "Usage: ./crawler [numberOfClients]" << std::endl;
-		exit(EXIT_FAILURE);
-	}
+		int NUMBER_OF_CLIENTS = 10;
 
-	if (argc == 2)
-	{
-		NUMBER_OF_CLIENTS = atoi(argv[1]);
-	}
-
-	const std::string ipaddress = "192.168.100.13";
-	const int port = 7500;
-
-	logger.Log(INFO, "Starting to crawl using ip: " + std::string(ipaddress));
-
-	for (int i = 0; i < NUMBER_OF_CLIENTS - 1; i++)
-	{
-		try
+		if (argc > 2)
 		{
+			std::cout << "Usage: ./crawler [numberOfClients]" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+
+		if (argc == 2)
+		{
+			NUMBER_OF_CLIENTS = atoi(argv[1]);
+		}
+
+		const std::string ipaddress = "192.168.100.13";
+		const int port = 7500;
+
+		logger.Log(INFO, "Starting to crawl using ip: " + std::string(ipaddress));
+
+		for (int i = 0; i < NUMBER_OF_CLIENTS - 1; i++)
+		{
+
 			pid_t processID = fork();
 			if (processID == -1)
 			{
@@ -53,19 +54,21 @@ int main(int argc, char** argv)
 				break; // exit loop as child
 			}
 		}
-		catch(std::exception& e)
+
+		Crawler crawler(ipaddress, port);
+
+		while (true)
 		{
-			logger.Log(ERROR, "Crawler main, forking failed: " + std::string(e.what()));
-			exit(EXIT_FAILURE);
+			crawler.CrawlURI();
 		}
+		return EXIT_SUCCESS;
 	}
-
-	Crawler crawler = Crawler(ipaddress, port);
-
-	while (true)
+	catch (std::exception& e)
 	{
-		crawler.CrawlURI();
+		logger.Log(ERROR, "Crawler: " + std::string(e.what()));
 	}
-	return EXIT_SUCCESS;
+	catch(...)
+	{
+		logger.Log(ERROR, "Crawler: Unexpected error while crawling");
+	}
 }
-
