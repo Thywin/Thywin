@@ -2,7 +2,8 @@
  * Crawler.hpp
  *
  *  Created on: 25 apr. 2014
- *      Author: Thomas Kooi, Bobby Bouwmann
+ *      Author: Thomas Kooi
+ *      Author: Bobby Bouwmann
  */
 
 #ifndef CRAWLER_HPP_
@@ -34,9 +35,20 @@ namespace thywin
 		private:
 			Communicator communication;
 			Logger logger;
-			int crawl(const std::string& URI);
-			void sendURIDocument(int* pagePipe, const std::string& URI);
-			void startCurl(int* pagePipe, const std::string& URI);
+			void crawl(const std::string& URI);
+
+			/**
+			 * Use Curl to download a page and write to the page pipe
+			 */
+			void startCurl(int pagePipeWrite, const std::string& crawledURI);
+
+			/**
+			 * Read from the page pipe and send the data to the master
+			 */
+			void sendURIDocument(int pagePipeRead, const std::string& crawledURI);
+			void parseMovedFile(const std::string& head, const std::string& crawledURI);
+			void createAndSendPacket(const std::string& document, const std::string::size_type& headerend, const std::string& crawledURI);
+
 	};
 }
 
