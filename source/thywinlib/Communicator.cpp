@@ -12,6 +12,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdexcept>
+#include <errno.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -29,14 +31,12 @@ namespace thywin
 		connectionSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		if (connectionSocket == -1)
 		{
-			perror("Socket creation failed");
-			exit(EXIT_FAILURE);
+			throw std::runtime_error(std::string("failed to create socket: ") + strerror(errno));
 		}
 
 		if (connect(connectionSocket, (struct sockaddr*) &sockAddr, sizeof(sockAddr)) < 0)
 		{
-			perror("Connect failed");
-			exit(EXIT_FAILURE);
+			throw std::runtime_error(std::string("failed to connect to socket: ") + strerror(errno));
 		}
 	}
 
@@ -44,8 +44,7 @@ namespace thywin
 	{
 		if (close(connectionSocket) < 0)
 		{
-			perror("Close connection failed");
-			exit(EXIT_FAILURE);
+			throw std::runtime_error(std::string("failed to close socket: ") + strerror(errno));
 		}
 	}
 
@@ -59,11 +58,10 @@ namespace thywin
 		}
 		data << TP_END_OF_PACKET;
 
-		int sendSize = send(connectionSocket,(char*) data.str().c_str(), data.str().size(), 0);
+		int sendSize = send(connectionSocket, (char*) data.str().c_str(), data.str().size(), 0);
 		if (sendSize < 0)
 		{
-			perror("Send failed");
-			exit(EXIT_FAILURE);
+			throw std::runtime_error(std::string("failed to send to socket: ") + strerror(errno));
 		}
 
 		return sendSize;
@@ -83,13 +81,14 @@ namespace thywin
 
 		if (receiveSize < 0)
 		{
-			perror("Receive failed");
-			exit(EXIT_SUCCESS);
+			throw std::runtime_error(std::string("failed to receive from socket: ") + strerror(errno));
 		}
 		else if (receiveSize == 0)
 		{
-			close(connectionSocket);
-			std::cout << "Master closed the connection" << std::endl;
+			if (close(connectionSocket) < 0)
+			{
+				throw std::runtime_error(std::string("failed to close socket: ") + strerror(errno));
+			}
 			exit(EXIT_SUCCESS);
 		}
 		//no else because the code just continues the previous if's terminate the program.
