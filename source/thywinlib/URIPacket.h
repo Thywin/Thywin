@@ -9,6 +9,8 @@
 #ifndef URIELEMENT_H_
 #define URIELEMENT_H_
 #include "ThywinPacketContent.h"
+#include <memory>
+#include <vector>
 
 namespace thywin
 {
@@ -18,6 +20,9 @@ namespace thywin
 	class URIPacket: public ThywinPacketContent
 	{
 		public:
+			typedef std::shared_ptr<URIPacket> URIPacketPtr;
+			typedef std::vector<std::shared_ptr<URIPacket>> URIPacketVector;
+
 			/**
 			 * double that represents the relevance of the URI  
 			 */
