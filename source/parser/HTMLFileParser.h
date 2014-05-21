@@ -4,6 +4,7 @@
  *  Created on: May 8, 2014
  *      Author: Imre Woudstra
  *      Author: Thomas Gerritsen
+ *      Author: Erwin Janssen
  */
 
 #ifndef HTMLFILEPARSER_H_
@@ -11,44 +12,41 @@
 
 #include <string>
 #include <vector>
+#include "FileParser.h"
 
 namespace thywin
 {
-
-	class HTMLFileParser
+	/**
+	 * File parser for HTML files
+	 * Can be used to extract URIs from a HTML file
+	 * Can be used to extract text from a HTML file
+	 */
+	class HTMLFileParser: public FileParser
 	{
 		public:
-			HTMLFileParser();
 			virtual ~HTMLFileParser();
 
 			/**
-			 * Returns a list of URIs extracted from the contents of a file.
-			 * The content argument must contain the code of a page in it's entirety.
-			 * The source argument contains the URI of the page where the content came from.
-			 * The returned URI are constructed according to the source that is given with the content.
-			 *
-			 * @param content a string containing the code of a page
-			 * @param source the URI of the page
-			 * @return the list of the URI found in the content
+			 * @see FileParser.ExtractURIs() 
 			 */
-			std::vector<std::string> ExtractURIs(std::string content, std::string source);
+			virtual URIs ExtractURIs(const std::string& content, const std::string& sourceURI);
 
 			/**
-			 * Returns the actual text content of a html file.
-			 * All html tags will be removed from the html content. 
-			 * 
-			 * @param content a string containing the html content of an URI
-			 * @return the content with all html tags removed.
+			 * @see FileParser.ExtractText()
 			 */
-			std::string ExtractText(std::string content);
+			virtual std::string ExtractText(const std::string& content);
 		private:
-			std::vector<std::string> parseString(std::string input, std::string::size_type endHeadPos,
-					std::string source);
-			std::string constructURI(std::string input, std::string host, std::string path);
-			std::vector<std::string> splitSource(std::string source);
-			std::string removeOneUps(int amount, std::string path);
-			std::string formHost(std::string source);
-			std::string formPath(std::string source, int hostLength);
+			std::string constructURI(const std::string& input, const std::string& host, const std::string& path);
+			std::string constructRelativeURI(const std::string& input, const std::string& host,
+					const std::string& path);
+			std::string constructRelativeURIWithDirectoryUp(const std::string& URI, const std::string& host,
+					const std::string& path);
+			std::string removeOneUps(const int amount, const std::string& path);
+			std::string getHostPartOfURI(const std::string& source);
+			std::string getPathPartOfURI(const std::string& source);
+			std::string addProtocolToURI(const std::string& source);
+			std::string::size_type getEndPositionOfProtocol(const std::string& URI);
+			std::string::size_type getPositionOfFirstSlashAfterProtocol(const std::string& URI);
 	};
 
 } /* namespace thywin */
