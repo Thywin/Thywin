@@ -33,5 +33,8 @@ int main(int argc, char* argv[])
 	{
 		printf("Catched an exception on main: %s\n",e.what());
 	}
+	catch (...){
+		std::cout << "Something went terribly wrong!" << std::endl;
+	}
 }
 

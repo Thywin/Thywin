@@ -6,6 +6,7 @@
  */
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdexcept>
 #include <iostream>
 #include <string>
 #include <string.h>
@@ -47,19 +48,19 @@ namespace thywin
 		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &environmentHandle))
 		{
 			Disconnect();
-			return;
+			throw std::runtime_error(std::string("Couldn't allocate environment handle."));
 		}
 
 		if (SQL_SUCCESS != SQLSetEnvAttr(environmentHandle, SQL_ATTR_ODBC_VERSION, (SQLPOINTER) SQL_OV_ODBC3, 0))
 		{
 			Disconnect();
-			return;
+			throw std::runtime_error(std::string("Couldn't set ODBC version."));
 		}
 
 		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, environmentHandle, &connectionHandle))
 		{
 			Disconnect();
-			return;
+			throw std::runtime_error(std::string("Couldn't allocate connection handle."));
 		}
 
 		SQLSetConnectOption(connectionHandle, SQL_LOGIN_TIMEOUT, 15);
@@ -72,11 +73,8 @@ namespace thywin
 		const char* connectionString = temp.c_str();
 
 		SQLCHAR retconstring[1024];
-		SQLRETURN connect = SQLDriverConnect(connectionHandle,
-		NULL, (SQLCHAR*) connectionString,
-		SQL_NTS, retconstring, 1024,
-		NULL,
-		SQL_DRIVER_NOPROMPT);
+		SQLRETURN connect = SQLDriverConnect(connectionHandle, NULL, (SQLCHAR*) connectionString, SQL_NTS, retconstring,
+				1024, NULL, SQL_DRIVER_NOPROMPT);
 
 		switch (connect)
 		{
@@ -84,28 +82,22 @@ namespace thywin
 				show_error(SQL_HANDLE_DBC, connectionHandle);
 				break;
 			case SQL_INVALID_HANDLE:
+				show_error(SQL_HANDLE_DBC, connectionHandle);
+				Disconnect();
+				throw std::runtime_error(std::string("Failed to connect to the database."));
 			case SQL_ERROR:
 				show_error(SQL_HANDLE_DBC, connectionHandle);
 				Disconnect();
-				return;
+				throw std::runtime_error(std::string("Failed to connect to the database."));
 			default:
 				break;
 		}
-		//std::cout << "Connected!" << std::endl;
 	}
 
-	void DatabaseHandler::DeleteURIFrom(std::string URI, std::string table, bool all)
+	void DatabaseHandler::DeleteURIFrom(std::string URI, std::string table)
 	{
-		std::string query;
-		if (all)
-		{
-			query = "DELETE FROM " + table + " WHERE uri_id = (SELECT uri_id FROM uris WHERE uri = '" + URI + "')";
-		}
-		else
-		{
-			query = "DELETE FROM " + table + " WHERE ctid IN (SELECT ctid FROM " + table
-					+ " WHERE uri_id = (SELECT uri_id FROM uris WHERE uri = '" + URI + "') LIMIT 1)";
-		}
+		std::string query = "DELETE FROM " + table + " WHERE uri_id = (SELECT uri_id FROM uris WHERE uri = '" + URI
+				+ "')";
 		handleNonRowReturningQuery(query);
 	}
 
@@ -133,13 +125,15 @@ namespace thywin
 		{
 			show_error(SQL_HANDLE_STMT, statementHandle);
 			Disconnect(statementHandle);
-			return; // throw exception
+			throw std::runtime_error(std::string("Couldn't prepare sql statement."));
 		}
+
 		SQLLEN nts = SQL_NTS;
 		SQLBindParameter(statementHandle, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, input->URI.size(), 0,
 				(char *) input->URI.c_str(), input->URI.size(), &nts);
 		SQLBindParameter(statementHandle, 2, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, input->Document.size(), 0,
 				(char *) input->Document.c_str(), input->Document.size(), &nts);
+
 		if (SQL_SUCCESS != SQLExecute(statementHandle))
 		{
 			show_error(SQL_HANDLE_STMT, statementHandle);
@@ -150,7 +144,7 @@ namespace thywin
 	void DatabaseHandler::AddWordcountToIndex(std::string URI, std::string word, int count)
 	{
 		std::ostringstream ossCount;
-		ossCount << count;  // std::string(count); // Possible implementation to use
+		ossCount << count;
 		std::string sCount = ossCount.str();
 		std::string query = "INSERT INTO indices VALUES ((SELECT uri_id FROM uris WHERE uri = '" + URI + "'), '" + word
 				+ "'," + sCount + ")";
@@ -186,7 +180,7 @@ namespace thywin
 		result = RetrieveURIFromQueue();
 		if (!(result->URI.empty()))
 		{
-			DeleteURIFrom(result->URI, "uri_queue", false);
+			DeleteURIFrom(result->URI, "uri_queue");
 		}
 		return result;
 	}
@@ -197,7 +191,7 @@ namespace thywin
 		SQLHANDLE statementHandle = createStatementHandler();
 
 		std::string query = "SELECT uris.uri, uri_queue.priority FROM uris, uri_queue"
-				" WHERE uris.uri_id = uri_queue.uri_id ORDER BY row_number() OVER () LIMIT 300"; // ORDER by uri_queue.priority DESC LIMIT 300
+				" WHERE uris.uri_id = uri_queue.uri_id ORDER BY row_number() OVER () LIMIT 300";
 
 		if (executeQuery(query, statementHandle))
 		{
@@ -214,7 +208,8 @@ namespace thywin
 			}
 		}
 		releaseStatementHandler(statementHandle);
-		query = "DELETE FROM uri_queue WHERE uri_id IN (SELECT uri_id FROM uri_queue ORDER BY row_number() OVER () LIMIT 300)"; // ORDER by priority DESC LIMIT 300
+		query = "DELETE FROM uri_queue WHERE uri_id IN (SELECT uri_id "
+				"FROM uri_queue ORDER BY row_number() OVER () LIMIT 300)";
 		handleNonRowReturningQuery(query);
 
 		return CachedURIQueue;
@@ -229,13 +224,14 @@ namespace thywin
 
 		if (executeQuery(query, statementHandler))
 		{
-			char uri[1024];
-			char buffer[2];
 			if (SQLFetch(statementHandler) == SQL_SUCCESS)
 			{
 				SQLRETURN retcode = 0;
-				if (SQLGetData(statementHandler, 1, SQL_C_CHAR, uri, 1024, NULL) == SQL_SUCCESS) {
+				char uri[1024];
+				if (SQLGetData(statementHandler, 1, SQL_C_CHAR, uri, 1024, NULL) == SQL_SUCCESS)
+				{
 					result->URI = std::string(uri);
+					char buffer[2];
 					do
 					{
 						retcode = SQLGetData(statementHandler, 2, SQL_C_CHAR, &buffer, 2, NULL);
@@ -255,7 +251,7 @@ namespace thywin
 		result = RetrieveDocumentFromQueue();
 		if (!(result->URI.empty()))
 		{
-			DeleteURIFrom(result->URI, "document_queue", false);
+			DeleteURIFrom(result->URI, "document_queue");
 		}
 		return result;
 	}
@@ -290,28 +286,23 @@ namespace thywin
 		return true;
 	}
 
-	SQLHANDLE DatabaseHandler::createStatementHandler()
+	void DatabaseHandler::Disconnect(SQLHANDLE& stmtHndl)
 	{
-		SQLHANDLE stmtHndl;
-		if (!connectionCheck())
+		if (connected)
 		{
-			// throw exception
+			SQLFreeHandle(SQL_HANDLE_STMT, stmtHndl);
+			Disconnect();
 		}
-
-		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, connectionHandle, &stmtHndl))
-		{
-			show_error(SQL_HANDLE_STMT, stmtHndl);
-			Disconnect(stmtHndl);
-			// throw exception
-		}
-		return stmtHndl;
 	}
 
-	void DatabaseHandler::releaseStatementHandler(SQLHANDLE& handler)
+	void DatabaseHandler::Disconnect()
 	{
-		if (connectionCheck())
+		if (connected)
 		{
-			SQLFreeHandle(SQL_HANDLE_STMT, handler);
+			SQLDisconnect(connectionHandle);
+			SQLFreeHandle(SQL_HANDLE_DBC, connectionHandle);
+			SQLFreeHandle(SQL_HANDLE_ENV, environmentHandle);
+			connected = false;
 		}
 	}
 
@@ -328,15 +319,11 @@ namespace thywin
 
 	bool DatabaseHandler::executeQuery(std::string SQLQuery, SQLHANDLE& statementHandle)
 	{
-		if (!connectionCheck())
-		{
-			return false;
-		}
 		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, connectionHandle, &statementHandle))
 		{
 			show_error(SQL_HANDLE_STMT, statementHandle);
 			Disconnect(statementHandle);
-			return false;
+			throw std::runtime_error(std::string("Couldn't allocate statement handle"));
 		}
 		const char* query = SQLQuery.c_str();
 		if (SQL_SUCCESS != SQLExecDirect(statementHandle, (SQLCHAR*) query, SQL_NTS))
@@ -345,40 +332,6 @@ namespace thywin
 			return false;
 		}
 		return true;
-	}
-
-	bool DatabaseHandler::connectionCheck()
-	{
-		if (!connected)
-		{
-			std::cout << "Not connected to the database. Is the IP address correct "
-					"and did you call the \"Connect\" function?" << std::endl;
-			return false;
-		}
-		return true;
-	}
-
-	void DatabaseHandler::Disconnect(SQLHANDLE& stmtHndl)
-	{
-		if (connected)
-		{
-			SQLFreeHandle(SQL_HANDLE_STMT, stmtHndl);
-			Disconnect();
-		}
-
-	}
-
-	void DatabaseHandler::Disconnect()
-	{
-		if (connected)
-		{
-			SQLDisconnect(connectionHandle);
-			SQLFreeHandle(SQL_HANDLE_DBC, connectionHandle);
-			SQLFreeHandle(SQL_HANDLE_ENV, environmentHandle);
-			connected = false;
-			//std::cout << "Disconnected" << std::endl;
-		}
-
 	}
 
 	void DatabaseHandler::show_error(unsigned int handletype, const SQLHANDLE& statementHandler)
@@ -394,5 +347,24 @@ namespace thywin
 				std::cout << "Message: " << message << " SQLSTATE: " << sqlstate << std::endl;
 			}
 		}
+	}
+
+	SQLHANDLE DatabaseHandler::createStatementHandler()
+	{
+		SQLHANDLE stmtHndl;
+		throw std::runtime_error(std::string("Database not connected."));
+
+		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, connectionHandle, &stmtHndl))
+		{
+			show_error(SQL_HANDLE_STMT, stmtHndl);
+			Disconnect(stmtHndl);
+			throw std::runtime_error(std::string("Couldn't allocate statement handle"));
+		}
+		return stmtHndl;
+	}
+
+	void DatabaseHandler::releaseStatementHandler(SQLHANDLE& handler)
+	{
+		SQLFreeHandle(SQL_HANDLE_STMT, handler);
 	}
 }
