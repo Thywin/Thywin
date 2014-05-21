@@ -53,7 +53,7 @@ namespace thywin
 		}
 		catch (std::exception& e)
 		{
-			logger.Log(ERROR, "Crawler crawl, " + std::string(e.what()));
+			logger.Log(ERROR, "Crawler CrawlUri, " + std::string(e.what()));
 		}
 	}
 
@@ -129,7 +129,7 @@ namespace thywin
 		std::string::size_type content_type_html = head.find(content_type);
 		if (content_type_html != std::string::npos)
 		{
-			createSendPacket(document, headerend, crawledURI);
+			createAndSendPacket(document, headerend, crawledURI);
 		}
 		else
 		{
@@ -142,12 +142,10 @@ namespace thywin
 		}
 	}
 
-	void Crawler::createSendPacket(const std::string& document, const std::string::size_type& headerend,
+	void Crawler::createAndSendPacket(const std::string& document, const std::string::size_type& headerend,
 			const std::string& crawledURI)
 	{
 		std::string body = document.substr(headerend, document.size());
-
-		logger.Log(INFO, "Valid link: " + std::string(crawledURI));
 
 		std::shared_ptr<DocumentPacket> documentPacket(new DocumentPacket);
 		documentPacket->Document = body;
@@ -159,5 +157,6 @@ namespace thywin
 		packet.Content = documentPacket;
 
 		communication.SendPacket(packet);
+		logger.Log(INFO, "Sent valid link: " + std::string(crawledURI));
 	}
 }

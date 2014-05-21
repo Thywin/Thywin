@@ -23,21 +23,25 @@ int main(int argc, char** argv)
 
 	try
 	{
-		int NUMBER_OF_CLIENTS = 10;
+		long int NUMBER_OF_CLIENTS = 10;
+		std::string ipaddress = "192.168.100.13";
+		long int port = 7500;
 
-		if (argc > 2)
+		if (argc > 4)
 		{
-			std::cout << "Usage: ./crawler [numberOfClients]" << std::endl;
+			std::cout << "Usage: ./crawler [numberOfClients] [ipaddress] [port]" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 
-		if (argc == 2)
+		if (argc == 4)
 		{
-			NUMBER_OF_CLIENTS = atoi(argv[1]);
+			NUMBER_OF_CLIENTS = strtol(argv[1], NULL, 0);
+			ipaddress = argv[2];
+			port = strtol(argv[3], NULL, 0);
+		} else if (argc == 2)
+		{
+			NUMBER_OF_CLIENTS = strtol(argv[1], NULL, 0);
 		}
-
-		const std::string ipaddress = "192.168.100.13";
-		const int port = 7500;
 
 		logger.Log(INFO, "Starting to crawl using ip: " + std::string(ipaddress));
 
@@ -67,7 +71,7 @@ int main(int argc, char** argv)
 	{
 		logger.Log(ERROR, "Crawler: " + std::string(e.what()));
 	}
-	catch(...)
+	catch (...)
 	{
 		logger.Log(ERROR, "Crawler: Unexpected error while crawling");
 	}
