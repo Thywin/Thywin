@@ -101,7 +101,7 @@ namespace thywin
 		}
 
 		char* exec[] =
-		{ "curl", "-i", (char *) crawledURI.c_str(), NULL };
+		{ "curl", "-A", "Thywin/1.0", "-i", (char *) crawledURI.c_str(), NULL };
 
 		execvp(exec[0], exec);
 		throw std::runtime_error(std::string("failing to execute with execvp: ") + strerror(errno));
