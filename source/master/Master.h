@@ -16,18 +16,18 @@
 #include <stdlib.h>
 #include <semaphore.h>
 
-
 namespace thywin
 {
+
+	/**
+	 * A vector of shared pointers to a URIPacket.
+	 */
+	//typedef std::vector<std::shared_ptr<URIPacket>> URIPacketSPtrs;
 
 	class Master
 	{
 		public:
 
-			/**
-			 * Database connection object. Used get URIs or documents from the Database.
-			 */
-			static DatabaseHandler DBConnection;
 
 			/**
 			 * Initializes the master & semaphores for the Queues.
@@ -61,10 +61,19 @@ namespace thywin
 			static void AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element);
 
 		private:
+
+			/**
+			 * Database connection object. Used get URIs or documents from the Database.
+			 */
+			static DatabaseHandler DBConnection;
 			static std::mutex URIQueueMutex;
 			static std::mutex DocumentQueueMutex;
 			static sem_t documentQueueNotEmpty;
+			static std::vector<std::shared_ptr<URIPacket>> URIQueue;
 
+			/**
+			 * This function will fill the URI queue with basic URIs for starting points.
+			 */
 			static void fillURLQueue();
 	};
 }

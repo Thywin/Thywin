@@ -23,14 +23,15 @@ namespace thywin
 	std::mutex Master::URIQueueMutex;
 	std::mutex Master::DocumentQueueMutex;
 	sem_t Master::documentQueueNotEmpty;
+	std::vector<std::shared_ptr<URIPacket>> Master::URIQueue;
 	DatabaseHandler Master::DBConnection("192.168.100.13", 5432);
 
 	void Master::InitializeMaster()
 	{
 		DBConnection.Connect();
 		sem_init(&documentQueueNotEmpty, 0, DBConnection.GetRowCount("document_queue"));
-		printf("Current document Queue size: %i\n",DBConnection.GetRowCount("document_queue"));
-		printf("Current uri Queue size: %i\n",DBConnection.GetRowCount("uri_queue"));
+		printf("Current document Queue size: %i\n", DBConnection.GetRowCount("document_queue"));
+		printf("Current uri Queue size: %i\n", DBConnection.GetRowCount("uri_queue"));
 	}
 
 	void Master::AddURIElementToQueue(std::shared_ptr<URIPacket> element)
@@ -44,12 +45,23 @@ namespace thywin
 	std::shared_ptr<URIPacket> Master::GetNextURIElementFromQueue()
 	{
 		Master::URIQueueMutex.lock();
+
 		if (DBConnection.IsQueueEmpty("uri_queue"))
 		{
 			Master::fillURLQueue();
 			/* Temporary queue filling for debug purposes. */
 		}
-		std::shared_ptr<URIPacket> element = DBConnection.RetrieveAndDeleteURIFromQueue();
+
+		if (URIQueue.empty())
+		{
+			printf("URIQueue is empty. Start to refill from database\n");
+			std::vector<std::shared_ptr<URIPacket>> receivedCache = DBConnection.GetURIListFromQueue();
+			Master::URIQueue.insert(Master::URIQueue.end(), receivedCache.begin(), receivedCache.end());
+			printf("URIQueue refilled with new elements: %i\n",receivedCache.size());
+		}
+		std::shared_ptr<URIPacket> element = Master::URIQueue.at(0);
+		Master::URIQueue.erase(URIQueue.begin());
+
 		Master::URIQueueMutex.unlock();
 		return element;
 	}
@@ -57,7 +69,6 @@ namespace thywin
 	void Master::AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element)
 	{
 		Master::DocumentQueueMutex.lock();
-		printf("AddDocumentElementToQueue\n");
 		DBConnection.AddDocumentToQueue(element);
 		sem_post(&documentQueueNotEmpty);
 		Master::DocumentQueueMutex.unlock();
@@ -74,18 +85,18 @@ namespace thywin
 
 	void Master::fillURLQueue()
 	{
+
 		std::shared_ptr<URIPacket> URIElement(new URIPacket);
-		URIElement->URI =
-				"http://ieeexplore.ieee.org/xpl/login.jsp?tp=&arnumber=685270&url=http%3A%2F%2Fieeexplore.ieee.org%2Fiel4%2F5611%2F15013%2F00685270.pdf%3Farnumber%3D685270\0";
+		URIElement->URI = "http://thywin.com/kaas/kaas/index.html\0";
 		URIElement->Relevance = 0.5;
 		DBConnection.AddURIToList(URIElement);
 		DBConnection.AddURIToQueue(URIElement->URI);
 
-		std::shared_ptr<URIPacket> otherElement(new URIPacket);
-		otherElement->URI = "http://en.wikipedia.org/wiki/Discrete_event_simulation\0";
-		otherElement->Relevance = 0.01;
-		DBConnection.AddURIToList(otherElement);
-		DBConnection.AddURIToQueue(otherElement->URI);
+		std::shared_ptr<URIPacket> newelemente(new URIPacket);
+		newelemente->URI = "http://www.nu.nl\0";
+		newelemente->Relevance = 0.01;
+		DBConnection.AddURIToList(newelemente);
+		DBConnection.AddURIToQueue(newelemente->URI);
 
 		std::shared_ptr<URIPacket> anotherElement(new URIPacket);
 		anotherElement->URI = "http://www.reliasoft.com/reno/features1.htm\0";
@@ -93,11 +104,12 @@ namespace thywin
 		DBConnection.AddURIToList(anotherElement);
 		DBConnection.AddURIToQueue(anotherElement->URI);
 
-		std::shared_ptr<URIPacket> newelemente(new URIPacket);
-		newelemente->URI = "http://msdn.microsoft.com/en-us/library/ms710963%28v=vs.85%29.aspx\0";
-		newelemente->Relevance = 0.01;
-		DBConnection.AddURIToList(newelemente);
-		DBConnection.AddURIToQueue(newelemente->URI);
+		std::shared_ptr<URIPacket> otherElement(new URIPacket);
+		otherElement->URI = "http://en.wikipedia.org/wiki/Discrete_event_simulation\0";
+		otherElement->Relevance = 0.01;
+		DBConnection.AddURIToList(otherElement);
+		DBConnection.AddURIToQueue(otherElement->URI);
+
 	}
 
 }

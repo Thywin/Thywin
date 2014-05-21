@@ -18,6 +18,7 @@
 #include "Server.h"
 #include <string>
 #include "ClientConnection.h"
+#include <stdexcept>
 
 namespace thywin
 {
@@ -26,82 +27,96 @@ namespace thywin
 	 */
 	void* setUpConnectionWithClient(void *socket)
 	{
-		int client = *(int *) socket;
-		ClientConnection connection = thywin::ClientConnection(client);
-		connection.HandleConnection();
-		printf("Connection with client & Thread has been closed\n");
+		try
+		{
+			int client = *(int *) socket;
+			ClientConnection connection = thywin::ClientConnection(client);
+			connection.HandleConnection(); /* Blocking call. Will wait until client closed connection */
+			printf("Connection with client & Thread has been closed\n");
+		}
+		catch (std::exception& e)
+		{
+			printf("connection closed: %s\n",e.what());
+		}
 		pthread_exit(NULL);
-
 		return (void *) 0;
 	}
 
 	Server::Server()
 	{
-		serverSocket = -1;
+		AMOUNT_OF_CONNECTIONS_ACCEPT = 127;
+		connection = false;
+		SetUp(7500); /* Needs a define in the library for the default server port */
+		Listen();
+	}
+	Server::Server(const int port)
+	{
+		AMOUNT_OF_CONNECTIONS_ACCEPT = 127;
+		connection = false;
+		SetUp(port);
+		Listen();
 	}
 	
 	Server::~Server()
 	{
-		if (serverSocket != -1)
-		{
-			close(serverSocket);
-		}
+		connection = false;
+		close(serverSocket);
 	}
-	int Server::SetUp(const int& port)
-	{
-		if (serverSocket != -1)
-		{
-			close(serverSocket);
-		}
 
+	bool Server::HasConnection()
+	{
+		return connection;
+	}
+
+	void Server::SetUp(const int port)
+	{
 		int serverDesc = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		if (serverDesc < 0)
 		{
-			perror("Coudln't set up socket");
-			return -1;
+			std::string errorMessage(strerror(errno));
+			throw std::runtime_error("Failed to create socket: " + errorMessage);
 		}
 		sockaddr_in server;
 		server.sin_family = AF_INET;
 		server.sin_addr.s_addr = INADDR_ANY;
 		server.sin_port = htons(port);
-		const int on = 1; // what is this?
 
+		const int on = 1; // what is this?
 		if (setsockopt(serverDesc, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
 		{
-			perror("Failed to set up server socket");
-			return -2;
+			std::string errorMessage(strerror(errno));
+			throw std::runtime_error("Failed to set up server socket: " + errorMessage);
 		}
 
 		if (bind(serverDesc, (struct sockaddr *) &server, sizeof(server)) < 0)
 		{
-			perror("Couldn't bind socket");
-			return -3;
+			std::string errorMessage(strerror(errno));
+			throw std::runtime_error("Failed bind socket to port: " + errorMessage);
 		}
-
-		if (listen(serverDesc, 128) < 0)
-		{
-			perror("Couldn't listen");
-			return -4;
-		}
+		connection = true;
 		serverSocket = serverDesc;
-		return serverDesc;
 	}
 
 	void Server::Listen()
 	{
-		if (serverSocket < 0)
+		if (!HasConnection())
 		{
-			printf("Server was not yet initialized!\n");
-			return;
+			throw std::runtime_error("Couldn't listen because server has no connection");
+		}
+
+		if (listen(serverSocket, AMOUNT_OF_CONNECTIONS_ACCEPT) < 0)
+		{
+			std::string errorMessage(strerror(errno));
+			throw std::runtime_error("Failed have socket listen: " + errorMessage);
 		}
 
 		struct sockaddr_in clientAddr;
-		int c = sizeof(clientAddr);
-
+		int sizeOfClientAddr = sizeof(clientAddr);
 		pthread_t thread_id;
-		while (1)
+
+		while (HasConnection())
 		{
-			int client = accept(serverSocket, (struct sockaddr *) &clientAddr, (socklen_t*) &c);
+			int client = accept(serverSocket, (struct sockaddr *) &clientAddr, (socklen_t*) &sizeOfClientAddr);
 			printf("Connection accepted with client: %s port %i\n", inet_ntoa(clientAddr.sin_addr),
 					ntohs(clientAddr.sin_port));
 			if (pthread_create(&thread_id, NULL, setUpConnectionWithClient, (void *) &client) < 0)
@@ -112,7 +127,6 @@ namespace thywin
 			{
 				pthread_detach(thread_id);
 			}
-
 		}
 	}
 

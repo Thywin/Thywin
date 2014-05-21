@@ -12,6 +12,7 @@
 #include "DocumentPacket.h"
 #include "ThywinPacketContent.h"
 #include <memory>
+#include "Master.h"
 
 namespace thywin
 {
@@ -56,7 +57,6 @@ namespace thywin
 			void HandlePutDocument(std::shared_ptr<ThywinPacketContent> Content);
 
 		private:
-
 	};
 
 }

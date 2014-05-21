@@ -33,14 +33,7 @@ namespace thywin
 	
 	ClientConnection::~ClientConnection()
 	{
-		try
-		{
-			CloseConnection();
-		}
-		catch (std::runtime_error& e)
-		{
-			printf("Connection already closed: %s\n", e.what());
-		}
+		CloseConnection();
 	}
 
 	void ClientConnection::HandleGetRequest(ThywinPacket packet)
@@ -62,7 +55,6 @@ namespace thywin
 				//returnPacket = MasterCommunicator::HandleGetDocumentVector(); // to be implemented later
 				break;
 		}
-
 		try
 		{
 			SendPacket(returnPacket);
@@ -122,7 +114,7 @@ namespace thywin
 			{
 				printf("waiting for new packet\n");
 				ThywinPacket returnPacket = ReceivePacket();
-				if (connection)
+				if (hasConnection())
 				{
 					handleReceivedThywinPacket(returnPacket);
 				}
@@ -144,13 +136,13 @@ namespace thywin
 		}
 		data << TP_END_OF_PACKET;
 		const char* realdata = data.str().c_str();
-		printf("Sending packet of size: %i\n", data.str().size());
+
 		int sendSize = send(clientSocket, realdata, data.str().size(), 0);
 		if (sendSize < 0)
 		{
 			throw std::runtime_error(std::string(strerror(errno)));
 		}
-		printf("Sending completed\n");
+		printf("Sent packet of size: %i\n", data.str().size());
 		return sendSize;
 	}
 
@@ -254,27 +246,13 @@ namespace thywin
 		if (receiveSize < 0)
 		{
 			std::string errorMessage(strerror(errno));
-			try
-			{
-				CloseConnection();
-			}
-			catch (std::runtime_error& e)
-			{
-				printf("Error while attempting to close connection: %s\n", e.what());
-			}
+			CloseConnection();
 			throw std::runtime_error(errorMessage);
 		}
 		else if (receiveSize == 0)
 		{
-			try
-			{
-				CloseConnection();
-				std::cout << "client closed the connection" << std::endl;
-			}
-			catch (std::runtime_error& e)
-			{
-				printf("Error while attempting to close connection: %s\n", e.what());
-			}
+			CloseConnection();
+			std::cout << "client closed the connection" << std::endl;
 		} // There are no other cases that would need to be handled
 	}
 

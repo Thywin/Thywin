@@ -14,6 +14,7 @@
 #include <sqltypes.h>
 #include <sql.h>
 #include "DatabaseHandler.h"
+#include "Master.h"
 
 namespace thywin
 {
@@ -33,6 +34,11 @@ namespace thywin
 	{
 		ip = ipaddress;
 		port = givenPort;
+	}
+
+	DatabaseHandler::~DatabaseHandler()
+	{
+		Disconnect();
 	}
 
 	void DatabaseHandler::Connect()
@@ -90,7 +96,7 @@ namespace thywin
 
 	void DatabaseHandler::DeleteURIFrom(std::string URI, std::string table, bool all)
 	{
-		std::string query = "";
+		std::string query;
 		if (all)
 		{
 			query = "DELETE FROM " + table + " WHERE uri_id = (SELECT uri_id FROM uris WHERE uri = '" + URI + "')";
@@ -156,7 +162,7 @@ namespace thywin
 		SQLHANDLE statementHandle = createStatementHandler();
 		std::shared_ptr<URIPacket> result(new URIPacket);
 		std::string query = "SELECT uris.uri, uri_queue.priority FROM uris, uri_queue"
-				" WHERE uris.uri_id = uri_queue.uri_id LIMIT 1";
+				" WHERE uris.uri_id = uri_queue.uri_id ORDER BY row_number() OVER () LIMIT 1";
 
 		if (executeQuery(query, statementHandle))
 		{
@@ -185,12 +191,41 @@ namespace thywin
 		return result;
 	}
 
+	std::vector<std::shared_ptr<URIPacket>> DatabaseHandler::GetURIListFromQueue()
+	{
+		std::vector<std::shared_ptr<URIPacket>> CachedURIQueue;
+		SQLHANDLE statementHandle = createStatementHandler();
+
+		std::string query = "SELECT uris.uri, uri_queue.priority FROM uris, uri_queue"
+				" WHERE uris.uri_id = uri_queue.uri_id ORDER BY row_number() OVER () LIMIT 300"; // ORDER by uri_queue.priority DESC LIMIT 300
+
+		if (executeQuery(query, statementHandle))
+		{
+			char uri[1024];
+			double priority;
+			while (SQLFetch(statementHandle) == SQL_SUCCESS)
+			{
+				std::shared_ptr<URIPacket> result(new URIPacket);
+				SQLGetData(statementHandle, 1, SQL_C_CHAR, uri, 1024, NULL);
+				SQLGetData(statementHandle, 2, SQL_C_DOUBLE, &priority, 0, NULL);
+				result->URI = std::string(uri);
+				result->Relevance = priority;
+				CachedURIQueue.insert(CachedURIQueue.end(), result);
+			}
+		}
+		releaseStatementHandler(statementHandle);
+		query = "DELETE FROM uri_queue WHERE uri_id IN (SELECT uri_id FROM uri_queue ORDER BY row_number() OVER () LIMIT 300)"; // ORDER by priority DESC LIMIT 300
+		handleNonRowReturningQuery(query);
+
+		return CachedURIQueue;
+	}
+
 	std::shared_ptr<DocumentPacket> DatabaseHandler::RetrieveDocumentFromQueue()
 	{
 		SQLHANDLE statementHandler = createStatementHandler();
 		std::shared_ptr<DocumentPacket> result(new DocumentPacket);
 		std::string query = "SELECT uris.uri, document_queue.content FROM uris, "
-				"document_queue WHERE uris.uri_id = document_queue.uri_id LIMIT 1";
+				"document_queue WHERE uris.uri_id = document_queue.uri_id ORDER BY row_number() OVER () LIMIT 1";
 
 		if (executeQuery(query, statementHandler))
 		{
@@ -350,7 +385,7 @@ namespace thywin
 	{
 		SQLCHAR sqlstate[1024];
 		SQLCHAR message[1024];
-		if (SQL_SUCCESS == SQLGetDiagRec(SQL_HANDLE_STMT, statementHandler, 1, sqlstate, NULL, message, 1024, NULL))
+		if (SQL_SUCCESS == SQLGetDiagRec(handletype, statementHandler, 1, sqlstate, NULL, message, 1024, NULL))
 		{
 			std::string sqlStateString((char *) sqlstate);
 			std::string::size_type statePos = sqlStateString.find("23505");
