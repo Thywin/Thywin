@@ -65,7 +65,6 @@ int main(int argc, char** argv)
 		{
 			crawler.CrawlURI();
 		}
-		return EXIT_SUCCESS;
 	}
 	catch (std::exception& e)
 	{
@@ -75,4 +74,6 @@ int main(int argc, char** argv)
 	{
 		logger.Log(ERROR, "Crawler: Unexpected error while crawling");
 	}
+
+	return EXIT_FAILURE;
 }

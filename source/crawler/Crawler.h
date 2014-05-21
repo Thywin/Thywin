@@ -36,10 +36,12 @@ namespace thywin
 			Communicator communication;
 			Logger logger;
 			void crawl(const std::string& URI);
+
 			/**
 			 * Use Curl to download a page and write to the page pipe
 			 */
 			void startCurl(int pagePipeWrite, const std::string& crawledURI);
+
 			/**
 			 * Read from the page pipe and send the data to the master
 			 */

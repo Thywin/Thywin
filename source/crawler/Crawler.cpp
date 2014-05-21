@@ -82,6 +82,7 @@ namespace thywin
 			default:
 				if (close(pagePipe[1]) == -1)
 				{
+					logger.Log(WARNING, "Failed to close pagePipe[1]");
 					throw std::runtime_error(std::string("failed to close pipe[1]: ") + strerror(errno));
 				}
 				sendURIDocument(pagePipe[0], URI);
@@ -126,19 +127,19 @@ namespace thywin
 		}
 
 		std::string::size_type headerend = document.find("\r\n\r\n");
-		std::string head = document.substr(0, headerend);
-		std::transform(head.begin(), head.end(), head.begin(), ::tolower);
+		std::string header = document.substr(0, headerend);
+		std::transform(header.begin(), header.end(), header.begin(), ::tolower);
 
 		const std::string http_moved = "http/1.1 30";
-		std::string::size_type http_moved_in_head = head.find(http_moved);
+		std::string::size_type http_moved_in_head = header.find(http_moved);
 		if (http_moved_in_head != std::string::npos)
 		{
-			parseMovedFile(head, crawledURI);
+			parseMovedFile(header, crawledURI);
 		}
 		else
 		{
 			const std::string content_type = "content-type: text/html";
-			std::string::size_type content_type_html = head.find(content_type);
+			std::string::size_type content_type_html = header.find(content_type);
 			if (content_type_html != std::string::npos)
 			{
 				createAndSendPacket(document, headerend, crawledURI);
@@ -150,16 +151,15 @@ namespace thywin
 		}
 	}
 
-	void Crawler::parseMovedFile(const std::string& head, const std::string& crawledURI)
+	void Crawler::parseMovedFile(const std::string& header, const std::string& crawledURI)
 	{
-		const std::string redirect_uri = "location: ";
-		std::string::size_type head_location = head.find(redirect_uri);
-		std::string::size_type head_location_end = head.find("\r\n", head_location);
-		int head_start = head_location + redirect_uri.size();
+		const std::string redirect_URI = "location: ";
+		std::string::size_type head_location = header.find(redirect_URI);
+		std::string::size_type head_location_end = header.find("\r\n", head_location);
+		int head_start = head_location + redirect_URI.size();
 		if (head_location != std::string::npos)
 		{
-			std::string newuri = head.substr(head_start, head_location_end - head_start);
-			crawl(newuri);
+			crawl(header.substr(head_start, head_location_end - head_start));
 		}
 	}
 
