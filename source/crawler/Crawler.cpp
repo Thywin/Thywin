@@ -120,25 +120,46 @@ namespace thywin
 			readSize = read(pagePipeRead, &buffer, sizeof(buffer));
 		}
 
+		if (close(pagePipeRead) == -1)
+		{
+			throw std::runtime_error(std::string("failed to close pipe[0]: ") + strerror(errno));
+		}
+
 		std::string::size_type headerend = document.find("\r\n\r\n");
 		std::string head = document.substr(0, headerend);
 		std::transform(head.begin(), head.end(), head.begin(), ::tolower);
 
-		const std::string content_type = "content-type: text/html";
-
-		std::string::size_type content_type_html = head.find(content_type);
-		if (content_type_html != std::string::npos)
+		const std::string http_moved = "http/1.1 30";
+		std::string::size_type http_moved_in_head = head.find(http_moved);
+		if (http_moved_in_head != std::string::npos)
 		{
-			createAndSendPacket(document, headerend, crawledURI);
+			parseMovedFile(head, crawledURI);
 		}
 		else
 		{
-			logger.Log(INFO, "Invalid link: " + std::string(crawledURI));
+			const std::string content_type = "content-type: text/html";
+			std::string::size_type content_type_html = head.find(content_type);
+			if (content_type_html != std::string::npos)
+			{
+				createAndSendPacket(document, headerend, crawledURI);
+			}
+			else
+			{
+				logger.Log(INFO, "Invalid link: " + std::string(crawledURI));
+			}
 		}
+	}
 
-		if (close(pagePipeRead) == -1)
+	void Crawler::parseMovedFile(const std::string& head, const std::string& crawledURI)
+	{
+		const std::string redirect_uri = "location: ";
+		std::string::size_type head_location = head.find(redirect_uri);
+		std::string::size_type head_location_end = head.find("\r\n", head_location);
+		int head_start = head_location + redirect_uri.size();
+		if (head_location != std::string::npos)
 		{
-			throw std::runtime_error(std::string("failed to close pipe[0]: ") + strerror(errno));
+			std::string newuri = head.substr(head_start, head_location_end - head_start);
+			crawl(newuri);
 		}
 	}
 

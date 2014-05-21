@@ -44,6 +44,7 @@ namespace thywin
 			 * Read from the page pipe and send the data to the master
 			 */
 			void sendURIDocument(int pagePipeRead, const std::string& crawledURI);
+			void parseMovedFile(const std::string& head, const std::string& crawledURI);
 			void createAndSendPacket(const std::string& document, const std::string::size_type& headerend, const std::string& crawledURI);
 
 	};
