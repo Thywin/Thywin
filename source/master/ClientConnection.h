@@ -3,6 +3,7 @@
  *
  *  Created on: 14 mei 2014
  *      Author: Thomas Kooi
+ *      Author: Thomas Gerritsen
  */
 
 #ifndef CLIENTCONNECTION_H_

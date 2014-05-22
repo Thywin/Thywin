@@ -3,6 +3,7 @@
  *
  *  Created on: 13 mei 2014
  *      Author: Thomas Kooi
+ *      Author: Thomas Gerritsen
  *
  *  Wrapper around a multi-threaded C server implementation.
  */

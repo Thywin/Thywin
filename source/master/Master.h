@@ -3,6 +3,7 @@
  *
  *  Created on: 7 mei 2014
  *      Author: Thomas Kooi
+ *      Author: Thomas Gerritsen
  */
 
 #ifndef MASTER_HPP_

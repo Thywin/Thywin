@@ -3,6 +3,7 @@
  *
  *  Created on: May 15, 2014
  *      Author: Thomas Gerritsen
+ *      Author: Thomas Kooi
  */
 
 #ifndef DATABASEHANDLER_H_
@@ -39,12 +40,6 @@ namespace thywin
 			 */
 			DatabaseHandler(std::string ipaddress, int givenPort);
 			virtual ~DatabaseHandler();
-
-			/**
-			 * Sets up a connection to the database of given IP.
-			 * In case a port was given with the constructor it will connect to a database of that port.
-			 */
-			void Connect();
 
 			/**
 			 * Delete an URI from a table.
@@ -136,6 +131,10 @@ namespace thywin
 			void Disconnect();
 
 		private:
+			SQLHANDLE environmentHandle;
+			SQLHANDLE connectionHandle;
+			bool connected;
+
 			void handleNonRowReturningQuery(std::string query);
 			bool executeQuery(std::string query, SQLHANDLE& stmtHndl);
 			void show_error(unsigned int handletype, const SQLHANDLE& handle);
@@ -149,6 +148,12 @@ namespace thywin
 			 * Closes a statement handler. Should always be called after every query!
 			 */
 			void releaseStatementHandler(SQLHANDLE& handler);
+
+			/**
+			 * Sets up a connection to the database of given IP.
+			 * In case a port was given with the constructor it will connect to a database of that port.
+			 */
+			void Connect(std::string ipaddress, int givenPort);
 	};
 
 } /* namespace thywin */

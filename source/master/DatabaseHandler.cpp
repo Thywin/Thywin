@@ -3,7 +3,9 @@
  *
  *  Created on: May 15, 2014
  *      Author: Thomas Gerritsen
+ *      Author: Thomas Kooi
  */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdexcept>
@@ -19,22 +21,15 @@
 
 namespace thywin
 {
-	SQLHANDLE environmentHandle;
-	SQLHANDLE connectionHandle;
-	std::string ip;
-	int port = 0;
-	bool connected = false;
 
 	DatabaseHandler::DatabaseHandler(std::string ipaddress)
 	{
-		ip = ipaddress;
-		port = DEFAULT_DATABASE_PORT;
+		Connect(ipaddress,DEFAULT_DATABASE_PORT);
 	}
 
 	DatabaseHandler::DatabaseHandler(std::string ipaddress, int givenPort)
 	{
-		ip = ipaddress;
-		port = givenPort;
+		Connect(ipaddress, givenPort);
 	}
 
 	DatabaseHandler::~DatabaseHandler()
@@ -42,7 +37,7 @@ namespace thywin
 		Disconnect();
 	}
 
-	void DatabaseHandler::Connect()
+	void DatabaseHandler::Connect(std::string ipaddress, int givenPort)
 	{
 		connected = true;
 		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &environmentHandle))
@@ -66,9 +61,9 @@ namespace thywin
 		SQLSetConnectOption(connectionHandle, SQL_LOGIN_TIMEOUT, 15);
 
 		std::ostringstream ossPort;
-		ossPort << port;
+		ossPort << givenPort;
 		std::string sPort = ossPort.str();
-		std::string temp = "DRIVER={/usr/lib/arm-linux-gnueabihf/odbc/psqlodbca.so};SERVER=" + ip + ";PORT=" + sPort
+		std::string temp = "DRIVER={/usr/lib/arm-linux-gnueabihf/odbc/psqlodbca.so};SERVER=" + ipaddress + ";PORT=" + sPort
 				+ ";DATABASE=thywin;UID=thywin;PWD=hanicampna;";
 		const char* connectionString = temp.c_str();
 
@@ -87,14 +82,14 @@ namespace thywin
 			{
 				show_error(SQL_HANDLE_DBC, connectionHandle);
 				Disconnect();
-				throw std::runtime_error(std::string("Failed to connect to the database. 1"));
+				throw std::runtime_error(std::string("Failed to connect to the database."));
 				break;
 			}
 			case SQL_ERROR:
 			{
 				show_error(SQL_HANDLE_DBC, connectionHandle);
 				Disconnect();
-				throw std::runtime_error(std::string("Failed to connect to the database. 2"));
+				throw std::runtime_error(std::string("Failed to connect to the database."));
 				break;
 			}
 			default:

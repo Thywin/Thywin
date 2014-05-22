@@ -3,6 +3,7 @@
  *
  *  Created on: 23 apr. 2014
  *      Author: Thomas Kooi
+ *      Author: Thomas Gerritsen
  */
 
 #include <stdlib.h>
@@ -28,7 +29,6 @@ namespace thywin
 
 	void Master::InitializeMaster()
 	{
-		DBConnection.Connect();
 		sem_init(&documentQueueSemaphore, 0, DBConnection.GetRowCount("document_queue"));
 		printf("Current document Queue size: %i\n", DBConnection.GetRowCount("document_queue"));
 		printf("Current uri Queue size: %i\n", DBConnection.GetRowCount("uri_queue"));
@@ -102,13 +102,13 @@ namespace thywin
 			DBConnection.AddURIToQueue(URIElement->URI);
 
 			std::shared_ptr<URIPacket> newelemente(new URIPacket);
-			newelemente->URI = "http://thywin.com/test5.html\0";
+			newelemente->URI = "http://www.cs.mun.ca/~donald/msc/node11.html\0";
 			newelemente->Relevance = 0;
 			DBConnection.AddURIToList(newelemente);
 			DBConnection.AddURIToQueue(newelemente->URI);
 
 			std::shared_ptr<URIPacket> anotherElement(new URIPacket);
-			anotherElement->URI = "http://www.reliasoft.com/reno/features1.htm\0";
+			anotherElement->URI = "www.facebook.com\0";
 			anotherElement->Relevance = 0;
 			DBConnection.AddURIToList(anotherElement);
 			DBConnection.AddURIToQueue(anotherElement->URI);

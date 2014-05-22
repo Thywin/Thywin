@@ -3,6 +3,7 @@
  *
  *  Created on: 13 mei 2014
  *      Author: Thomas Kooi
+ *      Author: Thomas Gerritsen
  */
 #include <pthread.h>
 #include <stdio.h>

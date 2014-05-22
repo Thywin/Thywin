@@ -3,6 +3,7 @@
  *
  *  Created on: 14 mei 2014
  *      Author: Thomas Kooi
+ *      Author: Thomas Gerritsen
  */
 
 #include <sys/socket.h>
@@ -207,10 +208,6 @@ namespace thywin
 			case DOCUMENTVECTOR:
 			{
 				break;
-			}
-			default:
-			{
-
 			}
 		}
 	}
