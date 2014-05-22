@@ -42,7 +42,7 @@ namespace thywin
 
 	Server::Server()
 	{
-		logger.log(INFO,std::string("Server starting on default port and default amount of connections accept"));
+		logger.Log(INFO,std::string("Server starting on default port and default amount of connections accept"));
 		amountOfConnectionsAccept = AMOUNT_OF_CONNECTIONS_ACCEPT_DEFAULT;
 		connection = false;
 		SetUp(7500); /* Needs a define in the library for the default server port */
@@ -50,7 +50,7 @@ namespace thywin
 	}
 	Server::Server(const int port)
 	{
-		logger.log(INFO,std::string("Server starting on port # and default amount of connections accept"));
+		logger.Log(INFO,std::string("Server starting on port # and default amount of connections accept"));
 		amountOfConnectionsAccept = AMOUNT_OF_CONNECTIONS_ACCEPT_DEFAULT;
 		connection = false;
 		SetUp(port);
@@ -59,7 +59,7 @@ namespace thywin
 
 	Server::Server(const int port, const int accept)
 	{
-		logger.log(INFO,std::string("Server starting on port # and amount of connections accept #"));
+		logger.Log(INFO,std::string("Server starting on port # and amount of connections accept #"));
 		amountOfConnectionsAccept = accept;
 		connection = false;
 		SetUp(port);
@@ -102,7 +102,7 @@ namespace thywin
 			std::string errorMessage(strerror(errno));
 			throw std::runtime_error("Failed bind socket to port: " + errorMessage);
 		}
-		logger.log(INFO,std::string("Socket has been created"));
+		logger.Log(INFO,std::string("Socket has been created"));
 
 		connection = true;
 		serverSocket = serverDesc;
@@ -124,7 +124,7 @@ namespace thywin
 		int sizeOfClientAddr = sizeof(clientAddr);
 		pthread_t thread_id;
 
-		logger.log(INFO,std::string("Server is awaiting connections"));
+		logger.Log(INFO,std::string("Server is awaiting connections"));
 
 		while (HasConnection())
 		{
@@ -132,11 +132,11 @@ namespace thywin
 			printf("Connection accepted with client: %s port %i\n", inet_ntoa(clientAddr.sin_addr),
 					ntohs(clientAddr.sin_port));
 
-			logger.log(INFO,std::string("Connection accepted with client: %s port %i"));
+			logger.Log(INFO,std::string("Connection accepted with client: %s port %i"));
 			if (pthread_create(&thread_id, NULL, setUpConnectionWithClient, (void *) &client) < 0)
 			{
 				close(client);
-				logger.log(ERROR,std::string("Failed to create a new thread for client connection"));
+				logger.Log(ERROR,std::string("Failed to create a new thread for client connection"));
 				throw std::string("Failed to create a new thread for client connection");
 			}
 			else
