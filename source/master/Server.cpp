@@ -29,12 +29,9 @@ namespace thywin
 			int client = *(int *) socket;
 			ClientConnection connection = thywin::ClientConnection(client);
 			connection.HandleConnection(); /* Blocking call. Will wait until client closed connection */
-			printf("Connection with client & Thread has been closed\n");
 		}
 		catch (std::exception& e)
 		{
-			close(client);
-			printf("connection closed: %s\n", e.what());
 		}
 		pthread_exit(NULL);
 		return (void *) 0;
