@@ -55,12 +55,7 @@ namespace thywin
 			/**
 			 * Basic constructor for ThywinPacket with standard values
 			 */
-			ThywinPacket();
-
-			/**
-			 * Constructor for ThywinPacket
-			 */
-			ThywinPacket(PacketMethod method, PacketType type, std::shared_ptr<ThywinPacketContent> content);
+			ThywinPacket(PacketMethod method = GET, PacketType type = URI, std::shared_ptr<ThywinPacketContent> content = NULL);
 
 			/**
 			 * Default destructor
