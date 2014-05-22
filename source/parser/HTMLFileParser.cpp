@@ -2,327 +2,263 @@
  * HTMLFileParser.cpp
  *
  *  Created on: May 8, 2014
- *      Author: damonk
+ *      Author: Imre Woudstra
  *      Author: Thomas Gerritsen
+ *      Author: Erwin Janssen
  */
 
 #include "HTMLFileParser.h"
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <vector>
-#include <algorithm>
-#include <string.h>
-using namespace std;
+
+#include <sstream>
+
+#include "Logger.h"
 
 namespace thywin
 {
-
-	HTMLFileParser::HTMLFileParser()
-	{
-	}
+	typedef FileParser::URIs URIs;
 
 	HTMLFileParser::~HTMLFileParser()
 	{
 	}
 
-	std::vector<std::string> HTMLFileParser::ExtractURIs(std::string content, std::string source)
+	URIs HTMLFileParser::ExtractURIs(const std::string& content, const std::string& sourceURI)
 	{
-		std::string stringToParse = content;
-		std::vector<string> list;
-		std::vector<string> buffer;
-
-		std::string::size_type endHeadFound = stringToParse.find("</head>");
-		if (endHeadFound == string::npos)
+		std::string::size_type endHTMLHeadPosition = content.find("</head>");
+		if (endHTMLHeadPosition == std::string::npos)
 		{
-			endHeadFound = 0;
+			endHTMLHeadPosition = 0;
 		}
 
-		buffer = parseString(stringToParse, endHeadFound, source);
-		for (unsigned int i = 0; i < buffer.size(); i++)
+		const std::string href("href=\"");
+		const std::string quoteCharacter("\"");
+		URIs extractedURIs;
+
+		std::string::size_type currentParsePosition = endHTMLHeadPosition;
+		while (currentParsePosition < content.length())
 		{
-			list.push_back(buffer.at(i));
-		}
-
-		std::sort(list.begin(), list.end());
-		std::vector<std::string>::iterator it = std::unique(list.begin(), list.end());
-		list.resize(std::distance(list.begin(), it));
-
-		return list;
-	}
-
-	std::string HTMLFileParser::ExtractText(std::string content)
-	{
-		std::string text = std::string(content);
-
-		unsigned int current = 0;
-		int pointyBracketIndex = -1;
-		while (current < text.size())
-		{
-			if (pointyBracketIndex == -1)
+			std::string::size_type hrefPosition = content.find(href, currentParsePosition);
+			if (hrefPosition == std::string::npos)
 			{
-				if (text.at(current) == '<')
-				{
-					pointyBracketIndex = current;
-				}
+				break;
 			}
-			else
-			{
-				if (text.at(current) == '>')
-				{
-					text.erase(pointyBracketIndex, (current + 1) - pointyBracketIndex);
-					current = pointyBracketIndex;
-					pointyBracketIndex = -1;
-				}
-			}
-			current++;
-		}
+			std::string::size_type startURIPosition = hrefPosition + href.length();
 
-		return text;
-	}
-
-	std::vector<std::string> HTMLFileParser::parseString(string input, std::string::size_type endHeadPos,
-			std::string source)
-	{
-		std::vector<std::string> hostPath = splitSource(source);
-		std::string href("href=\"");
-		std::string character("\"");
-		std::string line = input;
-		std::vector<string> list;
-		unsigned int startPos = endHeadPos;
-
-		while (startPos < line.length())
-		{
-			std::string::size_type pos = line.find(href, startPos);
-			if (pos == string::npos)
+			std::string::size_type endURIPosition = content.find(quoteCharacter, startURIPosition);
+			if (endURIPosition == std::string::npos)
 			{
 				break;
 			}
 
-			int hrefPos = pos + href.length();
+			std::string uri = content.substr(startURIPosition, endURIPosition - startURIPosition);
 
-			std::string::size_type quotePos = line.find(character, hrefPos);
-			if (quotePos == string::npos)
-			{
-				break;
-			}
-
-			int length = quotePos - hrefPos;
-
-			std::string uri = line.substr(hrefPos, length);
-			startPos = quotePos;
+			uri = constructURI(uri, sourceURI);
 			if (!uri.empty())
 			{
-				uri = constructURI(uri, hostPath.at(0), hostPath.at(1));
-				if (!uri.empty())
-				{
-					list.push_back(uri);
-				}
+				extractedURIs.push_back(uri);
 			}
+
+			currentParsePosition = endURIPosition;
 		}
-		return list;
+
+		return extractedURIs;
 	}
 
-	std::string HTMLFileParser::constructURI(std::string input, std::string host, std::string path)
+	std::string HTMLFileParser::ExtractText(const std::string& content)
 	{
-		std::vector<const char *> bannedTags;
-		const char *http("http://");
-		const char *https("https://");
-		const char *www("www");
-		bannedTags.push_back("://");
-		bannedTags.push_back("mailto:");
-		bannedTags.push_back("file:");
-		bannedTags.push_back("javascript:");
+		const std::string openBracket("<");
+		const std::string closeBracket(">");
 
-		std::string::size_type httpPos = input.find(http, 0, strlen(http));
-		std::string::size_type httpsPos = input.find(https, 0, strlen(https));
-		std::string::size_type wwwPos = input.find(www, 0, strlen(www));
-		if (httpPos == string::npos && httpsPos == string::npos && wwwPos == string::npos
-				&& !(input[0] == '/' && input[1] == '/'))
+		std::stringstream textStream;
+		std::string::size_type openBracketPosition = std::string::npos;
+		std::string::size_type closeBracketPosition = std::string::npos;
+		do
 		{
-			for (unsigned int i = 0; i < bannedTags.size(); i++)
-			{
-				std::string::size_type pos = input.find(bannedTags.at(i));
-				if (pos != string::npos)
-				{
-					return "";
-				}
-			}
-			if (input[0] == '#')
-			{
-				return "";
-			}
+			openBracketPosition = content.find(openBracket, closeBracketPosition);
 
-			if (input[0] == '/')
+			if (openBracketPosition == std::string::npos)
 			{
-				return host + input;
-			}
-
-			int oneUpCounter = 0;
-			std::string::size_type foundOneUp = 0;
-			do
-			{
-				foundOneUp = input.find("../", foundOneUp);
-				if (foundOneUp != string::npos)
-				{
-					input.erase(0, 3);
-					oneUpCounter++;
-				}
-			} while (foundOneUp != string::npos);
-
-			std::string uriPath = removeOneUps(oneUpCounter, path);
-
-			if (oneUpCounter > 0)
-			{
-				return host + uriPath + input;
+				textStream << content.substr(closeBracketPosition + closeBracket.length(), std::string::npos);
 			}
 			else
 			{
-				return host + "/" + input;
+				textStream
+						<< content.substr(closeBracketPosition + closeBracket.length(),
+								openBracketPosition - closeBracketPosition);
 			}
-		}
-		return input;
+
+			closeBracketPosition = content.find(closeBracket, openBracketPosition);
+		} while (openBracketPosition != std::string::npos && closeBracketPosition != std::string::npos);
+
+		return textStream.str();
 	}
 
-	std::string HTMLFileParser::removeOneUps(int amount, std::string path)
+	std::string HTMLFileParser::constructURI(const std::string& rawURI, const std::string& sourceURI)
 	{
-		std::string uriPath = path;
-		for (int i = 0; i < amount; i++)
+		if (rawURI.length() == 0)
 		{
-			std::string::size_type lastFoundSlashPos = uriPath.find("/");
-			if (lastFoundSlashPos == string::npos)
-			{
-				if (uriPath[uriPath.length() - 1] != '/')
-				{
-					uriPath += '/';
-				}
-				break;
-			}
-			std::string::size_type newSlashPos;
-			std::string::size_type secondToLastSlashPos;
-			do
-			{
-				newSlashPos = uriPath.find("/", lastFoundSlashPos + 1);
-				if (newSlashPos != string::npos)
-				{
-					secondToLastSlashPos = lastFoundSlashPos;
-					lastFoundSlashPos = newSlashPos;
-				}
-			} while (newSlashPos != string::npos);
-
-			if (secondToLastSlashPos != string::npos)
-			{
-				if (lastFoundSlashPos == uriPath.length() - 1)
-				{
-					if ((lastFoundSlashPos - secondToLastSlashPos) >= 2)
-					{
-						uriPath = uriPath.erase(secondToLastSlashPos, lastFoundSlashPos - secondToLastSlashPos);
-					}
-				}
-				else
-				{
-					uriPath = uriPath.erase(lastFoundSlashPos, uriPath.length() - lastFoundSlashPos);
-				}
-				if (uriPath[uriPath.length() - 1] != '/')
-				{
-					uriPath += '/';
-				}
-			}
+			return rawURI;
 		}
-		return uriPath;
-	}
 
-	std::string HTMLFileParser::formHost(std::string source)
-	{
-		std::string host = source;
-		std::string::size_type lastFoundDotPos = host.find(".");
-		if (lastFoundDotPos == string::npos)
-		{
-			return "";
-		}
-		std::string::size_type newDotPos;
-		std::string::size_type secondToLastDotPos;
-		do
-		{
-			newDotPos = host.find(".", lastFoundDotPos + 1);
-			if (newDotPos != string::npos)
-			{
-				secondToLastDotPos = lastFoundDotPos;
-				lastFoundDotPos = newDotPos;
-			}
-		} while (newDotPos != string::npos);
+		std::string constructedURI;
+		bool relativeURI = (getEndPositionOfProtocol(rawURI) == std::string::npos);
 
-		std::string::size_type checkHtm = host.find("htm", lastFoundDotPos);
-		if (checkHtm != string::npos)
+		if (relativeURI)
 		{
-			lastFoundDotPos = secondToLastDotPos;
-		}
-		std::string::size_type pathPos = host.find("/", lastFoundDotPos);
-		if (pathPos != string::npos)
-		{
-			host = host.erase(pathPos, host.length() - pathPos);
-		}
-		return host;
-	}
-
-	std::string HTMLFileParser::formPath(std::string source, int hostLength)
-	{
-		std::string path = source;
-		std::string::size_type htmPos = path.find(".htm");
-		if (htmPos != string::npos)
-		{
-			std::string::size_type lastFoundSlashPos = path.find("/");
-			std::string::size_type newSlashPos;
-			std::string::size_type secondToLastSlashPos;
-			do
-			{
-				newSlashPos = path.find("/", lastFoundSlashPos + 1);
-				if (newSlashPos != string::npos)
-				{
-					secondToLastSlashPos = lastFoundSlashPos;
-					lastFoundSlashPos = newSlashPos;
-				}
-			} while (newSlashPos != string::npos);
-
-			if (path[path.length() - 1] == '/')
-			{
-				lastFoundSlashPos = secondToLastSlashPos;
-			}
-			path = path.erase(lastFoundSlashPos, path.length() - lastFoundSlashPos);
+			constructedURI = constructRelativeURI(rawURI, sourceURI);
 		}
 		else
 		{
-			if (path[path.length() - 1] == '/')
-			{
-				path = path.erase(path.length() - 1, 1);
-			}
+			constructedURI = rawURI;
 		}
-		path = path.erase(0, hostLength);
-		return path;
+
+		const std::string fragmentIdentifier("#");
+		return constructedURI.substr(0, constructedURI.find(fragmentIdentifier));
 	}
 
-	std::vector<std::string> HTMLFileParser::splitSource(std::string source)
+	std::string HTMLFileParser::constructRelativeURI(const std::string& URI, const std::string& sourceURI)
 	{
-		std::string::size_type containsNoHttp = source.find("http://");
-		std::string::size_type containsNoHttps = source.find("https://");
-		if (containsNoHttp == string::npos && containsNoHttps == string::npos)
+		const std::string relativeProtocolURI("//");
+		const std::string relativeDirectoryUpURI("../");
+		const std::string relativeHostURI("/");
+
+		std::stringstream constructedURIStream;
+
+		if (URI.compare(0, relativeProtocolURI.length(), relativeProtocolURI) == 0)
 		{
-			if (!(source[0] == '/' && source[1] == '/'))
+			constructedURIStream << addProtocolToURI(URI);
+		}
+		else if (URI.compare(0, relativeDirectoryUpURI.length(), relativeDirectoryUpURI) == 0)
+		{
+			constructedURIStream
+					<< constructRelativeURIWithDirectoryUp(URI, getHostPartOfURI(sourceURI),
+							getPathPartOfURI(sourceURI));
+		}
+		else if (URI.compare(0, relativeHostURI.length(), relativeHostURI) == 0)
+		{
+			constructedURIStream << getHostPartOfURI(sourceURI) << URI;
+		}
+		else
+		{
+			const std::string colon(":");
+			const std::string startQueryString("?");
+
+			std::string::size_type colonPosition = URI.find(colon);
+			std::string::size_type startQueryStringPosition = URI.find(startQueryString);
+
+			if (colonPosition > startQueryStringPosition || colonPosition == std::string::npos)
 			{
-				source = "http://" + source;
+				constructedURIStream << getHostPartOfURI(sourceURI) << getPathPartOfURI(sourceURI) << URI;
+			}
+		}
+
+		return constructedURIStream.str();
+	}
+
+	std::string HTMLFileParser::constructRelativeURIWithDirectoryUp(const std::string& inputURI,
+			const std::string& host, const std::string& path)
+	{
+		std::string::size_type pathEndPosition = path.length() - 1;
+		std::string::size_type inputURIStartPosition = 0;
+
+		const std::string relativeDirectoryUpURI("../");
+		const std::string slash("/");
+		while (inputURI.compare(inputURIStartPosition, relativeDirectoryUpURI.length(), relativeDirectoryUpURI) == 0)
+		{
+			inputURIStartPosition += relativeDirectoryUpURI.length();
+			pathEndPosition = path.find_last_of(slash, pathEndPosition - slash.length());
+			if (pathEndPosition == std::string::npos)
+			{
+				pathEndPosition = 0;
+				break;
+			}
+		}
+
+		return host + path.substr(0, pathEndPosition + slash.length())
+				+ inputURI.substr(inputURIStartPosition, inputURI.length() - inputURIStartPosition);
+	}
+
+	std::string HTMLFileParser::getHostPartOfURI(const std::string& sourceURI)
+	{
+		std::string sourceURIWithProtocol = addProtocolToURI(sourceURI);
+		std::string::size_type firstNonProtocolSlashPosition = getPositionOfFirstSlashAfterProtocol(
+				sourceURIWithProtocol);
+
+		if (firstNonProtocolSlashPosition == std::string::npos)
+		{
+			return sourceURI;
+		}
+		else
+		{
+			return sourceURI.substr(0, firstNonProtocolSlashPosition);
+		}
+	}
+
+	std::string HTMLFileParser::getPathPartOfURI(const std::string& sourceURI)
+	{
+		std::string sourceURIWithProtocol = addProtocolToURI(sourceURI);
+
+		std::string::size_type firstNonProtocolSlashPosition = getPositionOfFirstSlashAfterProtocol(
+				sourceURIWithProtocol);
+
+		if (firstNonProtocolSlashPosition == std::string::npos)
+		{
+			return std::string("/");
+		}
+		else
+		{
+			std::string::size_type firstHashtagPosition = sourceURIWithProtocol.find("#");
+			std::string::size_type firstQuestionMarkPosition = sourceURIWithProtocol.find("?");
+			std::string::size_type pathBoundary;
+			if (firstHashtagPosition == std::string::npos && firstQuestionMarkPosition != std::string::npos)
+			{
+				pathBoundary = firstQuestionMarkPosition;
+			}
+			else if (firstHashtagPosition != std::string::npos && firstQuestionMarkPosition == std::string::npos)
+			{
+				pathBoundary = firstHashtagPosition;
 			}
 			else
 			{
-				source = "http:" + source;
+				pathBoundary = std::min(firstHashtagPosition, firstQuestionMarkPosition);
 			}
+
+			std::string::size_type endPathPosition = sourceURIWithProtocol.find_last_of("/", pathBoundary);
+			return sourceURIWithProtocol.substr(firstNonProtocolSlashPosition,
+					(endPathPosition + 1) - firstNonProtocolSlashPosition);
 		}
-		std::vector<std::string> splitSource;
-		std::string host = formHost(source);
-		splitSource.push_back(host);
-		std::string path = formPath(source, host.length());
-		splitSource.push_back(path);
-		return splitSource;
+	}
+
+	std::string HTMLFileParser::addProtocolToURI(const std::string& URI)
+	{
+		const std::string relativeProtocolURI("//");
+		if (URI.compare(0, relativeProtocolURI.length(), relativeProtocolURI) == 0)
+		{
+			return "http:" + URI;
+		}
+		else if (getEndPositionOfProtocol(URI) == std::string::npos)
+		{
+			return "http://" + URI;
+		}
+		else
+		{
+			return URI;
+		}
+	}
+
+	std::string::size_type HTMLFileParser::getEndPositionOfProtocol(const std::string& URI)
+	{
+		const std::string protocolEnd("://");
+		std::string::size_type protocolEndPosition = URI.find(protocolEnd);
+		if (protocolEndPosition != std::string::npos)
+		{
+			protocolEndPosition += protocolEnd.length();
+		}
+		return protocolEndPosition;
+	}
+
+	std::string::size_type HTMLFileParser::getPositionOfFirstSlashAfterProtocol(const std::string& URI)
+	{
+		return URI.find("/", getEndPositionOfProtocol(URI));
 	}
 
 } /* namespace thywin */
