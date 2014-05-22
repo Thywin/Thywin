@@ -9,10 +9,11 @@
 #ifndef DOCUMENT_H_
 #define DOCUMENT_H_
 #include "ThywinPacketContent.h"
+#include <memory>
+#include <vector>
 
 namespace thywin
 {
-
 	/**
 	 * Object to store documents and their location on the web.
 	 * Has build in functionality to serialize and deserialize for
@@ -21,6 +22,9 @@ namespace thywin
 	class DocumentPacket: public ThywinPacketContent
 	{
 		public:
+			typedef std::shared_ptr<DocumentPacket> DocumentPacketPtr;
+			typedef std::vector<DocumentPacketPtr> DocumentPacketVector;
+
 			/**
 			 * String containing a URI, location of the document on the web.
 			 */

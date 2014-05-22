@@ -31,8 +31,5 @@ namespace thywin
 		Relevance = atof(extractedValue.c_str());
 
 		std::getline(stream, URI, TP_CONTENT_SEPERATOR);
-
-		printf("deserialize: %s | %f\n", URI.c_str(), Relevance);
 	}
-
 }
