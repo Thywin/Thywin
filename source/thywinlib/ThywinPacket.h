@@ -53,6 +53,21 @@ namespace thywin
 	{
 		public:
 			/**
+			 * Basic constructor for ThywinPacket with standard values
+			 */
+			ThywinPacket();
+
+			/**
+			 * Constructor for ThywinPacket
+			 */
+			ThywinPacket(PacketMethod method, PacketType type, std::shared_ptr<ThywinPacketContent> content);
+
+			/**
+			 * Default destructor
+			 */
+			virtual ~ThywinPacket();
+
+			/**
 			 * Contains the method of the ThywinPacket. @PacketMethod
 			 */
 			PacketMethod Method;

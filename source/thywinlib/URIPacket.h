@@ -21,7 +21,7 @@ namespace thywin
 	{
 		public:
 			typedef std::shared_ptr<URIPacket> URIPacketPtr;
-			typedef std::vector<std::shared_ptr<URIPacket>> URIPacketVector;
+			typedef std::vector<URIPacketPtr> URIPacketVector;
 
 			/**
 			 * double that represents the relevance of the URI  

@@ -31,12 +31,12 @@ namespace thywin
 		connectionSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		if (connectionSocket == -1)
 		{
-			throw std::runtime_error(std::string("failed to create socket: ") + strerror(errno));
+			throw std::string("failed to create socket: ") + strerror(errno);
 		}
 
 		if (connect(connectionSocket, (struct sockaddr*) &sockAddr, sizeof(sockAddr)) < 0)
 		{
-			throw std::runtime_error(std::string("failed to connect to socket: ") + strerror(errno));
+			throw std::string("failed to connect to socket: ") + strerror(errno);
 		}
 	}
 
@@ -44,7 +44,7 @@ namespace thywin
 	{
 		if (close(connectionSocket) < 0)
 		{
-			throw std::runtime_error(std::string("failed to close socket: ") + strerror(errno));
+			throw std::string("failed to close socket: ") + strerror(errno);
 		}
 	}
 
@@ -61,7 +61,7 @@ namespace thywin
 		int sendSize = send(connectionSocket, (char*) data.str().c_str(), data.str().size(), 0);
 		if (sendSize < 0)
 		{
-			throw std::runtime_error(std::string("failed to send to socket: ") + strerror(errno));
+			throw std::string("failed to send to socket: ") + strerror(errno);
 		}
 
 		return sendSize;
@@ -69,40 +69,48 @@ namespace thywin
 
 	std::shared_ptr<ThywinPacket> Communicator::ReceivePacket(std::shared_ptr<ThywinPacketContent> contentObject)
 	{
-		std::shared_ptr<ThywinPacket> packet(new ThywinPacket);
 		std::stringstream receiveStream;
 		char receiveBuffer;
 		int receiveSize;
 		do
 		{
 			receiveSize = recv(connectionSocket, &receiveBuffer, sizeof(char), 0);
+			checkRecv(receiveSize, connectionSocket);
 			receiveStream << receiveBuffer;
 		} while (receiveSize > 0 && receiveBuffer != TP_END_OF_PACKET);
 
-		if (receiveSize < 0)
-		{
-			throw std::runtime_error(std::string("failed to receive from socket: ") + strerror(errno));
-		}
-		else if (receiveSize == 0)
-		{
-			if (close(connectionSocket) < 0)
-			{
-				throw std::runtime_error(std::string("failed to close socket: ") + strerror(errno));
-			}
-			exit(EXIT_SUCCESS);
-		}
-		//no else because the code just continues the previous if's terminate the program.
+		std::string extractedValueMethod;
+		std::getline(receiveStream, extractedValueMethod, TP_HEADER_SEPERATOR);
 
-		std::string extractedValue;
-		std::getline(receiveStream, extractedValue, TP_HEADER_SEPERATOR);
-		packet->Method = (PacketMethod) atoi(extractedValue.c_str());
+		std::string extractedValueType;
+		std::getline(receiveStream, extractedValueType, TP_HEADER_SEPERATOR);
 
-		std::getline(receiveStream, extractedValue, TP_HEADER_SEPERATOR);
-		packet->Type = (PacketType) atoi(extractedValue.c_str());
+		std::string extractedValueContent;
+		std::getline(receiveStream, extractedValueContent, TP_END_OF_PACKET);
+		contentObject->Deserialize(extractedValueContent);
 
-		std::getline(receiveStream, extractedValue, TP_END_OF_PACKET);
-		contentObject->Deserialize(extractedValue);
+		std::shared_ptr<ThywinPacket> packet(
+				new ThywinPacket((PacketMethod) atoi(extractedValueMethod.c_str()),
+						(PacketType) atoi(extractedValueType.c_str()), contentObject));
 
 		return packet;
 	}
+
+	void checkRecv(int receiveSize, int socket)
+	{
+		if (receiveSize < 0)
+		{
+			throw std::string("failed to receive from socket: ") + strerror(errno);
+		}
+		else if (receiveSize == 0)
+		{
+			if (close(socket) < 0)
+			{
+				throw std::string("failed to close socket: ") + strerror(errno);
+			}
+			throw std::string("Master closed the connection");
+		}
+		//no else because the code just continues the previous if's terminate the program.
+	}
+
 } /* namespace thywin */

@@ -23,7 +23,7 @@ namespace thywin
 	{
 		public:
 			typedef std::shared_ptr<DocumentPacket> DocumentPacketPtr;
-			typedef std::vector<std::shared_ptr<DocumentPacket>> DocumentPacketVector;
+			typedef std::vector<DocumentPacketPtr> DocumentPacketVector;
 
 			/**
 			 * String containing a URI, location of the document on the web.
