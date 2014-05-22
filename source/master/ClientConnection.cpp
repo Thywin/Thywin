@@ -12,13 +12,13 @@
 #include <unistd.h>
 #include <memory>
 #include <string.h>
+#include <string>
 #include <errno.h>
 #include <stdexcept>
 #include "Logger.h"
 #include "ClientConnection.h"
 #include "Communicator.h"
 #include "MasterCommunicator.h"
-
 
 namespace thywin
 {
@@ -98,9 +98,6 @@ namespace thywin
 	{
 		if (hasConnection())
 		{
-
-			//logger.log(ERROR,std::string("Closing Connection"));
-
 			printf("Closing Connection\n");
 			handlingConnection = false;
 			connection = false;
@@ -138,9 +135,8 @@ namespace thywin
 			data << packet.Content->Serialize();
 		}
 		data << TP_END_OF_PACKET;
-		const char* realdata = data.str().c_str();
 
-		int sendSize = send(clientSocket, realdata, data.str().size(), 0);
+		int sendSize = send(clientSocket, (const char*)data.str().c_str(), data.str().size(), 0);
 		if (sendSize < 0)
 		{
 			throw std::runtime_error(std::string(strerror(errno)));
