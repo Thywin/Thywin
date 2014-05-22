@@ -101,9 +101,10 @@ namespace thywin
 
 			/**
 			 * Get a list of URIpackets from the URI Queue table in the database.
+			 * @param amount The amount of URIs you want to get.
 			 * @return list of URIpackets. Shared pointers.
 			 */
-			std::vector<std::shared_ptr<URIPacket>> GetURIListFromQueue();
+			std::vector<std::shared_ptr<URIPacket>> GetURIListFromQueue(const int amount);
 
 			/**
 			 * Get the number of rows that are within the given queue table.
@@ -134,10 +135,14 @@ namespace thywin
 			SQLHANDLE environmentHandle;
 			SQLHANDLE connectionHandle;
 			bool connected;
+			const int CONNECTION_TIMEOUT_IN_MINUTES = 15;
+			const int RETRIEVE_URI_BUFFER_SIZE = 1024;
+			const std::string SQL_ERRORSTATE_UNIQUE = "23505";
+			const int DEFAULT_BUFFER_SIZE = 1024;
 
 			void handleNonRowReturningQuery(std::string query);
 			bool executeQuery(std::string query, SQLHANDLE& stmtHndl);
-			void show_error(unsigned int handletype, const SQLHANDLE& handle);
+			void showError(unsigned int handletype, const SQLHANDLE& handle);
 
 			/**
 			 * Creates a new statement handler.

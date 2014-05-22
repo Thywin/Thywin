@@ -64,7 +64,7 @@ namespace thywin
 		}
 		if (URIQueue.empty())
 		{
-			std::vector<std::shared_ptr<URIPacket>> receivedCache = DBConnection.GetURIListFromQueue();
+			std::vector<std::shared_ptr<URIPacket>> receivedCache = DBConnection.GetURIListFromQueue(URI_QUEUE_SIZE);
 			Master::URIQueue.insert(Master::URIQueue.end(), receivedCache.begin(), receivedCache.end());
 		}
 		std::shared_ptr<URIPacket> element = Master::URIQueue.at(0);

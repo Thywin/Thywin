@@ -58,7 +58,7 @@ namespace thywin
 			throw std::runtime_error(std::string("Couldn't allocate connection handle."));
 		}
 
-		SQLSetConnectOption(connectionHandle, SQL_LOGIN_TIMEOUT, 15);
+		SQLSetConnectOption(connectionHandle, SQL_LOGIN_TIMEOUT, CONNECTION_TIMEOUT_IN_MINUTES);
 
 		std::ostringstream ossPort;
 		ossPort << givenPort;
@@ -74,19 +74,19 @@ namespace thywin
 		{
 			case SQL_SUCCESS_WITH_INFO:
 			{
-				show_error(SQL_HANDLE_DBC, connectionHandle);
+				showError(SQL_HANDLE_DBC, connectionHandle);
 				break;
 			}
 			case SQL_INVALID_HANDLE:
 			{
-				show_error(SQL_HANDLE_DBC, connectionHandle);
+				showError(SQL_HANDLE_DBC, connectionHandle);
 				Disconnect();
 				throw std::runtime_error(std::string("Failed to connect to the database."));
 				break;
 			}
 			case SQL_ERROR:
 			{
-				show_error(SQL_HANDLE_DBC, connectionHandle);
+				showError(SQL_HANDLE_DBC, connectionHandle);
 				Disconnect();
 				throw std::runtime_error(std::string("Failed to connect to the database."));
 				break;
@@ -109,7 +109,8 @@ namespace thywin
 	{
 		std::ostringstream ossRelevance;
 		ossRelevance << element->Relevance;
-		std::string query = "INSERT INTO uris (uri, relevance) VALUES ('" + element->URI + "'," + ossRelevance.str() + ")";
+		std::string query = "INSERT INTO uris (uri, relevance) VALUES ('" + element->URI + "'," + ossRelevance.str()
+				+ ")";
 		handleNonRowReturningQuery(query);
 	}
 
@@ -126,20 +127,22 @@ namespace thywin
 		char* statement = (char*) "INSERT INTO document_queue VALUES ((SELECT uri_id FROM uris WHERE uri = ?), ?)";
 		if (SQL_SUCCESS != SQLPrepare(statementHandle, (SQLCHAR *) statement, strlen(statement)))
 		{
-			show_error(SQL_HANDLE_STMT, statementHandle);
+			showError(SQL_HANDLE_STMT, statementHandle);
 			Disconnect(statementHandle);
 			throw std::runtime_error(std::string("Couldn't prepare sql statement."));
 		}
 
 		SQLLEN nts = SQL_NTS;
+		// Bind input->URI to the first column.
 		SQLBindParameter(statementHandle, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, input->URI.size(), 0,
 				(char *) input->URI.c_str(), input->URI.size(), &nts);
+		// Bind input->Document to the second column.
 		SQLBindParameter(statementHandle, 2, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, input->Document.size(), 0,
 				(char *) input->Document.c_str(), input->Document.size(), &nts);
 
 		if (SQL_SUCCESS != SQLExecute(statementHandle))
 		{
-			show_error(SQL_HANDLE_STMT, statementHandle);
+			showError(SQL_HANDLE_STMT, statementHandle);
 		}
 		releaseStatementHandler(statementHandle);
 	}
@@ -162,12 +165,13 @@ namespace thywin
 
 		if (executeQuery(query, statementHandle))
 		{
-			char uri[1024];
+			char uri[RETRIEVE_URI_BUFFER_SIZE];
 			if (SQLFetch(statementHandle) == SQL_SUCCESS)
 			{
-				SQLGetData(statementHandle, 1, SQL_C_CHAR, uri, 1024, NULL);
+				// Get data from first column
+				SQLGetData(statementHandle, 1, SQL_C_CHAR, uri, RETRIEVE_URI_BUFFER_SIZE, NULL);
 				result->URI = std::string(uri);
-
+				// Get data from second column
 				SQLGetData(statementHandle, 2, SQL_C_DOUBLE, &result->Relevance, 0, NULL);
 			}
 		}
@@ -186,22 +190,26 @@ namespace thywin
 		return result;
 	}
 
-	std::vector<std::shared_ptr<URIPacket>> DatabaseHandler::GetURIListFromQueue()
+	std::vector<std::shared_ptr<URIPacket>> DatabaseHandler::GetURIListFromQueue(const int amount)
 	{
 		std::vector<std::shared_ptr<URIPacket>> CachedURIQueue;
 		SQLHANDLE statementHandle = createStatementHandler();
 
+		std::ostringstream ossAmount;
+		ossAmount << amount;
 		std::string query = "SELECT uris.uri, uri_queue.priority FROM uris, uri_queue"
-				" WHERE uris.uri_id = uri_queue.uri_id ORDER BY row_number() OVER () LIMIT 300";
+				" WHERE uris.uri_id = uri_queue.uri_id ORDER BY row_number() OVER () LIMIT " + ossAmount.str();
 
 		if (executeQuery(query, statementHandle))
 		{
-			char uri[1024];
+			char uri[RETRIEVE_URI_BUFFER_SIZE];
 			double priority;
 			while (SQLFetch(statementHandle) == SQL_SUCCESS)
 			{
 				std::shared_ptr<URIPacket> result(new URIPacket);
-				SQLGetData(statementHandle, 1, SQL_C_CHAR, uri, 1024, NULL);
+				// First column
+				SQLGetData(statementHandle, 1, SQL_C_CHAR, uri, RETRIEVE_URI_BUFFER_SIZE, NULL);
+				// Second column
 				SQLGetData(statementHandle, 2, SQL_C_DOUBLE, &priority, 0, NULL);
 				result->URI = std::string(uri);
 				result->Relevance = priority;
@@ -210,7 +218,7 @@ namespace thywin
 		}
 		releaseStatementHandler(statementHandle);
 		query = "DELETE FROM uri_queue WHERE uri_id IN (SELECT uri_id "
-				"FROM uri_queue ORDER BY row_number() OVER () LIMIT 300)";
+				"FROM uri_queue ORDER BY row_number() OVER () LIMIT " + ossAmount.str() + ")";
 		handleNonRowReturningQuery(query);
 
 		return CachedURIQueue;
@@ -228,13 +236,15 @@ namespace thywin
 			if (SQLFetch(statementHandler) == SQL_SUCCESS)
 			{
 				SQLRETURN retcode = 0;
-				char uri[1024];
-				if (SQLGetData(statementHandler, 1, SQL_C_CHAR, uri, 1024, NULL) == SQL_SUCCESS)
+				char uri[RETRIEVE_URI_BUFFER_SIZE];
+				// Get data of first column
+				if (SQLGetData(statementHandler, 1, SQL_C_CHAR, uri, RETRIEVE_URI_BUFFER_SIZE, NULL) == SQL_SUCCESS)
 				{
 					result->URI = std::string(uri);
-					char buffer[2];
+					char buffer[2]; // Need room for zero terminate.
 					do
 					{
+						// Get data of second column
 						retcode = SQLGetData(statementHandler, 2, SQL_C_CHAR, &buffer, 2, NULL);
 						result->Document.push_back(buffer[0]);
 					} while (retcode != SQL_SUCCESS);
@@ -312,7 +322,7 @@ namespace thywin
 		const char* query = SQLQuery.c_str();
 		if (SQL_SUCCESS != SQLExecDirect(statementHandler, (SQLCHAR*) query, SQL_NTS))
 		{
-			show_error(SQL_HANDLE_STMT, statementHandler);
+			showError(SQL_HANDLE_STMT, statementHandler);
 		}
 		releaseStatementHandler(statementHandler);
 	}
@@ -328,22 +338,24 @@ namespace thywin
 		const char* query = SQLQuery.c_str();
 		if (SQL_SUCCESS != SQLExecDirect(statementHandle, (SQLCHAR*) query, SQL_NTS))
 		{
-			show_error(SQL_HANDLE_STMT, statementHandle);
+			showError(SQL_HANDLE_STMT, statementHandle);
 			return false;
 		}
 		return true;
 	}
 
-	void DatabaseHandler::show_error(unsigned int handletype, const SQLHANDLE& statementHandler)
+	void DatabaseHandler::showError(unsigned int handletype, const SQLHANDLE& statementHandler)
 	{
-		SQLCHAR sqlstate[1024];
-		SQLCHAR message[1024];
-		if (SQL_SUCCESS == SQLGetDiagRec(handletype, statementHandler, 1, sqlstate, NULL, message, 1024, NULL))
+		SQLCHAR sqlstate[DEFAULT_BUFFER_SIZE];
+		SQLCHAR message[DEFAULT_BUFFER_SIZE];
+		if (SQL_SUCCESS
+				== SQLGetDiagRec(handletype, statementHandler, 1, sqlstate, NULL, message, DEFAULT_BUFFER_SIZE, NULL))
 		{
 			std::string sqlStateString((char *) sqlstate);
-			std::string::size_type statePos = sqlStateString.find("23505");
+			std::string::size_type statePos = sqlStateString.find(SQL_ERRORSTATE_UNIQUE);
 			if (statePos == std::string::npos)
 			{
+				// Once the library has been updated, this will be turned into a logger message.
 				std::cout << "Message: " << message << " SQLSTATE: " << sqlstate << std::endl;
 			}
 		}
@@ -354,7 +366,7 @@ namespace thywin
 		SQLHANDLE stmtHndl;
 		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, connectionHandle, &stmtHndl))
 		{
-			show_error(SQL_HANDLE_STMT, stmtHndl);
+			showError(SQL_HANDLE_STMT, stmtHndl);
 			Disconnect(stmtHndl);
 			throw std::runtime_error(std::string("Couldn't allocate statement handle"));
 		}
