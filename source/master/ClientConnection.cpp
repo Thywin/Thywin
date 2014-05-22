@@ -136,10 +136,6 @@ namespace thywin
 		{
 			data << packet.Content->Serialize();
 		}
-		else
-		{
-			//logger.log(WARNING,std::string("Content of a send packet is NULL"));
-		}
 		data << TP_END_OF_PACKET;
 		const char* realdata = data.str().c_str();
 
@@ -148,10 +144,6 @@ namespace thywin
 		{
 			throw std::runtime_error(std::string(strerror(errno)));
 		}
-
-		std::stringstream message;
-		message << "Sent packet of size: " << data.str().size();
-		//logger.log(INFO,message.str());
 		return sendSize;
 	}
 
@@ -167,10 +159,6 @@ namespace thywin
 		} while (receiveSize > 0 && characterReceiveBuffer != TP_END_OF_PACKET);
 		checkReceiveSize(receiveSize);
 		ThywinPacket returnPacket = createThywinPacket(receiveBuffer);
-
-		std::stringstream message;
-		message <<"Received packet: METHOD " << returnPacket.Method << " TYPE " << returnPacket.Type;
-		//logger.log(INFO,message.str());
 		return returnPacket;
 	}
 
