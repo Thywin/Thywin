@@ -97,25 +97,25 @@ namespace thywin
 		{
 			std::shared_ptr<URIPacket> URIElement(new URIPacket);
 			URIElement->URI = "http://thywin.com/kaas/kaas/index.html\0";
-			URIElement->Relevance = 0.5;
+			URIElement->Relevance = 0;
 			DBConnection.AddURIToList(URIElement);
 			DBConnection.AddURIToQueue(URIElement->URI);
 
 			std::shared_ptr<URIPacket> newelemente(new URIPacket);
-			newelemente->URI = "http://www.nu.nl\0";
-			newelemente->Relevance = 0.01;
+			newelemente->URI = "http://thywin.com/test5.html\0";
+			newelemente->Relevance = 0;
 			DBConnection.AddURIToList(newelemente);
 			DBConnection.AddURIToQueue(newelemente->URI);
 
 			std::shared_ptr<URIPacket> anotherElement(new URIPacket);
 			anotherElement->URI = "http://www.reliasoft.com/reno/features1.htm\0";
-			anotherElement->Relevance = 0.01;
+			anotherElement->Relevance = 0;
 			DBConnection.AddURIToList(anotherElement);
 			DBConnection.AddURIToQueue(anotherElement->URI);
 
 			std::shared_ptr<URIPacket> otherElement(new URIPacket);
 			otherElement->URI = "http://en.wikipedia.org/wiki/Discrete_event_simulation\0";
-			otherElement->Relevance = 0.01;
+			otherElement->Relevance = 0;
 			DBConnection.AddURIToList(otherElement);
 			DBConnection.AddURIToQueue(otherElement->URI);
 		}
