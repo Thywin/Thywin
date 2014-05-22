@@ -21,12 +21,8 @@
 
 namespace thywin
 {
-	DatabaseHandler::DatabaseHandler(std::string ipaddress)
-	{
-		Connect(ipaddress, DEFAULT_DATABASE_PORT);
-	}
 
-	DatabaseHandler::DatabaseHandler(std::string ipaddress, int givenPort)
+	DatabaseHandler::DatabaseHandler(std::string ipaddress, int givenPort = DEFAULT_DATABASE_PORT)
 	{
 		Connect(ipaddress, givenPort);
 	}
@@ -63,10 +59,9 @@ namespace thywin
 		ossPort << givenPort;
 		std::string temp = "DRIVER={/usr/lib/arm-linux-gnueabihf/odbc/psqlodbca.so};SERVER=" + ipaddress + ";PORT="
 				+ ossPort.str() + ";DATABASE=thywin;UID=thywin;PWD=hanicampna;";
-		const char* connectionString = temp.c_str();
 
 		SQLCHAR retconstring[1024];
-		SQLRETURN connect = SQLDriverConnect(connectionHandle, NULL, (SQLCHAR*) connectionString, SQL_NTS, retconstring,
+		SQLRETURN connect = SQLDriverConnect(connectionHandle, NULL, (SQLCHAR*) temp.c_str(), SQL_NTS, retconstring,
 				1024, NULL, SQL_DRIVER_NOPROMPT);
 
 		switch (connect)
@@ -123,8 +118,8 @@ namespace thywin
 	void DatabaseHandler::AddDocumentToQueue(std::shared_ptr<DocumentPacket> input)
 	{
 		SQLHANDLE statementHandle = createStatementHandler();
-		char* statement = (char*) "INSERT INTO document_queue VALUES ((SELECT uri_id FROM uris WHERE uri = ?), ?)";
-		if (SQL_SUCCESS != SQLPrepare(statementHandle, (SQLCHAR *) statement, strlen(statement)))
+		std::string statement = "INSERT INTO document_queue VALUES ((SELECT uri_id FROM uris WHERE uri = ?), ?)";
+		if (SQL_SUCCESS != SQLPrepare(statementHandle, (SQLCHAR *) statement.c_str(), statement.size()))
 		{
 			showError(SQL_HANDLE_STMT, statementHandle);
 			Disconnect(statementHandle);
@@ -274,7 +269,6 @@ namespace thywin
 		{
 			if (SQLFetch(stmtHndl) == SQL_SUCCESS)
 			{
-
 				SQLGetData(stmtHndl, 1, SQL_C_LONG, &rowsInQueue, 0, NULL);
 			}
 		}
@@ -318,8 +312,7 @@ namespace thywin
 	void DatabaseHandler::handleNonRowReturningQuery(std::string SQLQuery)
 	{
 		SQLHANDLE statementHandler = createStatementHandler();
-		const char* query = SQLQuery.c_str();
-		if (SQL_SUCCESS != SQLExecDirect(statementHandler, (SQLCHAR*) query, SQL_NTS))
+		if (SQL_SUCCESS != SQLExecDirect(statementHandler, (SQLCHAR*) SQLQuery.c_str(), SQL_NTS))
 		{
 			showError(SQL_HANDLE_STMT, statementHandler);
 		}
@@ -334,8 +327,7 @@ namespace thywin
 			Disconnect(statementHandle);
 			throw std::runtime_error(std::string("Couldn't allocate statement handle"));
 		}
-		const char* query = SQLQuery.c_str();
-		if (SQL_SUCCESS != SQLExecDirect(statementHandle, (SQLCHAR*) query, SQL_NTS))
+		if (SQL_SUCCESS != SQLExecDirect(statementHandle, (SQLCHAR*) SQLQuery.c_str(), SQL_NTS))
 		{
 			showError(SQL_HANDLE_STMT, statementHandle);
 			return false;

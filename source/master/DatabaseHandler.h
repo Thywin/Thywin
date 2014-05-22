@@ -30,12 +30,6 @@ namespace thywin
 	{
 		public:
 
-			/**
-			 * Create a database handler that will connect to a ODBC database.
-			 * This will connect to the default ODBC port.
-			 * @param ipaddress The IP of the machine where the database is running
-			 */
-			DatabaseHandler(std::string ipaddress);
 
 			/**
 			 * Create a database handler that will connect to a ODBC database

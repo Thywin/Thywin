@@ -56,13 +56,13 @@ namespace thywin
 			//Logger logger; /* Temporarily placed in comment while awaiting library update */
 
 			ThywinPacket ReceivePacket();
-			int SendPacket(ThywinPacket sendPacket);
-			void HandleGetRequest(ThywinPacket packet);
-			void HandlePutRequest(ThywinPacket packet);
-			void deserializePutObject(ThywinPacket& packet, std::string serializedObject);
+			int SendPacket(ThywinPacket& sendPacket);
+			void HandleGetRequest(const ThywinPacket& packet);
+			void HandlePutRequest(const ThywinPacket& packet);
+			void deserializePutObject(ThywinPacket& packet, std::string& serializedObject);
 			void fillThywinPacket(ThywinPacket& packet, std::stringstream& buffer);
 			void handleReceivedThywinPacket(const ThywinPacket& packet);
-			void checkReceiveSize(const int& receiveSize);
+			void checkReceiveSize(const int receiveSize);
 			ThywinPacket createThywinPacket(std::stringstream& receiveBuffer);
 	};
 

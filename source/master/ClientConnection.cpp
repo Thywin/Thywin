@@ -41,7 +41,7 @@ namespace thywin
 		CloseConnection();
 	}
 
-	void ClientConnection::HandleGetRequest(ThywinPacket packet)
+	void ClientConnection::HandleGetRequest(const ThywinPacket& packet)
 	{
 		ThywinPacket returnPacket;
 		returnPacket.Method = RESPONSE;
@@ -54,9 +54,11 @@ namespace thywin
 				returnPacket = communicator.HandleGetDocument();
 				break;
 			case RELEVANCE:
+				// TODO
 				//returnPacket = MasterCommunicator::HandleGetRelevance(); // to be implemented later
 				break;
 			case DOCUMENTVECTOR:
+				// TODO
 				//returnPacket = MasterCommunicator::HandleGetDocumentVector(); // to be implemented later
 				break;
 		}
@@ -70,7 +72,7 @@ namespace thywin
 		}
 	}
 
-	void ClientConnection::HandlePutRequest(ThywinPacket packet)
+	void ClientConnection::HandlePutRequest(const ThywinPacket& packet)
 	{
 		switch (packet.Type)
 		{
@@ -81,9 +83,11 @@ namespace thywin
 				communicator.HandlePutDocument(packet.Content);
 				break;
 			case RELEVANCE:
+				// TODO
 				//MasterCommunicator::HandlePutRelevance(packet);	// to be implemented later
 				break;
 			case DOCUMENTVECTOR:
+				// TODO
 				//MasterCommunicator::HandlePutDocumentVector(packet);	// to be implemented later
 				break;
 		}
@@ -112,21 +116,18 @@ namespace thywin
 
 	void ClientConnection::HandleConnection()
 	{
-		if (!handlingConnection)
+		handlingConnection = true;
+		while (handlingConnection)
 		{
-			handlingConnection = true;
-			while (handlingConnection)
+			ThywinPacket returnPacket = ReceivePacket();
+			if (hasConnection())
 			{
-				ThywinPacket returnPacket = ReceivePacket();
-				if (hasConnection())
-				{
-					handleReceivedThywinPacket(returnPacket);
-				}
+				handleReceivedThywinPacket(returnPacket);
 			}
 		}
 	}
 
-	int ClientConnection::SendPacket(ThywinPacket packet)
+	int ClientConnection::SendPacket(ThywinPacket& packet)
 	{
 		std::stringstream data;
 		data << packet.Method << TP_HEADER_SEPERATOR << packet.Type << TP_HEADER_SEPERATOR;
@@ -136,7 +137,7 @@ namespace thywin
 		}
 		data << TP_END_OF_PACKET;
 
-		int sendSize = send(clientSocket, (const char*)data.str().c_str(), data.str().size(), 0);
+		int sendSize = send(clientSocket, (const char*) data.str().c_str(), data.str().size(), 0);
 		if (sendSize < 0)
 		{
 			throw std::runtime_error(std::string(strerror(errno)));
@@ -163,10 +164,10 @@ namespace thywin
 	{
 		std::string valueForPacket;
 		std::getline(buffer, valueForPacket, TP_HEADER_SEPERATOR);
-		packet.Method = (PacketMethod) atoi(valueForPacket.c_str());
+		packet.Method = (PacketMethod) std::stoi(valueForPacket);
 
 		std::getline(buffer, valueForPacket, TP_HEADER_SEPERATOR);
-		packet.Type = (PacketType) atoi(valueForPacket.c_str());
+		packet.Type = (PacketType) std::stoi(valueForPacket);
 
 		if (packet.Method == PUT)
 		{
@@ -175,7 +176,7 @@ namespace thywin
 		}
 	}
 
-	void ClientConnection::deserializePutObject(ThywinPacket& packet, std::string serializedObject)
+	void ClientConnection::deserializePutObject(ThywinPacket& packet, std::string& serializedObject)
 	{
 		if (packet.Method != PUT)
 		{
@@ -199,10 +200,12 @@ namespace thywin
 			}
 			case RELEVANCE:
 			{
+				// TODO
 				break;
 			}
 			case DOCUMENTVECTOR:
 			{
+				// TODO
 				break;
 			}
 		}
@@ -233,7 +236,7 @@ namespace thywin
 		return returnPacket;
 	}
 
-	void ClientConnection::checkReceiveSize(const int& receiveSize)
+	void ClientConnection::checkReceiveSize(const int receiveSize)
 	{
 		if (receiveSize < 0)
 		{
