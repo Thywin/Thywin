@@ -5,27 +5,31 @@
  *      Author: Thomas Kooi
  */
 
-#include "ClientConnection.h"
-#include "Communicator.h"
-#include "MasterCommunicator.h"
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <sstream>
-#include <iostream>
 #include <memory>
 #include <string.h>
 #include <errno.h>
 #include <stdexcept>
-#include <pthread.h>
+#include "Logger.h"
+#include "ClientConnection.h"
+#include "Communicator.h"
+#include "MasterCommunicator.h"
+
 
 namespace thywin
 {
-	ClientConnection::ClientConnection(int& client)
+
+	/**
+	 * Loggers are temporarily placed in comments while awaiting library update
+	 */
+	ClientConnection::ClientConnection(int client)
 	{
+		std::stringstream out;
+		out << "Master_connection_" << client << ".log";
+		std::string logFileName = out.str();
 		clientSocket = client;
 		handlingConnection = false;
 		connection = true;
@@ -93,6 +97,9 @@ namespace thywin
 	{
 		if (hasConnection())
 		{
+
+			//logger.log(ERROR,std::string("Closing Connection"));
+
 			printf("Closing Connection\n");
 			handlingConnection = false;
 			connection = false;
@@ -112,7 +119,6 @@ namespace thywin
 			handlingConnection = true;
 			while (handlingConnection)
 			{
-				printf("waiting for new packet\n");
 				ThywinPacket returnPacket = ReceivePacket();
 				if (hasConnection())
 				{
@@ -132,7 +138,7 @@ namespace thywin
 		}
 		else
 		{
-			printf("Content is NULL\n");
+			//logger.log(WARNING,std::string("Content of a send packet is NULL"));
 		}
 		data << TP_END_OF_PACKET;
 		const char* realdata = data.str().c_str();
@@ -142,7 +148,10 @@ namespace thywin
 		{
 			throw std::runtime_error(std::string(strerror(errno)));
 		}
-		printf("Sent packet of size: %i\n", data.str().size());
+
+		std::stringstream message;
+		message << "Sent packet of size: " << data.str().size();
+		//logger.log(INFO,message.str());
 		return sendSize;
 	}
 
@@ -156,10 +165,12 @@ namespace thywin
 			receiveSize = recv(clientSocket, &characterReceiveBuffer, 1, 0);
 			receiveBuffer << characterReceiveBuffer;
 		} while (receiveSize > 0 && characterReceiveBuffer != TP_END_OF_PACKET);
-
 		checkReceiveSize(receiveSize);
 		ThywinPacket returnPacket = createThywinPacket(receiveBuffer);
-		printf("Received packet: METHOD %i TYPE %i\n", returnPacket.Method, returnPacket.Type);
+
+		std::stringstream message;
+		message <<"Received packet: METHOD " << returnPacket.Method << " TYPE " << returnPacket.Type;
+		//logger.log(INFO,message.str());
 		return returnPacket;
 	}
 
@@ -252,7 +263,7 @@ namespace thywin
 		else if (receiveSize == 0)
 		{
 			CloseConnection();
-			std::cout << "client closed the connection" << std::endl;
+			throw std::string("Client Closed Connection");
 		} // There are no other cases that would need to be handled
 	}
 

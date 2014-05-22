@@ -10,6 +10,7 @@
 #include "Communicator.h"
 #include "MasterCommunicator.h"
 #include <sstream>
+#include "Logger.h"
 
 namespace thywin
 {
@@ -21,7 +22,7 @@ namespace thywin
 			 * Creates a connection class for handling the connection from client to Master Server.
 			 * @param Client Socket Descriptor for the client connection. Has to be a live connection
 			 */
-			ClientConnection(int& client);
+			ClientConnection(int client);
 
 			/**
 			 * Default destructor. Closes the connection with the client if still alive
@@ -51,6 +52,7 @@ namespace thywin
 			bool connection;
 			std::string lastPacketContent;
 			MasterCommunicator communicator;
+			//Logger logger; /* Temporarily placed in comment while awaiting library update */
 
 			ThywinPacket ReceivePacket();
 			int SendPacket(ThywinPacket sendPacket);

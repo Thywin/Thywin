@@ -18,6 +18,9 @@
 namespace thywin
 {
 
+	const int DEFAULT_DATABASE_PORT = 5432;
+	const std::string DEFAULT_DATABASE_IP = "192.168.100.13";
+
 	class DatabaseHandler
 	{
 		public:

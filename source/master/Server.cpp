@@ -8,17 +8,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sstream>
-#include <iostream>
-#include <vector>
 #include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
-#include "Server.h"
-#include <string>
-#include "ClientConnection.h"
 #include <stdexcept>
+#include "Server.h"
+#include "ClientConnection.h"
+#include "Logger.h"
 
 namespace thywin
 {
@@ -36,22 +33,36 @@ namespace thywin
 		}
 		catch (std::exception& e)
 		{
-			printf("connection closed: %s\n",e.what());
+			close(client);
+			printf("connection closed: %s\n", e.what());
 		}
 		pthread_exit(NULL);
 		return (void *) 0;
 	}
 
+	Logger Server::logger("Master.log");
+
 	Server::Server()
 	{
-		AMOUNT_OF_CONNECTIONS_ACCEPT = 127;
+		logger.log(INFO,std::string("Server starting on default port and default amount of connections accept"));
+		amountOfConnectionsAccept = AMOUNT_OF_CONNECTIONS_ACCEPT_DEFAULT;
 		connection = false;
 		SetUp(7500); /* Needs a define in the library for the default server port */
 		Listen();
 	}
 	Server::Server(const int port)
 	{
-		AMOUNT_OF_CONNECTIONS_ACCEPT = 127;
+		logger.log(INFO,std::string("Server starting on port # and default amount of connections accept"));
+		amountOfConnectionsAccept = AMOUNT_OF_CONNECTIONS_ACCEPT_DEFAULT;
+		connection = false;
+		SetUp(port);
+		Listen();
+	}
+
+	Server::Server(const int port, const int accept)
+	{
+		logger.log(INFO,std::string("Server starting on port # and amount of connections accept #"));
+		amountOfConnectionsAccept = accept;
 		connection = false;
 		SetUp(port);
 		Listen();
@@ -93,6 +104,8 @@ namespace thywin
 			std::string errorMessage(strerror(errno));
 			throw std::runtime_error("Failed bind socket to port: " + errorMessage);
 		}
+		logger.log(INFO,std::string("Socket has been created"));
+
 		connection = true;
 		serverSocket = serverDesc;
 	}
@@ -103,8 +116,7 @@ namespace thywin
 		{
 			throw std::runtime_error("Couldn't listen because server has no connection");
 		}
-
-		if (listen(serverSocket, AMOUNT_OF_CONNECTIONS_ACCEPT) < 0)
+		if (listen(serverSocket, amountOfConnectionsAccept) < 0)
 		{
 			std::string errorMessage(strerror(errno));
 			throw std::runtime_error("Failed have socket listen: " + errorMessage);
@@ -114,14 +126,20 @@ namespace thywin
 		int sizeOfClientAddr = sizeof(clientAddr);
 		pthread_t thread_id;
 
+		logger.log(INFO,std::string("Server is awaiting connections"));
+
 		while (HasConnection())
 		{
 			int client = accept(serverSocket, (struct sockaddr *) &clientAddr, (socklen_t*) &sizeOfClientAddr);
 			printf("Connection accepted with client: %s port %i\n", inet_ntoa(clientAddr.sin_addr),
 					ntohs(clientAddr.sin_port));
+
+			logger.log(INFO,std::string("Connection accepted with client: %s port %i"));
 			if (pthread_create(&thread_id, NULL, setUpConnectionWithClient, (void *) &client) < 0)
 			{
-				perror("could not create thread");
+				close(client);
+				logger.log(ERROR,std::string("Failed to create a new thread for client connection"));
+				throw std::string("Failed to create a new thread for client connection");
 			}
 			else
 			{

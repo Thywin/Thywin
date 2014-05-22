@@ -28,7 +28,7 @@ namespace thywin
 	DatabaseHandler::DatabaseHandler(std::string ipaddress)
 	{
 		ip = ipaddress;
-		port = 5432;
+		port = DEFAULT_DATABASE_PORT;
 	}
 
 	DatabaseHandler::DatabaseHandler(std::string ipaddress, int givenPort)
@@ -79,18 +79,28 @@ namespace thywin
 		switch (connect)
 		{
 			case SQL_SUCCESS_WITH_INFO:
+			{
 				show_error(SQL_HANDLE_DBC, connectionHandle);
 				break;
+			}
 			case SQL_INVALID_HANDLE:
+			{
 				show_error(SQL_HANDLE_DBC, connectionHandle);
 				Disconnect();
-				throw std::runtime_error(std::string("Failed to connect to the database."));
-			case SQL_ERROR:
-				show_error(SQL_HANDLE_DBC, connectionHandle);
-				Disconnect();
-				throw std::runtime_error(std::string("Failed to connect to the database."));
-			default:
+				throw std::runtime_error(std::string("Failed to connect to the database. 1"));
 				break;
+			}
+			case SQL_ERROR:
+			{
+				show_error(SQL_HANDLE_DBC, connectionHandle);
+				Disconnect();
+				throw std::runtime_error(std::string("Failed to connect to the database. 2"));
+				break;
+			}
+			default:
+			{
+				break;
+			}
 		}
 	}
 
@@ -161,13 +171,12 @@ namespace thywin
 		if (executeQuery(query, statementHandle))
 		{
 			char uri[1024];
-			double priority;
 			if (SQLFetch(statementHandle) == SQL_SUCCESS)
 			{
 				SQLGetData(statementHandle, 1, SQL_C_CHAR, uri, 1024, NULL);
-				SQLGetData(statementHandle, 2, SQL_C_DOUBLE, &priority, 0, NULL);
 				result->URI = std::string(uri);
-				result->Relevance = priority;
+
+				SQLGetData(statementHandle, 2, SQL_C_DOUBLE, &result->Relevance, 0, NULL);
 			}
 		}
 		releaseStatementHandler(statementHandle);
@@ -247,9 +256,8 @@ namespace thywin
 
 	std::shared_ptr<DocumentPacket> DatabaseHandler::RetrieveAndDeleteDocumentFromQueue()
 	{
-		std::shared_ptr<DocumentPacket> result(new DocumentPacket);
-		result = RetrieveDocumentFromQueue();
-		if (!(result->URI.empty()))
+		std::shared_ptr<DocumentPacket> result = RetrieveDocumentFromQueue();
+		if (!result->URI.empty())
 		{
 			DeleteURIFrom(result->URI, "document_queue");
 		}
@@ -352,8 +360,6 @@ namespace thywin
 	SQLHANDLE DatabaseHandler::createStatementHandler()
 	{
 		SQLHANDLE stmtHndl;
-		throw std::runtime_error(std::string("Database not connected."));
-
 		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, connectionHandle, &stmtHndl))
 		{
 			show_error(SQL_HANDLE_STMT, stmtHndl);

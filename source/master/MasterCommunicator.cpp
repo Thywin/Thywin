@@ -5,23 +5,8 @@
  *      Author: Thomas Kooi
  */
 
-#include <string>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <sstream>
-#include <iostream>
-#include <vector>
-#include <string.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <mutex>
-#include <fstream>
 #include "Master.h"
 #include "MasterCommunicator.h"
-#include "Communicator.h"
 #include "URIPacket.h"
 #include "DocumentPacket.h"
 
@@ -29,20 +14,12 @@ namespace thywin
 {
 	ThywinPacket MasterCommunicator::HandleGetURI()
 	{
-		ThywinPacket packet;
-		packet.Method = RESPONSE;
-		packet.Type = URI;
-		packet.Content = Master::GetNextURIElementFromQueue();
-		return packet;
+		return createResponsePacket(Master::GetNextURIElementFromQueue());
 	}
 
 	ThywinPacket MasterCommunicator::HandleGetDocument()
 	{
-		ThywinPacket packet;
-		packet.Method = RESPONSE;
-		packet.Type = URI;
-		packet.Content = Master::GetNextDocumentElementFromQueue();
-		return packet;
+		return createResponsePacket(Master::GetNextDocumentElementFromQueue());
 	}
 
 	void MasterCommunicator::HandlePutURI(std::shared_ptr<ThywinPacketContent> content)
@@ -57,4 +34,12 @@ namespace thywin
 		Master::AddDocumentElementToQueue(packet);
 	}
 
+	ThywinPacket MasterCommunicator::createResponsePacket(std::shared_ptr<ThywinPacketContent> content)
+	{
+		ThywinPacket packet;
+		packet.Method = RESPONSE;
+		packet.Type = URI;
+		packet.Content = content;
+		return packet;
+	}
 }

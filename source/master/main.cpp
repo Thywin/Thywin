@@ -10,31 +10,42 @@
 #include "Server.h"
 #include <stdexcept>
 #include "Master.h"
+#include "Logger.h"
+
+using namespace thywin;
 
 int main(int argc, char* argv[])
 {
+	Logger logger("Master.log");
 	try
 	{
 		if (argc < 2)
 		{
-			printf("No port has been given..\n");
+			logger.log(ERROR, "No port has been given..");
 			return (EXIT_FAILURE);
 		}
 		else
 		{
-			thywin::Master::InitializeMaster();
-			const int portNumber = atoi(argv[1]);
-			thywin::Server srv(portNumber);
-			printf("Server shutting down\n");
+			const int portNumber = std::stoi(argv[1]);
+			logger.log(INFO, "Starting Master.");
+			Master::InitializeMaster();
+			Server srv(portNumber);
+			logger.log(INFO, "Server shutting down.");
 			return (EXIT_SUCCESS);
 		}
 	}
+	catch (std::invalid_argument& e)
+	{
+		logger.log(ERROR, "Invalid argument exception: " + std::string(e.what()));
+	}
 	catch (std::exception& e)
 	{
-		printf("Catched an exception on main: %s\n",e.what());
+		logger.log(ERROR, "Catched an exception on main: " + std::string(e.what()));
 	}
-	catch (...){
-		std::cout << "Something went terribly wrong!" << std::endl;
+	catch (...)
+	{
+		logger.log(ERROR, "Something went terribly wrong!");
 	}
+	return (EXIT_SUCCESS);
 }
 

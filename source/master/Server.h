@@ -10,10 +10,15 @@
 #ifndef SERVER_H_
 #define SERVER_H_
 #include "Communicator.h"
-#include <vector>
+#include "Logger.h"
 
 namespace thywin
 {
+	/**
+	 *
+	 */
+	const int AMOUNT_OF_CONNECTIONS_ACCEPT_DEFAULT = 127;
+
 	class Server
 	{
 		public:
@@ -24,23 +29,30 @@ namespace thywin
 			Server();
 
 			/**
-			 * Creates the server object and sets up the server on given port
-			 * @param port Valid port number. Can be any number between # and #.
+			 * Creates the server object and sets up the server on given port.
+			 * @param port Valid port number. Can be any number between 256 and 65535.
 			 */
 			Server(const int port);
+
+			/**
+			 * Creates the server object and sets up the server on given port.
+			 * @param port Valid port number. Can be any number between 256 and 65535.
+			 * @param accept Number of accepted connections at any given time.
+			 */
+			Server(const int port, const int accept);
 			virtual ~Server();
 
 			/**
-			 *
-			 * @return returns true when the server has connection (is setup) otherwise returns false
+			 * Check whatever or not the server has a connection set up.
+			 * @return returns true when the server has connection (is setup) otherwise returns false.
 			 */
 			bool HasConnection();
 
 		private:
 			int serverSocket;
 			bool connection;
-			int AMOUNT_OF_CONNECTIONS_ACCEPT;
-
+			int amountOfConnectionsAccept;
+			static Logger logger;
 			/**
 			 * Set up the server on port, if the server has not been set up yet
 			 * @param port Valid port number. Can be any number between # and #.

@@ -8,26 +8,19 @@
 #ifndef MASTER_HPP_
 #define MASTER_HPP_
 #include <mutex>
-#include "URIPacket.h"
-#include "DocumentPacket.h"
-#include "DatabaseHandler.h"
 #include <memory>
 #include <stdio.h>
 #include <stdlib.h>
 #include <semaphore.h>
+#include "URIPacket.h"
+#include "DocumentPacket.h"
+#include "DatabaseHandler.h"
 
 namespace thywin
 {
-
-	/**
-	 * A vector of shared pointers to a URIPacket.
-	 */
-	//typedef std::vector<std::shared_ptr<URIPacket>> URIPacketSPtrs;
-
 	class Master
 	{
 		public:
-
 
 			/**
 			 * Initializes the master & semaphores for the Queues.
@@ -42,7 +35,7 @@ namespace thywin
 
 			/**
 			 * Adds a new URI element to the URI Queue.
-			 * @param URIElement
+			 * @param URIElement A shared pointer to an URI packet
 			 */
 			static void AddURIElementToQueue(std::shared_ptr<URIPacket> element);
 
@@ -60,15 +53,26 @@ namespace thywin
 			 */
 			static void AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element);
 
+			/**
+			 * Disconnects the connection with the database
+			 */
+			virtual ~Master();
+
 		private:
 
 			/**
 			 * Database connection object. Used get URIs or documents from the Database.
 			 */
 			static DatabaseHandler DBConnection;
+
 			static std::mutex URIQueueMutex;
 			static std::mutex DocumentQueueMutex;
-			static sem_t documentQueueNotEmpty;
+
+			/**
+			 * Semaphore for the document Queue.
+			 * Will be initialized with the number of documents available in the Database Queue on start.
+			 */
+			static sem_t documentQueueSemaphore;
 			static std::vector<std::shared_ptr<URIPacket>> URIQueue;
 
 			/**

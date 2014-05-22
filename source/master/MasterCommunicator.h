@@ -7,19 +7,19 @@
 
 #ifndef COMMUNICATOR_HPP_
 #define COMMUNICATOR_HPP_
+#include <memory>
 #include "Communicator.h"
 #include "URIPacket.h"
 #include "DocumentPacket.h"
 #include "ThywinPacketContent.h"
-#include <memory>
 #include "Master.h"
 
 namespace thywin
 {
-
 	class MasterCommunicator
 	{
 		public:
+
 			/**
 			 * Grabs the first element from the URI Queue
 			 * and put's this into a new Thywin Packet for a reply to a Get Request.
@@ -57,6 +57,7 @@ namespace thywin
 			void HandlePutDocument(std::shared_ptr<ThywinPacketContent> Content);
 
 		private:
+			ThywinPacket createResponsePacket(std::shared_ptr<ThywinPacketContent> content);
 	};
 
 }
