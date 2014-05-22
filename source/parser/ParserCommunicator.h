@@ -2,7 +2,7 @@
  * Communicator.h
  *
  *  Created on: May 8, 2014
- *      Author: damonk
+ *      Author: Imre Woudstra
  */
 
 #ifndef PARSERCOMMUNICATOR_H_
@@ -15,63 +15,55 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "Document.h"
-#include "URIRelevance.h"
+#include "DocumentPacket.h"
+#include "URIPacket.h"
+#include "DocumentVector.h"
+#include "Communicator.h"
+#include "Logger.h"
 
 namespace thywin
 {
-	const short URL = 1;
-	const short DOCUMENT = 2;
-	const short GET = 1;
-	const short PUT = 2;
-
-	typedef struct RequestPacket
-	{
-			short type;
-			short action;
-			unsigned int size;
-	} RequestPacket;
-
+	/**
+	 * 
+	 */
 	class ParserCommunicator
 	{
 		public:
 			/*
 			 * Creates a ParserCommunicator which can be used for communication with the queues
-			 * @param documentQueue ipaddress of the documentQueue
-			 * @param URIQueue ipaddress of the URIQueue
-			 * @param indexStore ipaddress of the indexStore
+			 * @param masterIP ipaddress of the master PI
+			 * @param masterPort port of the master PI
 			 */
-			ParserCommunicator(std::string documentQueue, std::string URIQueue, std::string indexStore);
+			ParserCommunicator(const std::string& masterIP, const unsigned short masterPort);
+
+			/**
+			 * Default destructor
+			 */
 			virtual ~ParserCommunicator();
 
 			/*
 			 * Get a document from the Document Queue 
 			 */
-			Document GetDocumentFromQueue();
+			DocumentPacket GetDocumentFromQueue();
 
 			/*
 			 * todo
 			 */
-			void StoreIndex();
+			void StoreIndex(const DocumentVector& index);
 
 			/*
 			 * Store an URI with the relevance of the document the URI is found in.
 			 */
-			void StoreExpectedURIRelevance(URIRelevance uriRelevance);
+			void StoreExpectedURIRelevance(const URIPacket& uriPacket);
 
 			/*
 			 * Store the actual relevance of a URI.
 			 */
-			void StoreActualURIRelevance(URIRelevance uriRelevance);
+			void StoreActualURIRelevance(const URIPacket& uriPacket);
 
 		private:
-
-			enum
-			{
-				eDocumentQueue = 0, eURLQueue = 1, eIndexStore = 2
-			};
-			int masterSockets[3];
-			struct sockaddr_in masterSockAddrs[3];
+			Logger logger;
+			Communicator communicator;
 	};
 
 } /* namespace thywin */
