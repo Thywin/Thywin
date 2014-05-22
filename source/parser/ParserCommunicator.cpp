@@ -27,9 +27,7 @@ namespace thywin
 	{
 		std::shared_ptr<DocumentPacket> documentPacketSPtr(new DocumentPacket);
 
-		ThywinPacket requestPacket;
-		requestPacket.Method = GET;
-		requestPacket.Type = DOCUMENT;
+		ThywinPacket requestPacket(GET, DOCUMENT);
 
 		communicator.SendPacket(requestPacket);
 		communicator.ReceivePacket(documentPacketSPtr);
@@ -46,10 +44,7 @@ namespace thywin
 	{
 		std::shared_ptr<URIPacket> uriPacketSPtr(new URIPacket(uriPacket));
 
-		ThywinPacket thywinPacket;
-		thywinPacket.Method = PUT;
-		thywinPacket.Type = URI;
-		thywinPacket.Content = uriPacketSPtr;
+		ThywinPacket thywinPacket(PUT, URI, uriPacketSPtr);
 
 		communicator.SendPacket(thywinPacket);
 	}
@@ -58,10 +53,7 @@ namespace thywin
 	{
 		std::shared_ptr<URIPacket> uriPacketSPtr(new URIPacket(uriPacket));
 
-		ThywinPacket thywinPacket;
-		thywinPacket.Method = PUT;
-		thywinPacket.Type = RELEVANCE;
-		thywinPacket.Content = uriPacketSPtr;
+		ThywinPacket thywinPacket(PUT, RELEVANCE, uriPacketSPtr);
 
 		communicator.SendPacket(thywinPacket);
 	}
