@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 	Logger logger("parser.log");
 	try
 	{
-		Parser parser("192.168.100.13", "192.168.100.13", "192.168.100.13");
+		Parser parser("192.168.100.13", 7500);
 		parser.Run();
 
 		return EXIT_SUCCESS;

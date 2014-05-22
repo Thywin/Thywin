@@ -13,10 +13,10 @@
 namespace thywin
 {
 
-	ParserCommunicator::ParserCommunicator(std::string documentQueue, std::string URLQueue, std::string indexStore) :
-			logger("parser.log"), communicator(documentQueue, 7500)
+	ParserCommunicator::ParserCommunicator(const std::string& masterIP, const unsigned short masterPort) :
+			logger("parser.log"), communicator(masterIP, masterPort)
 	{
-		logger.Log(INFO, std::string("Connected to the master will now start parsing!"));
+		logger.Log(INFO, std::string("Connected to the master, will now start parsing!"));
 	}
 
 	ParserCommunicator::~ParserCommunicator()
@@ -25,43 +25,43 @@ namespace thywin
 
 	DocumentPacket ParserCommunicator::GetDocumentFromQueue()
 	{
-		std::shared_ptr<DocumentPacket> doc(new DocumentPacket);
+		std::shared_ptr<DocumentPacket> documentPacketSPtr(new DocumentPacket);
 
 		ThywinPacket requestPacket;
 		requestPacket.Method = GET;
 		requestPacket.Type = DOCUMENT;
 
 		communicator.SendPacket(requestPacket);
-		communicator.ReceivePacket(doc);
+		communicator.ReceivePacket(documentPacketSPtr);
 
-		return *doc;
+		return *documentPacketSPtr;
 	}
 
-	void ParserCommunicator::StoreIndex(DocumentVector index)
+	void ParserCommunicator::StoreIndex(const DocumentVector& index)
 	{
 
 	}
 
-	void ParserCommunicator::StoreExpectedURIRelevance(URIPacket uriRelevance)
+	void ParserCommunicator::StoreExpectedURIRelevance(const URIPacket& uriPacket)
 	{
-		std::shared_ptr<URIPacket> uriPacket(new URIPacket(uriRelevance));
+		std::shared_ptr<URIPacket> uriPacketSPtr(new URIPacket(uriPacket));
 
 		ThywinPacket thywinPacket;
 		thywinPacket.Method = PUT;
 		thywinPacket.Type = URI;
-		thywinPacket.Content = uriPacket;
+		thywinPacket.Content = uriPacketSPtr;
 
 		communicator.SendPacket(thywinPacket);
 	}
 
-	void ParserCommunicator::StoreActualURIRelevance(URIPacket uriRelevance)
+	void ParserCommunicator::StoreActualURIRelevance(const URIPacket& uriPacket)
 	{
-		std::shared_ptr<URIPacket> uriPacket(new URIPacket(uriRelevance));
+		std::shared_ptr<URIPacket> uriPacketSPtr(new URIPacket(uriPacket));
 
 		ThywinPacket thywinPacket;
 		thywinPacket.Method = PUT;
 		thywinPacket.Type = RELEVANCE;
-		thywinPacket.Content = uriPacket;
+		thywinPacket.Content = uriPacketSPtr;
 
 		communicator.SendPacket(thywinPacket);
 	}

@@ -20,18 +20,24 @@ namespace thywin
 		public:
 			/*
 			 * Creates a Parser which can be used to parse documents.
+			 * @param masterIP ip of the master pi
+			 * @param masterPort port of the master pi
 			 */
-			Parser(std::string documentQueue, std::string URLQueue, std::string indexStore);
+			Parser(const std::string& masterIP, const unsigned short masterPort);
+			
+			/**
+			 * Default destructor
+			 */
 			virtual ~Parser();
 
 			/*
-			 * Run the Parser which will run until the Stop method is called
+			 * Start the Parser, it will run until the Stop method is called
 			 * @see Stop()
 			 */
 			void Run();
 
 			/*
-			 * Stop the Parser only works if the parser is running
+			 * Stop the Parser. Only works if the parser is running
 			 * @see Run()
 			 */
 			void Stop();

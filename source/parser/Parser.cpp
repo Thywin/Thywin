@@ -14,8 +14,8 @@
 namespace thywin
 {
 
-	Parser::Parser(std::string documentQueue, std::string URLQueue, std::string indexStore) :
-			logger("parser.log"), communicator(documentQueue, URLQueue, indexStore)
+	Parser::Parser(const std::string& masterIP, const unsigned short masterPort) :
+			logger("parser.log"), communicator(masterIP, masterPort)
 	{
 		running = false;
 	}
@@ -32,28 +32,28 @@ namespace thywin
 		running = true;
 		while (running)
 		{
-			DocumentPacket documentFromQueue = communicator.GetDocumentFromQueue();
+			DocumentPacket documentToParse = communicator.GetDocumentFromQueue();
 
-			std::vector<std::string> URIs = parser.ExtractURIs(documentFromQueue.Document, documentFromQueue.URI);
+			FileParser::URIs extractedURIs = parser.ExtractURIs(documentToParse.Document, documentToParse.URI);
 
 			std::stringstream logMessageURIsFound;
-			logMessageURIsFound << "URIs found on URI: " << documentFromQueue.URI << " Count: " << URIs.size();
+			logMessageURIsFound << "URIs found on URI: " << documentToParse.URI << " Count: " << extractedURIs.size();
 			logger.Log(INFO, logMessageURIsFound.str());
 
-			std::string text = parser.ExtractText(documentFromQueue.Document);
+			std::string text = parser.ExtractText(documentToParse.Document);
 
 			DocumentVector docVector(text);
 			double relevance = docVector.CalculateSimilarity(subject);
 
 			std::stringstream logMessageRelevance;
-			logMessageRelevance << "Relevance of current URI: " << documentFromQueue.URI << " Relevance" << relevance;
+			logMessageRelevance << "Relevance of current URI: " << documentToParse.URI << " Relevance: " << relevance;
 			logger.Log(INFO, logMessageRelevance.str());
 
-			for (unsigned int i = 0; i < URIs.size(); i++)
+			for (unsigned int i = 0; i < extractedURIs.size(); i++)
 			{
 				URIPacket uriPacket;
 				uriPacket.Relevance = relevance;
-				uriPacket.URI = URIs.at(i);
+				uriPacket.URI = extractedURIs.at(i);
 				communicator.StoreExpectedURIRelevance(uriPacket);
 			}
 		}
