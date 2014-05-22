@@ -16,7 +16,8 @@
 namespace thywin
 {
 	/**
-	 *
+	 *	The number of clients that can be accepted for the server.
+	 *	This is the max number of clients that can be listened to.
 	 */
 	const int AMOUNT_OF_CONNECTIONS_ACCEPT_DEFAULT = 127;
 

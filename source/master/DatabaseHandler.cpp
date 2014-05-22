@@ -24,7 +24,7 @@ namespace thywin
 
 	DatabaseHandler::DatabaseHandler(std::string ipaddress)
 	{
-		Connect(ipaddress,DEFAULT_DATABASE_PORT);
+		Connect(ipaddress, DEFAULT_DATABASE_PORT);
 	}
 
 	DatabaseHandler::DatabaseHandler(std::string ipaddress, int givenPort)
@@ -62,9 +62,8 @@ namespace thywin
 
 		std::ostringstream ossPort;
 		ossPort << givenPort;
-		std::string sPort = ossPort.str();
-		std::string temp = "DRIVER={/usr/lib/arm-linux-gnueabihf/odbc/psqlodbca.so};SERVER=" + ipaddress + ";PORT=" + sPort
-				+ ";DATABASE=thywin;UID=thywin;PWD=hanicampna;";
+		std::string temp = "DRIVER={/usr/lib/arm-linux-gnueabihf/odbc/psqlodbca.so};SERVER=" + ipaddress + ";PORT="
+				+ ossPort.str() + ";DATABASE=thywin;UID=thywin;PWD=hanicampna;";
 		const char* connectionString = temp.c_str();
 
 		SQLCHAR retconstring[1024];
@@ -110,8 +109,7 @@ namespace thywin
 	{
 		std::ostringstream ossRelevance;
 		ossRelevance << element->Relevance;
-		std::string sRelevance = ossRelevance.str();
-		std::string query = "INSERT INTO uris (uri, relevance) VALUES ('" + element->URI + "'," + sRelevance + ")";
+		std::string query = "INSERT INTO uris (uri, relevance) VALUES ('" + element->URI + "'," + ossRelevance.str() + ")";
 		handleNonRowReturningQuery(query);
 	}
 
@@ -150,9 +148,8 @@ namespace thywin
 	{
 		std::ostringstream ossCount;
 		ossCount << count;
-		std::string sCount = ossCount.str();
 		std::string query = "INSERT INTO indices VALUES ((SELECT uri_id FROM uris WHERE uri = '" + URI + "'), '" + word
-				+ "'," + sCount + ")";
+				+ "'," + ossCount.str() + ")";
 		handleNonRowReturningQuery(query);
 	}
 
@@ -262,17 +259,17 @@ namespace thywin
 	int DatabaseHandler::GetRowCount(std::string queue)
 	{
 		SQLHANDLE stmtHndl = createStatementHandler();
+		int rowsInQueue = 0;
 		std::string query = "SELECT count(uri_id) FROM " + queue;
 		if (executeQuery(query, stmtHndl))
 		{
 			if (SQLFetch(stmtHndl) == SQL_SUCCESS)
 			{
-				int rowsInQueue = 0;
+
 				SQLGetData(stmtHndl, 1, SQL_C_LONG, &rowsInQueue, 0, NULL);
-				return rowsInQueue;
 			}
 		}
-		return 0;
+		return rowsInQueue;
 	}
 
 	bool DatabaseHandler::IsQueueEmpty(std::string queue)
