@@ -172,10 +172,7 @@ namespace thywin
 		documentPacket->Document = body;
 		documentPacket->URI = crawledURI;
 
-		ThywinPacket packet;
-		packet.Type = DOCUMENT;
-		packet.Method = PUT;
-		packet.Content = documentPacket;
+		ThywinPacket packet(PUT, DOCUMENT, documentPacket);
 
 		communication.SendPacket(packet);
 		logger.Log(INFO, "Sent valid link: " + std::string(crawledURI));

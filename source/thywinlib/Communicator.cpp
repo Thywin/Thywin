@@ -96,7 +96,7 @@ namespace thywin
 		return packet;
 	}
 
-	void checkRecv(int receiveSize, int socket)
+	void Communicator::checkRecv(int receiveSize, int socket)
 	{
 		if (receiveSize < 0)
 		{

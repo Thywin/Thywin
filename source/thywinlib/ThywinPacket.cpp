@@ -18,5 +18,9 @@ namespace thywin
 		Content = content;
 	}
 
+	ThywinPacket::~ThywinPacket()
+	{
+	}
+
 }
 
