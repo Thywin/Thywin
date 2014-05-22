@@ -149,15 +149,15 @@ namespace thywin
 	{
 		std::stringstream receiveBuffer;
 		char characterReceiveBuffer;
-		int receiveSize;
+		int receiveSize = -1;
 		do
 		{
 			receiveSize = recv(clientSocket, &characterReceiveBuffer, 1, 0);
+			checkReceiveSize(receiveSize);
 			receiveBuffer << characterReceiveBuffer;
 		} while (receiveSize > 0 && characterReceiveBuffer != TP_END_OF_PACKET);
-		checkReceiveSize(receiveSize);
-		ThywinPacket returnPacket = createThywinPacket(receiveBuffer);
-		return returnPacket;
+
+		return createThywinPacket(receiveBuffer);
 	}
 
 	void ClientConnection::fillThywinPacket(ThywinPacket& packet, std::stringstream& buffer)
