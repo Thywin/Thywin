@@ -24,6 +24,9 @@ namespace thywin
 	class HTMLFileParser: public FileParser
 	{
 		public:
+			/**
+			 * Default destructor
+			 */
 			virtual ~HTMLFileParser();
 
 			/**
@@ -36,12 +39,10 @@ namespace thywin
 			 */
 			virtual std::string ExtractText(const std::string& content);
 		private:
-			std::string constructURI(const std::string& input, const std::string& host, const std::string& path);
-			std::string constructRelativeURI(const std::string& input, const std::string& host,
-					const std::string& path);
+			std::string constructURI(const std::string& inputURI, const std::string& sourceURI);
+			std::string constructRelativeURI(const std::string& input, const std::string& sourceURI);
 			std::string constructRelativeURIWithDirectoryUp(const std::string& URI, const std::string& host,
 					const std::string& path);
-			std::string removeOneUps(const int amount, const std::string& path);
 			std::string getHostPartOfURI(const std::string& source);
 			std::string getPathPartOfURI(const std::string& source);
 			std::string addProtocolToURI(const std::string& source);

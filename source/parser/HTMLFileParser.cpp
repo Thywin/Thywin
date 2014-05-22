@@ -8,20 +8,14 @@
  */
 
 #include "HTMLFileParser.h"
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <vector>
-#include <algorithm>
-#include <string.h>
+
+#include <sstream>
 
 #include "Logger.h"
 
 namespace thywin
 {
 	typedef FileParser::URIs URIs;
-	Logger logger("uris.log");
 
 	HTMLFileParser::~HTMLFileParser()
 	{
@@ -38,9 +32,6 @@ namespace thywin
 		const std::string href("href=\"");
 		const std::string quoteCharacter("\"");
 		URIs extractedURIs;
-
-		std::string hostPartOfSourceURI = getHostPartOfURI(sourceURI);
-		std::string pathPartOfSourceURI = getPathPartOfURI(sourceURI);
 
 		std::string::size_type currentParsePosition = endHTMLHeadPosition;
 		while (currentParsePosition < content.length())
@@ -59,9 +50,8 @@ namespace thywin
 			}
 
 			std::string uri = content.substr(startURIPosition, endURIPosition - startURIPosition);
-			logger.Log(INFO, uri);
 
-			uri = constructURI(uri, hostPartOfSourceURI, pathPartOfSourceURI);
+			uri = constructURI(uri, sourceURI);
 			if (!uri.empty())
 			{
 				extractedURIs.push_back(uri);
@@ -75,149 +65,107 @@ namespace thywin
 
 	std::string HTMLFileParser::ExtractText(const std::string& content)
 	{
-		std::string text = std::string(content);
+		const std::string openBracket("<");
+		const std::string closeBracket(">");
 
-		unsigned int current = 0;
-		int pointyBracketIndex = -1;
-		while (current < text.size())
+		std::stringstream textStream;
+		std::string::size_type openBracketPosition = std::string::npos;
+		std::string::size_type closeBracketPosition = std::string::npos;
+		do
 		{
-			if (pointyBracketIndex == -1)
+			openBracketPosition = content.find(openBracket, closeBracketPosition);
+
+			if (openBracketPosition == std::string::npos)
 			{
-				if (text.at(current) == '<')
-				{
-					pointyBracketIndex = current;
-				}
+				textStream << content.substr(closeBracketPosition + closeBracket.length(), std::string::npos);
 			}
 			else
 			{
-				if (text.at(current) == '>')
-				{
-					text.erase(pointyBracketIndex, (current + 1) - pointyBracketIndex);
-					current = pointyBracketIndex;
-					pointyBracketIndex = -1;
-				}
+				textStream
+						<< content.substr(closeBracketPosition + closeBracket.length(),
+								openBracketPosition - closeBracketPosition);
 			}
-			current++;
-		}
 
-		return text;
+			closeBracketPosition = content.find(closeBracket, openBracketPosition);
+		} while (openBracketPosition != std::string::npos && closeBracketPosition != std::string::npos);
+
+		return textStream.str();
 	}
 
-	std::string HTMLFileParser::constructURI(const std::string& rawURI, const std::string& host,
-			const std::string& path)
+	std::string HTMLFileParser::constructURI(const std::string& rawURI, const std::string& sourceURI)
 	{
 		if (rawURI.length() == 0)
 		{
 			return rawURI;
 		}
 
+		std::string constructedURI;
 		bool relativeURI = (getEndPositionOfProtocol(rawURI) == std::string::npos);
+
 		if (relativeURI)
 		{
-			return constructRelativeURI(rawURI, host, path);
+			constructedURI = constructRelativeURI(rawURI, sourceURI);
 		}
 		else
 		{
-			return rawURI;
+			constructedURI = rawURI;
 		}
-		/*
-		 std::string tempInput = std::string(rawURI);
-		 std::vector<const char *> bannedTags;
-		 const char *http("http://");
-		 const char *https("https://");
-		 const char *www("www");
-		 bannedTags.push_back("mailto:");
-		 bannedTags.push_back("file:");
-		 bannedTags.push_back("javascript:");
 
-		 std::string::size_type httpPos = tempInput.find(http, 0, strlen(http));
-		 std::string::size_type httpsPos = tempInput.find(https, 0, strlen(https));
-		 std::string::size_type wwwPos = tempInput.find(www, 0, strlen(www));
-		 if ((httpPos == std::string::npos || httpPos != 0) && (httpsPos == std::string::npos || httpsPos != 0)
-		 && (wwwPos == std::string::npos || wwwPos != 0))
-		 {
-		 for (unsigned int i = 0; i < bannedTags.size(); i++)
-		 {
-		 std::string::size_type pos = tempInput.find(bannedTags.at(i));
-		 if (pos != std::string::npos)
-		 {
-		 return std::string();
-		 }
-		 }
-		 if (tempInput[0] == '#')
-		 {
-		 return std::string();
-		 }
-
-		 if (tempInput[0] == '/')
-		 {
-		 return host + tempInput;
-		 }
-
-		 int oneUpCounter = 0;
-		 std::string::size_type foundOneUp = 0;
-		 do
-		 {
-		 foundOneUp = tempInput.find("../", foundOneUp);
-		 if (foundOneUp != std::string::npos)
-		 {
-		 tempInput.erase(0, 3);
-		 oneUpCounter++;
-		 }
-		 } while (foundOneUp != std::string::npos);
-
-		 std::string uriPath = removeOneUps(oneUpCounter, path);
-
-		 if (oneUpCounter > 0)
-		 {
-		 return host + uriPath + tempInput;
-		 }
-		 else
-		 {
-		 return host + "/" + tempInput;
-		 }
-		 }
-		 return tempInput;
-		 */
+		const std::string fragmentIdentifier("#");
+		return constructedURI.substr(0, constructedURI.find(fragmentIdentifier));
 	}
 
-	std::string HTMLFileParser::constructRelativeURI(const std::string& URI, const std::string& host,
-			const std::string& path)
+	std::string HTMLFileParser::constructRelativeURI(const std::string& URI, const std::string& sourceURI)
 	{
 		const std::string relativeProtocolURI("//");
 		const std::string relativeDirectoryUpURI("../");
 		const std::string relativeHostURI("/");
 
+		std::stringstream constructedURIStream;
+
 		if (URI.compare(0, relativeProtocolURI.length(), relativeProtocolURI) == 0)
 		{
-			return addProtocolToURI(URI);
+			constructedURIStream << addProtocolToURI(URI);
 		}
 		else if (URI.compare(0, relativeDirectoryUpURI.length(), relativeDirectoryUpURI) == 0)
 		{
-			return constructRelativeURIWithDirectoryUp(URI, host, path);
+			constructedURIStream
+					<< constructRelativeURIWithDirectoryUp(URI, getHostPartOfURI(sourceURI),
+							getPathPartOfURI(sourceURI));
 		}
 		else if (URI.compare(0, relativeHostURI.length(), relativeHostURI) == 0)
 		{
-			return host + URI;
+			constructedURIStream << getHostPartOfURI(sourceURI) << URI;
 		}
 		else
 		{
-			return host + path + URI;
+			const std::string colon(":");
+			const std::string startQueryString("?");
+
+			std::string::size_type colonPosition = URI.find(colon);
+			std::string::size_type startQueryStringPosition = URI.find(startQueryString);
+
+			if (colonPosition > startQueryStringPosition || colonPosition == std::string::npos)
+			{
+				constructedURIStream << getHostPartOfURI(sourceURI) << getPathPartOfURI(sourceURI) << URI;
+			}
 		}
+
+		return constructedURIStream.str();
 	}
 
-	std::string HTMLFileParser::constructRelativeURIWithDirectoryUp(const std::string& URI, const std::string& host,
-			const std::string& path)
+	std::string HTMLFileParser::constructRelativeURIWithDirectoryUp(const std::string& inputURI,
+			const std::string& host, const std::string& path)
 	{
 		std::string::size_type pathEndPosition = path.length() - 1;
-		std::string::size_type URIStartPosition = 0;
+		std::string::size_type inputURIStartPosition = 0;
 
 		const std::string relativeDirectoryUpURI("../");
 		const std::string slash("/");
-		while (URI.compare(URIStartPosition, relativeDirectoryUpURI.length(), relativeDirectoryUpURI) == 0)
+		while (inputURI.compare(inputURIStartPosition, relativeDirectoryUpURI.length(), relativeDirectoryUpURI) == 0)
 		{
-			URIStartPosition += relativeDirectoryUpURI.length();
-			pathEndPosition = path.find_last_of(slash, pathEndPosition - 1);
+			inputURIStartPosition += relativeDirectoryUpURI.length();
+			pathEndPosition = path.find_last_of(slash, pathEndPosition - slash.length());
 			if (pathEndPosition == std::string::npos)
 			{
 				pathEndPosition = 0;
@@ -225,56 +173,8 @@ namespace thywin
 			}
 		}
 
-		return host + path.substr(0, pathEndPosition + 1)
-				+ URI.substr(URIStartPosition, URI.length() - URIStartPosition);
-	}
-
-	std::string HTMLFileParser::removeOneUps(const int amount, const std::string& path)
-	{
-		std::string uriPath = path;
-		for (int i = 0; i < amount; i++)
-		{
-			std::string::size_type lastFoundSlashPos = uriPath.find("/");
-			if (lastFoundSlashPos == std::string::npos)
-			{
-				if (uriPath[uriPath.length() - 1] != '/')
-				{
-					uriPath += '/';
-				}
-				break;
-			}
-			std::string::size_type newSlashPos;
-			std::string::size_type secondToLastSlashPos;
-			do
-			{
-				newSlashPos = uriPath.find("/", lastFoundSlashPos + 1);
-				if (newSlashPos != std::string::npos)
-				{
-					secondToLastSlashPos = lastFoundSlashPos;
-					lastFoundSlashPos = newSlashPos;
-				}
-			} while (newSlashPos != std::string::npos);
-
-			if (secondToLastSlashPos != std::string::npos)
-			{
-				if (lastFoundSlashPos == uriPath.length() - 1)
-				{
-					if ((lastFoundSlashPos - secondToLastSlashPos) >= 2)
-					{
-						uriPath = uriPath.erase(secondToLastSlashPos, lastFoundSlashPos - secondToLastSlashPos);
-					}
-				}
-				else
-				{
-					uriPath = uriPath.erase(lastFoundSlashPos, uriPath.length() - lastFoundSlashPos);
-				}
-				if (uriPath[uriPath.length() - 1] != '/')
-				{
-					uriPath += '/';
-				}
-			}
-		}
-		return uriPath;
+		return host + path.substr(0, pathEndPosition + slash.length())
+				+ inputURI.substr(inputURIStartPosition, inputURI.length() - inputURIStartPosition);
 	}
 
 	std::string HTMLFileParser::getHostPartOfURI(const std::string& sourceURI)
@@ -330,7 +230,8 @@ namespace thywin
 
 	std::string HTMLFileParser::addProtocolToURI(const std::string& URI)
 	{
-		if (URI.compare(0, 2, "//") == 0)
+		const std::string relativeProtocolURI("//");
+		if (URI.compare(0, relativeProtocolURI.length(), relativeProtocolURI) == 0)
 		{
 			return "http:" + URI;
 		}
