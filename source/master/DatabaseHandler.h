@@ -21,6 +21,10 @@ namespace thywin
 
 	const int DEFAULT_DATABASE_PORT = 5432;
 	const std::string DEFAULT_DATABASE_IP = "192.168.100.13";
+	const std::string SQL_ERRORSTATE_UNIQUE = "23505";
+	const int CONNECTION_TIMEOUT_IN_MINUTES = 15;
+	const int RETRIEVE_URI_BUFFER_SIZE = 1024;
+	const int DEFAULT_BUFFER_SIZE = 1024;
 
 	class DatabaseHandler
 	{
@@ -135,10 +139,6 @@ namespace thywin
 			SQLHANDLE environmentHandle;
 			SQLHANDLE connectionHandle;
 			bool connected;
-			static const int CONNECTION_TIMEOUT_IN_MINUTES = 15;
-			static const int RETRIEVE_URI_BUFFER_SIZE = 1024;
-			static const int SQL_ERRORSTATE_UNIQUE = 23505;
-			static const int DEFAULT_BUFFER_SIZE = 1024;
 
 			void handleNonRowReturningQuery(std::string query);
 			bool executeQuery(std::string query, SQLHANDLE& stmtHndl);

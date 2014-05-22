@@ -351,7 +351,7 @@ namespace thywin
 				== SQLGetDiagRec(handletype, statementHandler, 1, sqlstate, NULL, message, DEFAULT_BUFFER_SIZE, NULL))
 		{
 			std::string sqlStateString((char *) sqlstate);
-			std::string::size_type statePos = sqlStateString.find(std::string(SQL_ERRORSTATE_UNIQUE));
+			std::string::size_type statePos = sqlStateString.find(SQL_ERRORSTATE_UNIQUE);
 			if (statePos == std::string::npos)
 			{
 				// Once the library has been updated, this will be turned into a logger message.
