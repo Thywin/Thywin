@@ -1,66 +1,51 @@
 /*
  * main.cpp
  *
- *  Created on: 10 mei 2014
- *      Author: Thomas
+ *  Created on: 13 mei 2014
+ *      Author: Thomas Kooi
  */
-#include <string>
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <sstream>
-#include <iostream>
-#include <vector>
-#include <string.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <mutex>
-#include <fstream>
-#include "master.hpp"
-#include "communicator.hpp"
-#include <semaphore.h>
+#include "Server.h"
+#include <stdexcept>
+#include "Master.h"
+#include "Logger.h"
 
-void *awaitClient(void *socket);
+using namespace thywin;
 
-int main()
+int main(int argc, char* argv[])
 {
-	int port = 7000;
-	thywin::Communicator communicator;
-	int serverDesc = communicator.SetupServer(port);
-	if (serverDesc < 0)
+	Logger logger("Master.log");
+	try
 	{
-		return 1;
-	}
-	pthread_t thread_id;
-	for (int i = 0; i < 10; i++)
-	{
-		if (pthread_create(&thread_id, NULL, awaitClient, (void *) &serverDesc) < 0)
+		if (argc < 2)
 		{
-			perror("could not create thread");
-			return 1;
+			logger.log(ERROR, "No port has been given..");
+			return (EXIT_FAILURE);
+		}
+		else
+		{
+			const int portNumber = std::stoi(argv[1]);
+			logger.log(INFO, "Starting Master.");
+			Master::InitializeMaster();
+			Server srv(portNumber);
+			logger.log(INFO, "Server shutting down.");
+			return (EXIT_SUCCESS);
 		}
 	}
-
-	while (1)
+	catch (std::invalid_argument& e)
 	{
+		logger.log(ERROR, "Invalid argument exception: " + std::string(e.what()));
 	}
-	printf("System shutdown\n");
-	return EXIT_SUCCESS;
+	catch (std::exception& e)
+	{
+		logger.log(ERROR, "Catched an exception on main: " + std::string(e.what()));
+	}
+	catch (...)
+	{
+		logger.log(ERROR, "Something went terribly wrong!");
+	}
+	return (EXIT_SUCCESS);
 }
 
-void *awaitClient(void *socket)
-{
-	struct sockaddr_in client;
-	int serverDesc = *(int *) socket;
-	int c = sizeof(client);
-	thywin::Communicator communicator;
-	while (1)
-	{
-		int clientDesc = accept(serverDesc, (struct sockaddr *) &client, (socklen_t*) &c);
-		printf("Connection accepted with client: %s port %i\n", inet_ntoa(client.sin_addr), ntohs(client.sin_port));
-		communicator.HandleConnection(clientDesc);
-	}
-	return (void *) 0;
-}

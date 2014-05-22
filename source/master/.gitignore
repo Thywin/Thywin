@@ -1,6 +1,5 @@
 # eclipse specific git ignore
 .project
-.cproject
 .metadata
 bin/**
 tmp/**
@@ -25,7 +24,6 @@ local.properties
 *.obj
 
 # Compiled Dynamic libraries
-*.so
 *.dylib
 *.dll
 
