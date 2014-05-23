@@ -26,7 +26,6 @@ namespace thywin
 		std::stringstream stream;
 		stream << input;
 
-		std::string token;
 		std::getline(stream, URI, TP_CONTENT_SEPERATOR);
 		std::getline(stream, Document, TP_CONTENT_SEPERATOR);
 	}

@@ -96,9 +96,9 @@ namespace thywin
 	std::string DocumentVector::Serialize()
 	{
 		std::stringstream serializedStream;
-		for(DocumentVector::iterator i = begin(); i != end(); i++)
+		for (DocumentVector::iterator i = begin(); i != end(); i++)
 		{
-			serializedStream << i->first << TP_CONTENT_SEPERATOR << i-> second << TP_CONTENT_SEPERATOR;
+			serializedStream << i->first << TP_CONTENT_SEPERATOR << i->second << TP_CONTENT_SEPERATOR;
 		}
 		return serializedStream.str();
 	}
@@ -109,7 +109,8 @@ namespace thywin
 		serializedStream << serializedDocumentVector;
 		std::string wordBuffer;
 		std::string countBuffer;
-		while(std::getline(serializedStream, wordBuffer, TP_CONTENT_SEPERATOR) && std::getline(serializedStream, countBuffer, TP_CONTENT_SEPERATOR))
+		while (std::getline(serializedStream, wordBuffer, TP_CONTENT_SEPERATOR)
+				&& std::getline(serializedStream, countBuffer, TP_CONTENT_SEPERATOR))
 		{
 			(*this)[wordBuffer] = stoi(countBuffer);
 		}
