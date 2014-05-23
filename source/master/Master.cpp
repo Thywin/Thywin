@@ -78,7 +78,6 @@ namespace thywin
 	void Master::AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element)
 	{
 		Master::DocumentQueueMutex.lock();
-		std::cout << "add document " << element->URI << std::endl;
 		DBConnection.AddDocumentToQueue(element);
 		sem_post(&documentQueueSemaphore);
 		Master::DocumentQueueMutex.unlock();
