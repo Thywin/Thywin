@@ -73,7 +73,14 @@ namespace thywin
 		std::string::size_type closeBracketPosition = std::string::npos;
 		do
 		{
-			openBracketPosition = content.find(openBracket, closeBracketPosition);
+			if(closeBracketPosition == std::string::npos)
+			{
+				openBracketPosition = content.find(openBracket, 0);
+			}
+			else
+			{
+				openBracketPosition = content.find(openBracket, closeBracketPosition);
+			}
 
 			if (openBracketPosition == std::string::npos)
 			{
@@ -83,7 +90,7 @@ namespace thywin
 			{
 				textStream
 						<< content.substr(closeBracketPosition + closeBracket.length(),
-								openBracketPosition - closeBracketPosition);
+								openBracketPosition - (closeBracketPosition + closeBracket.length()));
 			}
 
 			closeBracketPosition = content.find(closeBracket, openBracketPosition);
