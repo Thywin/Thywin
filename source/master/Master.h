@@ -15,6 +15,7 @@
 #include <semaphore.h>
 #include "URIPacket.h"
 #include "DocumentPacket.h"
+#include "DocumentVectorPacket.h"
 #include "DatabaseHandler.h"
 
 namespace thywin
@@ -55,6 +56,10 @@ namespace thywin
 			static void AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element);
 
 			/**
+			 *
+			 */
+			static void PutDocumentVector(std::shared_ptr<DocumentVectorPacket> vector);
+			/**
 			 * Disconnects the connection with the database
 			 */
 			virtual ~Master();
@@ -69,7 +74,7 @@ namespace thywin
 
 			static std::mutex URIQueueMutex;
 			static std::mutex DocumentQueueMutex;
-
+			static std::mutex DocumentVectorMutex;
 			/**
 			 * Semaphore for the document Queue.
 			 * Will be initialized with the number of documents available in the Database Queue on start.

@@ -23,6 +23,7 @@ namespace thywin
 {
 	std::mutex Master::URIQueueMutex;
 	std::mutex Master::DocumentQueueMutex;
+	std::mutex Master::DocumentVectorMutex;
 	sem_t Master::documentQueueSemaphore;
 	std::vector<std::shared_ptr<URIPacket>> Master::URIQueue;
 	DatabaseHandler Master::DBConnection(DEFAULT_DATABASE_IP, DEFAULT_DATABASE_PORT);
@@ -89,6 +90,18 @@ namespace thywin
 		std::shared_ptr<DocumentPacket> element = DBConnection.RetrieveAndDeleteDocumentFromQueue();
 		Master::DocumentQueueMutex.unlock();
 		return element;
+	}
+
+	void Master::PutDocumentVector(std::shared_ptr<DocumentVectorPacket> vector)
+	{
+		DocumentVectorMutex.lock();
+		printf("PUTTING DOCUMENT VECTOR: %s | %f\n", vector->URI.c_str(), vector->Relevance);
+		for (DocumentVector::iterator i = vector->Index.begin(); i != vector->Index.end(); i++)
+		{
+			printf("%s %i\n", i->first.c_str(), i->second);
+			DBConnection.AddWordcountToIndex(vector->URI, i->first,i->second);
+		}
+		DocumentVectorMutex.unlock();
 	}
 
 	void Master::fillURLQueue()

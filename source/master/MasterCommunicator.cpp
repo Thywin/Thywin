@@ -9,6 +9,7 @@
 #include "MasterCommunicator.h"
 #include "URIPacket.h"
 #include "DocumentPacket.h"
+#include "DocumentVectorPacket.h"
 
 namespace thywin
 {
@@ -32,6 +33,11 @@ namespace thywin
 	{
 		std::shared_ptr<DocumentPacket> packet = std::dynamic_pointer_cast<DocumentPacket>(content);
 		Master::AddDocumentElementToQueue(packet);
+	}
+
+	void MasterCommunicator::HandlePutDocumentVector(std::shared_ptr<ThywinPacketContent> content) {
+		std::shared_ptr<DocumentVectorPacket> packet = std::dynamic_pointer_cast<DocumentVectorPacket>(content);
+		Master::PutDocumentVector(packet);
 	}
 
 	ThywinPacket MasterCommunicator::createResponsePacket(std::shared_ptr<ThywinPacketContent> content)

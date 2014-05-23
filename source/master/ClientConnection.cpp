@@ -90,7 +90,7 @@ namespace thywin
 				break;
 			case DOCUMENTVECTOR:
 				// TODO
-				//MasterCommunicator::HandlePutDocumentVector(packet);	// to be implemented later
+				// MasterCommunicator::HandlePutDocumentVector(packet.Content);	// to be implemented later
 				break;
 		}
 	}

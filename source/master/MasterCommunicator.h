@@ -56,6 +56,8 @@ namespace thywin
 			 */
 			void HandlePutDocument(std::shared_ptr<ThywinPacketContent> Content);
 
+			void HandlePutDocumentVector(std::shared_ptr<ThywinPacketContent> content);
+
 		private:
 			ThywinPacket createResponsePacket(std::shared_ptr<ThywinPacketContent> content);
 	};
