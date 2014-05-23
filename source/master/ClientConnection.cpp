@@ -38,6 +38,8 @@ namespace thywin
 	
 	ClientConnection::~ClientConnection()
 	{
+		handlingConnection = false;
+		connection = false;
 		CloseConnection();
 	}
 
@@ -110,7 +112,6 @@ namespace thywin
 			{
 				// who cares?
 			}
-			pthread_exit(NULL);
 		}
 	}
 
@@ -137,6 +138,7 @@ namespace thywin
 		}
 		data << TP_END_OF_PACKET;
 
+
 		int sendSize = send(clientSocket, (const char*) data.str().c_str(), data.str().size(), 0);
 		if (sendSize < 0)
 		{
@@ -156,12 +158,12 @@ namespace thywin
 			checkReceiveSize(receiveSize);
 			receiveBuffer << characterReceiveBuffer;
 		} while (receiveSize > 0 && characterReceiveBuffer != TP_END_OF_PACKET);
-
 		return createThywinPacket(receiveBuffer);
 	}
 
 	void ClientConnection::fillThywinPacket(ThywinPacket& packet, std::stringstream& buffer)
 	{
+		std::cout << buffer.str().substr(0,10) << std::endl;
 		std::string valueForPacket;
 		std::getline(buffer, valueForPacket, TP_HEADER_SEPERATOR);
 		packet.Method = (PacketMethod) std::stoi(valueForPacket);
@@ -228,11 +230,16 @@ namespace thywin
 
 	ThywinPacket ClientConnection::createThywinPacket(std::stringstream& receiveBuffer)
 	{
-		ThywinPacket returnPacket;
-		returnPacket.Method = GET;
-		returnPacket.Type = URI;
-		returnPacket.Content = NULL;
-		fillThywinPacket(returnPacket, receiveBuffer);
+		std::cout << receiveBuffer.str().substr(0,10) << std::endl;
+		ThywinPacket returnPacket(GET, URI);
+		try
+		{
+			fillThywinPacket(returnPacket, receiveBuffer);
+		}
+		catch (std::exception& e)
+		{
+			printf("Couldn't fill ThywinPacket\n");
+		}
 		return returnPacket;
 	}
 
@@ -246,8 +253,9 @@ namespace thywin
 		}
 		else if (receiveSize == 0)
 		{
+			printf("Client Closed Connection\n");
 			CloseConnection();
-			throw std::string("Client Closed Connection");
+			throw std::runtime_error("Client Closed Connection");
 		} // There are no other cases that would need to be handled
 	}
 

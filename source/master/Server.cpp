@@ -27,12 +27,17 @@ namespace thywin
 	{
 		try
 		{
-			int client = *(int *) socket;
-			ClientConnection connection = thywin::ClientConnection(client);
+			int client = *((int *) socket);
+		    free(socket);
+			ClientConnection connection(client);
 			connection.HandleConnection(); /* Blocking call. Will wait until client closed connection */
 		}
 		catch (std::exception& e)
 		{
+			std::cout << e.what() << std::endl;
+		}
+		catch (...) {
+			std::cout << "unexpected exception." << std::endl;
 		}
 		pthread_exit(NULL);
 		return (void *) 0;
@@ -121,7 +126,7 @@ namespace thywin
 		}
 
 		struct sockaddr_in clientAddr;
-		int sizeOfClientAddr = sizeof(clientAddr);
+		socklen_t sizeOfClientAddr = sizeof(clientAddr);
 		pthread_t thread_id;
 
 		logger.Log(INFO,std::string("Server is awaiting connections"));
@@ -129,15 +134,17 @@ namespace thywin
 		while (HasConnection())
 		{
 			int client = accept(serverSocket, (struct sockaddr *) &clientAddr, (socklen_t*) &sizeOfClientAddr);
-			printf("Connection accepted with client: %s port %i\n", inet_ntoa(clientAddr.sin_addr),
-					ntohs(clientAddr.sin_port));
+			printf("Connection accepted with client: %s port %i | CLIENT: %i\n", inet_ntoa(clientAddr.sin_addr),
+					ntohs(clientAddr.sin_port), client);
 
-			logger.Log(INFO,std::string("Connection accepted with client: %s port %i"));
-			if (pthread_create(&thread_id, NULL, setUpConnectionWithClient, (void *) &client) < 0)
+			logger.Log(INFO,std::string("Connection accepted with client: port"));
+			int* arg = (int*)malloc(sizeof(*arg));
+			*arg = client;
+			if (pthread_create(&thread_id, NULL, setUpConnectionWithClient, arg) < 0)
 			{
 				close(client);
 				logger.Log(ERROR,std::string("Failed to create a new thread for client connection"));
-				throw std::string("Failed to create a new thread for client connection");
+				throw std::runtime_error("Failed to create a new thread for client connection");
 			}
 			else
 			{

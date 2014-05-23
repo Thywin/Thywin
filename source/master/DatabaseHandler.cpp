@@ -101,18 +101,23 @@ namespace thywin
 
 	void DatabaseHandler::AddURIToList(std::shared_ptr<URIPacket> element)
 	{
-		std::ostringstream ossRelevance;
-		ossRelevance << element->Relevance;
-		std::string query = "INSERT INTO uris (uri, relevance) VALUES ('" + element->URI + "'," + ossRelevance.str()
-				+ ")";
-		handleNonRowReturningQuery(query);
+		if (!element->URI.empty())
+		{
+			std::ostringstream ossRelevance;
+			ossRelevance << element->Relevance;
+			std::string query = "SELECT add_uri('" + element->URI + "'," + ossRelevance.str() + ");";
+			handleNonRowReturningQuery(query);
+		}
 	}
 
 	void DatabaseHandler::AddURIToQueue(std::string URI)
 	{
-		std::string query = "INSERT INTO uri_queue VALUES ((SELECT uri_id FROM uris WHERE uri = '" + URI
-				+ "'), (SELECT relevance FROM uris WHERE uri = '" + URI + "'))";
-		handleNonRowReturningQuery(query);
+		if (!URI.empty())
+		{
+			std::string query = "INSERT INTO uri_queue VALUES ((SELECT uri_id FROM uris WHERE uri = '" + URI
+					+ "'), (SELECT relevance FROM uris WHERE uri = '" + URI + "'))";
+			handleNonRowReturningQuery(query);
+		}
 	}
 
 	void DatabaseHandler::AddDocumentToQueue(std::shared_ptr<DocumentPacket> input)
