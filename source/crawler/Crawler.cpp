@@ -130,13 +130,13 @@ namespace thywin
 		std::string header = document.substr(0, headerend);
 		std::transform(header.begin(), header.end(), header.begin(), ::tolower);
 
-		const std::string http_moved = "http/1.1 30";
-		std::string::size_type http_moved_in_head = header.find(http_moved);
-		if (http_moved_in_head != std::string::npos)
-		{
-			parseMovedFile(header, crawledURI);
-		}
-		else
+//		const std::string http_moved = "http/1.1 30";
+//		std::string::size_type http_moved_in_head = header.find(http_moved);
+//		if (http_moved_in_head != std::string::npos)
+//		{
+//			parseMovedFile(header, crawledURI);
+//		}
+//		else
 		{
 			const std::string content_type = "content-type: text/html";
 			std::string::size_type content_type_html = header.find(content_type);
