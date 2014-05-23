@@ -78,6 +78,7 @@ namespace thywin
 	void Master::AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element)
 	{
 		Master::DocumentQueueMutex.lock();
+		std::cout << "add document " << element->URI << std::endl;
 		DBConnection.AddDocumentToQueue(element);
 		sem_post(&documentQueueSemaphore);
 		Master::DocumentQueueMutex.unlock();
@@ -95,10 +96,8 @@ namespace thywin
 	void Master::PutDocumentVector(std::shared_ptr<DocumentVectorPacket> vector)
 	{
 		DocumentVectorMutex.lock();
-		printf("PUTTING DOCUMENT VECTOR: %s | %f\n", vector->URI.c_str(), vector->Relevance);
 		for (DocumentVector::iterator i = vector->Index.begin(); i != vector->Index.end(); i++)
 		{
-			printf("%s %i\n", i->first.c_str(), i->second);
 			DBConnection.AddWordcountToIndex(vector->URI, i->first,i->second);
 		}
 		DocumentVectorMutex.unlock();
@@ -121,7 +120,7 @@ namespace thywin
 			DBConnection.AddURIToQueue(newelemente->URI);
 
 			std::shared_ptr<URIPacket> anotherElement(new URIPacket);
-			anotherElement->URI = "www.facebook.com\0";
+			anotherElement->URI = "https://www.facebook.com\0";
 			anotherElement->Relevance = 0;
 			DBConnection.AddURIToList(anotherElement);
 			DBConnection.AddURIToQueue(anotherElement->URI);

@@ -36,7 +36,7 @@ namespace thywin
 			Relevance = 0;
 		}
 
-		std::getline(stream, token, TP_CONTENT_SEPERATOR);
+		std::getline(stream, token, TP_END_OF_PACKET);
 		DocumentVector vector;
 		vector.Deserialize(token);
 		Index = vector;
