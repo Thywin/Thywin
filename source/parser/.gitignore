@@ -1,6 +1,5 @@
 # eclipse specific git ignore
 .project
-.cproject
 .metadata
 bin/**
 tmp/**
