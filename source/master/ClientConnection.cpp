@@ -19,6 +19,7 @@
 #include "ClientConnection.h"
 #include "Communicator.h"
 #include "MasterCommunicator.h"
+#include "DocumentVectorPacket.h"
 
 namespace thywin
 {
@@ -90,7 +91,7 @@ namespace thywin
 				break;
 			case DOCUMENTVECTOR:
 				// TODO
-				// MasterCommunicator::HandlePutDocumentVector(packet.Content);	// to be implemented later
+				communicator.HandlePutDocumentVector(packet.Content);	// to be implemented later
 				break;
 		}
 	}
@@ -163,7 +164,6 @@ namespace thywin
 
 	void ClientConnection::fillThywinPacket(ThywinPacket& packet, std::stringstream& buffer)
 	{
-		std::cout << buffer.str().substr(0,10) << std::endl;
 		std::string valueForPacket;
 		std::getline(buffer, valueForPacket, TP_HEADER_SEPERATOR);
 		packet.Method = (PacketMethod) std::stoi(valueForPacket);
@@ -207,7 +207,9 @@ namespace thywin
 			}
 			case DOCUMENTVECTOR:
 			{
-				// TODO
+				std::shared_ptr<DocumentVectorPacket> docPacket(new DocumentVectorPacket);
+				docPacket->Deserialize(serializedObject);
+				packet.Content = docPacket;
 				break;
 			}
 		}
@@ -230,7 +232,6 @@ namespace thywin
 
 	ThywinPacket ClientConnection::createThywinPacket(std::stringstream& receiveBuffer)
 	{
-		std::cout << receiveBuffer.str().substr(0,10) << std::endl;
 		ThywinPacket returnPacket(GET, URI);
 		try
 		{
