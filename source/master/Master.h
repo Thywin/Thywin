@@ -15,6 +15,7 @@
 #include <semaphore.h>
 #include "URIPacket.h"
 #include "DocumentPacket.h"
+#include "DocumentVectorPacket.h"
 #include "DatabaseHandler.h"
 #include "MultiURIPacket.h"
 
@@ -51,7 +52,7 @@ namespace thywin
 
 			/**
 			 * Adds a new document element to the Document Queue.
-			 * @param documentElement Pointer to a documentElement struct
+			 * @param documentElement Pointer to a documentElement
 			 */
 			static void AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element);
 
@@ -62,13 +63,19 @@ namespace thywin
 			static void AddMultipleURISToQueue(std::shared_ptr<MultiURIPacket> packet);
 
 			/**
+			 * Adds a new documentVector element to the index database.
+			 * @param documentVector Pointer to a documentVector
+			 */
+			static void PutDocumentVector(std::shared_ptr<DocumentVectorPacket> documentVector);
+
+			/**
 			 * Disconnects the connection with the database
 			 */
 			virtual ~Master();
 
 		private:
 
-			static const int URI_QUEUE_SIZE = 300;
+			static const int URI_QUEUE_SIZE = 50;
 			/**
 			 * Database connection object. Used get URIs or documents from the Database.
 			 */
@@ -76,7 +83,7 @@ namespace thywin
 
 			static std::mutex URIQueueMutex;
 			static std::mutex DocumentQueueMutex;
-
+			static std::mutex DocumentVectorMutex;
 			/**
 			 * Semaphore for the document Queue.
 			 * Will be initialized with the number of documents available in the Database Queue on start.
@@ -88,6 +95,7 @@ namespace thywin
 			 * This function will fill the URI queue with basic URIs for starting points.
 			 */
 			static void fillURLQueue();
+			static void fillURIElementToQueue(std::string URI);
 	};
 }
 

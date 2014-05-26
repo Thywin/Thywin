@@ -13,10 +13,10 @@
 #include "HTMLFileParser.h"
 #include "DocumentVector.h"
 #include "MultiURIPacket.h"
+#include "DocumentVectorPacket.h"
 
 namespace thywin
 {
-
 	Parser::Parser(const std::string& masterIP, const unsigned short masterPort) :
 			logger("parser.log"), communicator(masterIP, masterPort)
 	{
@@ -47,6 +47,9 @@ namespace thywin
 
 			DocumentVector docVector(text);
 			double relevance = docVector.CalculateSimilarity(subject);
+
+			DocumentVectorPacket documentVectorPacket(documentToParse.URI,relevance,docVector);
+			communicator.StoreIndex(documentVectorPacket);
 
 			std::stringstream logMessageRelevance;
 			logMessageRelevance << "Relevance of current URI: " << documentToParse.URI << " Relevance: " << relevance;

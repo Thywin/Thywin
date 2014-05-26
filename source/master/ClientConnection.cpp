@@ -20,6 +20,7 @@
 #include "Communicator.h"
 #include "MasterCommunicator.h"
 #include "MultiURIPacket.h"
+#include "DocumentVectorPacket.h"
 
 namespace thywin
 {
@@ -92,8 +93,7 @@ namespace thywin
 				//MasterCommunicator::HandlePutRelevance(packet);	// to be implemented later
 				break;
 			case DOCUMENTVECTOR:
-				// TODO
-				//MasterCommunicator::HandlePutDocumentVector(packet);	// to be implemented later
+				communicator.HandlePutDocumentVector(packet.Content);
 				break;
 			case URIVECTOR:
 				communicator.HandlePutUriVector(packet.Content);
@@ -144,7 +144,6 @@ namespace thywin
 		}
 		data << TP_END_OF_PACKET;
 
-
 		int sendSize = send(clientSocket, (const char*) data.str().c_str(), data.str().size(), 0);
 		if (sendSize < 0)
 		{
@@ -169,7 +168,6 @@ namespace thywin
 
 	void ClientConnection::fillThywinPacket(ThywinPacket& packet, std::stringstream& buffer)
 	{
-		std::cout << buffer.str().substr(0,10) << std::endl;
 		std::string valueForPacket;
 		std::getline(buffer, valueForPacket, TP_HEADER_SEPERATOR);
 		packet.Method = (PacketMethod) std::stoi(valueForPacket);
@@ -213,7 +211,9 @@ namespace thywin
 			}
 			case DOCUMENTVECTOR:
 			{
-				// TODO
+				std::shared_ptr<DocumentVectorPacket> docPacket(new DocumentVectorPacket);
+				docPacket->Deserialize(serializedObject);
+				packet.Content = docPacket;
 				break;
 			}
 			case URIVECTOR:
@@ -244,7 +244,6 @@ namespace thywin
 
 	ThywinPacket ClientConnection::createThywinPacket(std::stringstream& receiveBuffer)
 	{
-		std::cout << receiveBuffer.str().substr(0,10) << std::endl;
 		ThywinPacket returnPacket(GET, URI);
 		try
 		{

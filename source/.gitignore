@@ -37,3 +37,6 @@ local.properties
 *.exe
 *.out
 *.app
+
+# Config file
+config.ini
