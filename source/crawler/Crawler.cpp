@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <algorithm>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <Memory>
 #include <stdexcept>
 #include <errno.h>
@@ -22,10 +24,10 @@
 
 namespace thywin
 {
-	const std::string logfile = "log";
+	const std::string logfile = "crawler.log";
 
-	Crawler::Crawler(const std::string& ipaddress, const int& port) :
-			communication(ipaddress, port), logger(logfile)
+	Crawler::Crawler(const std::string& masterIP, const unsigned short masterPort) :
+			communication(masterIP, masterPort), logger(logfile)
 	{
 	}
 
@@ -42,9 +44,10 @@ namespace thywin
 			std::shared_ptr<URIPacket> uriPacket(new URIPacket);
 			std::shared_ptr<ThywinPacket> receivedPacket(new ThywinPacket);
 			receivedPacket = communication.ReceivePacket(uriPacket);
+
 			if (receivedPacket->Type == URI && receivedPacket->Method == RESPONSE)
 			{
-				crawl(uriPacket->URI);
+				crawl(uriPacket->URI, uriPacket->Relevance);
 			}
 		}
 		catch (std::bad_alloc& e)
@@ -57,7 +60,7 @@ namespace thywin
 		}
 	}
 
-	void Crawler::crawl(const std::string& URI)
+	void Crawler::crawl(const std::string& URI, double relevance)
 	{
 		int pagePipe[2];
 		if (pipe(pagePipe) == -1)
@@ -65,7 +68,7 @@ namespace thywin
 			throw std::runtime_error(std::string("failing to pipe: ") + strerror(errno));
 		}
 
-		int processID = fork();
+		pid_t processID = fork();
 		switch (processID)
 		{
 			case 0:
@@ -85,7 +88,9 @@ namespace thywin
 					logger.Log(WARNING, "Failed to close pagePipe[1]");
 					throw std::runtime_error(std::string("failed to close pipe[1]: ") + strerror(errno));
 				}
-				sendURIDocument(pagePipe[0], URI);
+				sendURIDocument(pagePipe[0], URI, relevance);
+				int status = 0;
+				waitpid(processID, &status, 0);
 		}
 	}
 
@@ -108,7 +113,7 @@ namespace thywin
 		throw std::runtime_error(std::string("failing to execute with execvp: ") + strerror(errno));
 	}
 
-	void Crawler::sendURIDocument(int pagePipeRead, const std::string& crawledURI)
+	void Crawler::sendURIDocument(int pagePipeRead, const std::string& crawledURI, double relevance)
 	{
 		char buffer;
 		int readSize = read(pagePipeRead, &buffer, sizeof(buffer));
@@ -134,7 +139,7 @@ namespace thywin
 		std::string::size_type http_moved_in_head = header.find(http_moved);
 		if (http_moved_in_head != std::string::npos)
 		{
-			parseMovedFile(header, crawledURI);
+			parseMovedFile(header, crawledURI, relevance);
 		}
 		else
 		{
@@ -151,7 +156,7 @@ namespace thywin
 		}
 	}
 
-	void Crawler::parseMovedFile(const std::string& header, const std::string& crawledURI)
+	void Crawler::parseMovedFile(const std::string& header, const std::string& crawledURI, double relevance)
 	{
 		const std::string redirect_URI = "location: ";
 		std::string::size_type head_location = header.find(redirect_URI);
@@ -159,7 +164,15 @@ namespace thywin
 		int head_start = head_location + redirect_URI.size();
 		if (head_location != std::string::npos)
 		{
-			crawl(header.substr(head_start, head_location_end - head_start));
+			std::string redirectedURI = header.substr(head_start, head_location_end - head_start);
+			URIPacket uriPacket;
+			uriPacket.Relevance = relevance;
+			uriPacket.URI = redirectedURI;
+
+			std::shared_ptr<URIPacket> uriPacketSPtr(new URIPacket(uriPacket));
+			ThywinPacket packet(PUT, URI, uriPacketSPtr);
+			communication.SendPacket(packet);
+			logger.Log(INFO, "Send redirected URI: " + redirectedURI);
 		}
 	}
 
