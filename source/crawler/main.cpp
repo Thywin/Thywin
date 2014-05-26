@@ -19,7 +19,7 @@ using namespace thywin;
 
 int main(int argc, char** argv)
 {
-	Logger logger = Logger("log");
+	Logger logger = Logger("crawler.log");
 
 	try
 	{
