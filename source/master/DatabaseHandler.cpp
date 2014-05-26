@@ -129,6 +129,23 @@ namespace thywin
 		return false;
 	}
 
+	bool DatabaseHandler::URIInList(std::string URI)
+	{
+		SQLHANDLE statementHandler = createStatementHandler();
+		std::string query = "SELECT * FROM uris WHERE uri = '" + URI + "'";
+
+		if (executeQuery(query, statementHandler))
+		{
+			if (SQLFetch(statementHandler) == SQL_SUCCESS)
+			{
+				releaseStatementHandler(statementHandler);
+				return true;
+			}
+		}
+		releaseStatementHandler(statementHandler);
+		return false;
+	}
+
 	void DatabaseHandler::AddURIToQueue(std::string URI)
 	{
 		if (!URI.empty())

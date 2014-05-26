@@ -43,9 +43,16 @@ namespace thywin
 	void Master::AddURIElementToQueue(std::shared_ptr<URIPacket> element)
 	{
 		Master::URIQueueMutex.lock();
-		if (DBConnection.AddURIToList(element))
+		if (!DBConnection.URIInList(element->URI))
 		{
-			DBConnection.AddURIToQueue(element->URI);
+			if (DBConnection.AddURIToList(element))
+			{
+				DBConnection.AddURIToQueue(element->URI);
+			}
+		}
+		else
+		{
+			DBConnection.AddURIToList(element);
 		}
 		Master::URIQueueMutex.unlock();
 	}
@@ -114,7 +121,7 @@ namespace thywin
 		try
 		{
 			std::shared_ptr<URIPacket> URIElement(new URIPacket);
-			URIElement->URI = "http://thywin.com/kaas/kaas/index.html\0";
+			URIElement->URI = "https://github.com/\0";
 			URIElement->Relevance = 0;
 			DBConnection.AddURIToList(URIElement);
 			DBConnection.AddURIToQueue(URIElement->URI);
@@ -126,7 +133,7 @@ namespace thywin
 			DBConnection.AddURIToQueue(newelemente->URI);
 
 			std::shared_ptr<URIPacket> anotherElement(new URIPacket);
-			anotherElement->URI = "https://www.facebook.com\0";
+			anotherElement->URI = "http://mdm.sagepub.com/content/32/5/701.full\0";
 			anotherElement->Relevance = 0;
 			DBConnection.AddURIToList(anotherElement);
 			DBConnection.AddURIToQueue(anotherElement->URI);
@@ -136,6 +143,13 @@ namespace thywin
 			otherElement->Relevance = 0;
 			DBConnection.AddURIToList(otherElement);
 			DBConnection.AddURIToQueue(otherElement->URI);
+
+			std::shared_ptr<URIPacket> otherElementAdditional(new URIPacket);
+			otherElementAdditional->URI = "http://www.albrechts.com/mike/DES/\0";
+			otherElementAdditional->Relevance = 0;
+			DBConnection.AddURIToList(otherElementAdditional);
+			DBConnection.AddURIToQueue(otherElementAdditional->URI);
+
 		}
 		catch (std::bad_alloc& e)
 		{

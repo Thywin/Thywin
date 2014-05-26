@@ -124,6 +124,8 @@ namespace thywin
 			 */
 			void Disconnect();
 
+			bool URIInList(std::string URI);
+
 		private:
 			SQLHANDLE environmentHandle;
 			SQLHANDLE connectionHandle;

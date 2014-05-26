@@ -68,7 +68,7 @@ namespace thywin
 
 		private:
 
-			static const int URI_QUEUE_SIZE = 300;
+			static const int URI_QUEUE_SIZE = 50;
 			/**
 			 * Database connection object. Used get URIs or documents from the Database.
 			 */
