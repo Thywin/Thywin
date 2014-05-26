@@ -91,6 +91,16 @@ namespace thywin
 		return element;
 	}
 
+	void Master::AddMultipleURISToQueue(std::shared_ptr<MultiURIPacket> packet)
+	{
+		Master::URIQueueMutex.lock();
+		for (unsigned int i = 0; i < packet->Content.size(); i++)
+		{
+			AddURIElementToQueue(packet->Content.at(i));
+		}
+		Master::URIQueueMutex.unlock();
+	}
+
 	void Master::fillURLQueue()
 	{
 		try

@@ -7,9 +7,12 @@
 
 #include <iostream>
 
+#include <memory>
+#include <vector>
 #include "Parser.h"
 #include "HTMLFileParser.h"
 #include "DocumentVector.h"
+#include "MultiURIPacket.h"
 
 namespace thywin
 {
@@ -49,13 +52,19 @@ namespace thywin
 			logMessageRelevance << "Relevance of current URI: " << documentToParse.URI << " Relevance: " << relevance;
 			logger.Log(INFO, logMessageRelevance.str());
 
-			for (unsigned int i = 0; i < extractedURIs.size(); i++)
+			MultiURIPacket multiURIPacket;
+
+			for (unsigned int i = 0; i < extractedURIs.size(); i ++)
 			{
-				URIPacket uriPacket;
-				uriPacket.Relevance = relevance;
-				uriPacket.URI = extractedURIs.at(i);
-				communicator.StoreExpectedURIRelevance(uriPacket);
+				URIPacket::URIPacketPtr packet(new URIPacket);
+				packet->URI = extractedURIs.at(i);
+				packet->Relevance = relevance;
+				multiURIPacket.Content.insert(multiURIPacket.Content.end(), packet);
 			}
+
+			communicator.StoreMultipleURIs(multiURIPacket);
+
+			multiURIPacket.Deserialize(multiURIPacket.Serialize());
 		}
 	}
 

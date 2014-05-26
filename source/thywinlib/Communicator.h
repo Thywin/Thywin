@@ -37,6 +37,11 @@ namespace thywin
 	const char TP_CONTENT_SEPERATOR = (char) 3;
 
 	/**
+	 *
+	 */
+	const char TP_CONTENT_VECTOR_SEPERATOR = (char) 2;
+
+	/**
 	 * Communication class for connecting with a server.
 	 * Handles receiving and sending of ThywinPackets as well as (de)serialization of it's contents.
 	 */

@@ -5,10 +5,10 @@
  *      Author: Thomas Kooi
  */
 
+#include <stdlib.h>
 #include <string>
 #include <iostream>
 #include "Communicator.h"
-#include <stdlib.h>
 #include "DocumentPacket.h"
 
 namespace thywin

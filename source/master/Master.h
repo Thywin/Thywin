@@ -16,6 +16,7 @@
 #include "URIPacket.h"
 #include "DocumentPacket.h"
 #include "DatabaseHandler.h"
+#include "MultiURIPacket.h"
 
 namespace thywin
 {
@@ -53,6 +54,12 @@ namespace thywin
 			 * @param documentElement Pointer to a documentElement struct
 			 */
 			static void AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element);
+
+			/**
+			 * Adds multiple URIs to the URIs queue
+			 * @param packet Pointer to a MultiURIPacket object
+			 */
+			static void AddMultipleURISToQueue(std::shared_ptr<MultiURIPacket> packet);
 
 			/**
 			 * Disconnects the connection with the database
