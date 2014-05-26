@@ -44,6 +44,7 @@ namespace thywin
 			/**
 			 * Adds a new URI to the URI List table. This table is a collection of all URIs found.
 			 * @param element Add a new URI to the URI List table.
+			 * @return true if successfully added. F
 			 */
 			bool AddURIToList(std::shared_ptr<URIPacket> element);
 
@@ -124,6 +125,11 @@ namespace thywin
 			 */
 			void Disconnect();
 
+			/**
+			 * Check if given URI is already in the URI List.
+			 * @param URI URI to be checked.
+			 * @return true if the URI is already in the list, else false.
+			 */
 			bool URIInList(std::string URI);
 
 		private:
