@@ -95,9 +95,14 @@ namespace thywin
 	void Master::PutDocumentVector(std::shared_ptr<DocumentVectorPacket> vector)
 	{
 		DocumentVectorMutex.lock();
+
+		std::shared_ptr<URIPacket> URIElement(new URIPacket);
+		URIElement->URI = vector->URI;
+		URIElement->Relevance = vector->Relevance;
+		DBConnection.AddURIToList(URIElement);
 		for (DocumentVector::iterator i = vector->Index.begin(); i != vector->Index.end(); i++)
 		{
-			DBConnection.AddWordcountToIndex(vector->URI, i->first,i->second);
+			DBConnection.AddWordcountToIndex(vector->URI, i->first, i->second);
 		}
 		DocumentVectorMutex.unlock();
 	}
