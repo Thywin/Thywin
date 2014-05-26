@@ -19,6 +19,7 @@
 #include "ClientConnection.h"
 #include "Communicator.h"
 #include "MasterCommunicator.h"
+#include "MultiURIPacket.h"
 #include "DocumentVectorPacket.h"
 
 namespace thywin
@@ -64,6 +65,8 @@ namespace thywin
 				// TODO
 				//returnPacket = MasterCommunicator::HandleGetDocumentVector(); // to be implemented later
 				break;
+			case URIVECTOR:
+				break;
 		}
 		try
 		{
@@ -91,6 +94,9 @@ namespace thywin
 				break;
 			case DOCUMENTVECTOR:
 				communicator.HandlePutDocumentVector(packet.Content);
+				break;
+			case URIVECTOR:
+				communicator.HandlePutUriVector(packet.Content);
 				break;
 		}
 	}
@@ -210,6 +216,14 @@ namespace thywin
 				packet.Content = docPacket;
 				break;
 			}
+			case URIVECTOR:
+			{
+				std::shared_ptr<MultiURIPacket> multiURIPacket(new MultiURIPacket);
+				multiURIPacket->Deserialize(serializedObject);
+				packet.Content = multiURIPacket;
+				break;
+			}
+
 		}
 	}
 

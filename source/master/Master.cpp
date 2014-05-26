@@ -101,10 +101,17 @@ namespace thywin
 		return element;
 	}
 
+	void Master::AddMultipleURISToQueue(std::shared_ptr<MultiURIPacket> packet)
+	{
+		for (unsigned int i = 0; i < packet->Content.size(); i++)
+		{
+			AddURIElementToQueue(packet->Content.at(i));
+		}
+	}
+
 	void Master::PutDocumentVector(std::shared_ptr<DocumentVectorPacket> documentVector)
 	{
 		DocumentVectorMutex.lock();
-
 		std::shared_ptr<URIPacket> URIElement(new URIPacket);
 		URIElement->URI = documentVector->URI;
 		URIElement->Relevance = documentVector->Relevance;

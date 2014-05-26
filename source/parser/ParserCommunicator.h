@@ -14,9 +14,10 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <unistd.h>
-
 #include "DocumentPacket.h"
 #include "URIPacket.h"
+#include "MultiURIPacket.h"
+#include "DocumentVector.h"
 #include "DocumentVectorPacket.h"
 #include "Communicator.h"
 #include "Logger.h"
@@ -60,6 +61,11 @@ namespace thywin
 			 * Store the actual relevance of a URI.
 			 */
 			void StoreActualURIRelevance(const URIPacket& uriPacket);
+
+			/**
+			 * Store multiple uris with their relevance.
+			 */
+			void StoreMultipleURIs(const MultiURIPacket& multiURIPacket);
 
 		private:
 			Logger logger;

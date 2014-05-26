@@ -62,4 +62,13 @@ namespace thywin
 		communicator.SendPacket(thywinPacket);
 	}
 
+	void ParserCommunicator::StoreMultipleURIs(const MultiURIPacket& multiURIPacket)
+	{
+		std::shared_ptr<MultiURIPacket> multiURIPacketSPtr(new MultiURIPacket(multiURIPacket));
+
+		ThywinPacket packet(PUT, URIVECTOR, multiURIPacketSPtr);
+
+		communicator.SendPacket(packet);
+	}
+
 } /* namespace thywin */

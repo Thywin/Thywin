@@ -43,7 +43,7 @@ namespace thywin
 
 			/**
 			 * Deserializes a string to a DocumentPacket. Fills the URI and Document with the content from the string.
-			 *
+			 * @param input serialized DocumentPacket that will be deserialized to a DocumentPacket
 			 */
 			void Deserialize(const std::string& input);
 	};

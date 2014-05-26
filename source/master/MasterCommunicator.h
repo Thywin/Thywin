@@ -57,6 +57,13 @@ namespace thywin
 			void HandlePutDocument(std::shared_ptr<ThywinPacketContent> Content);
 
 			/**
+			 * Wrapper for putting multiple URIs into the URIs queue.
+			 * Used as a layer between the Client Connection and Queue.
+			 * @param Content shared_ptr<ThywinPacketContent>, expected to be an MultiURIPacket
+			 */
+			void HandlePutUriVector(std::shared_ptr<ThywinPacketContent> Content);
+
+			/**
 			 * Wrapper for storing new indices in the database.
 			 * @param content, expected to be a documentVector.
 			 */
