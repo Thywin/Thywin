@@ -117,15 +117,33 @@ namespace thywin
 		handleNonRowReturningQuery(query);
 	}
 
-	void DatabaseHandler::AddURIToList(std::shared_ptr<URIPacket> element)
+	bool DatabaseHandler::AddURIToList(std::shared_ptr<URIPacket> element)
 	{
 		if (!element->URI.empty())
 		{
 			std::ostringstream ossRelevance;
 			ossRelevance << element->Relevance;
 			std::string query = "SELECT add_uri('" + element->URI + "'," + ossRelevance.str() + ");";
-			handleNonRowReturningQuery(query);
+			return handleNonRowReturningQuery(query);
 		}
+		return false;
+	}
+
+	bool DatabaseHandler::URIInList(std::string URI)
+	{
+		SQLHANDLE statementHandler = createStatementHandler();
+		std::string query = "SELECT * FROM uris WHERE uri = '" + URI + "'";
+
+		if (executeQuery(query, statementHandler))
+		{
+			if (SQLFetch(statementHandler) == SQL_SUCCESS)
+			{
+				releaseStatementHandler(statementHandler);
+				return true;
+			}
+		}
+		releaseStatementHandler(statementHandler);
+		return false;
 	}
 
 	void DatabaseHandler::AddURIToQueue(std::string URI)
@@ -332,14 +350,17 @@ namespace thywin
 		}
 	}
 
-	void DatabaseHandler::handleNonRowReturningQuery(std::string SQLQuery)
+	bool DatabaseHandler::handleNonRowReturningQuery(std::string SQLQuery)
 	{
 		SQLHANDLE statementHandler = createStatementHandler();
 		if (SQL_SUCCESS != SQLExecDirect(statementHandler, (SQLCHAR*) SQLQuery.c_str(), SQL_NTS))
 		{
 			showError(SQL_HANDLE_STMT, statementHandler);
+			releaseStatementHandler(statementHandler);
+			return false;
 		}
 		releaseStatementHandler(statementHandler);
+		return true;
 	}
 
 	bool DatabaseHandler::executeQuery(std::string SQLQuery, SQLHANDLE& statementHandle)

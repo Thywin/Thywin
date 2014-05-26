@@ -28,7 +28,6 @@ namespace thywin
 	std::vector<std::shared_ptr<URIPacket>> Master::URIQueue;
 	DatabaseHandler Master::DBConnection;
 
-
 	void Master::InitializeMaster()
 	{
 		sem_init(&documentQueueSemaphore, 0, DBConnection.GetRowCount("document_queue"));
@@ -44,8 +43,17 @@ namespace thywin
 	void Master::AddURIElementToQueue(std::shared_ptr<URIPacket> element)
 	{
 		Master::URIQueueMutex.lock();
-		DBConnection.AddURIToList(element);
-		DBConnection.AddURIToQueue(element->URI);
+		if (!DBConnection.URIInList(element->URI))
+		{
+			if (DBConnection.AddURIToList(element))
+			{
+				DBConnection.AddURIToQueue(element->URI);
+			}
+		}
+		else
+		{
+			DBConnection.AddURIToList(element);
+		}
 		Master::URIQueueMutex.unlock();
 	}
 
@@ -110,36 +118,26 @@ namespace thywin
 
 	void Master::fillURLQueue()
 	{
+		fillURIElementToQueue("http://www.cs.mun.ca/~donald/msc/node11.html");
+		fillURIElementToQueue("http://mdm.sagepub.com/content/32/5/701.full");
+		fillURIElementToQueue("http://en.wikipedia.org/wiki/Discrete_event_simulation");
+		fillURIElementToQueue("hhttp://www.albrechts.com/mike/DES/");
+	}
+
+	void Master::fillURIElementToQueue(std::string URI)
+	{
 		try
 		{
-			std::shared_ptr<URIPacket> URIElement(new URIPacket);
-			URIElement->URI = "http://thywin.com/kaas/kaas/index.html\0";
-			URIElement->Relevance = 0;
-			DBConnection.AddURIToList(URIElement);
-			DBConnection.AddURIToQueue(URIElement->URI);
+			std::shared_ptr<URIPacket> packet(new URIPacket);
+			packet->URI = URI;
+			packet->Relevance = 0;
 
-			std::shared_ptr<URIPacket> newelemente(new URIPacket);
-			newelemente->URI = "http://www.cs.mun.ca/~donald/msc/node11.html\0";
-			newelemente->Relevance = 0;
-			DBConnection.AddURIToList(newelemente);
-			DBConnection.AddURIToQueue(newelemente->URI);
-
-			std::shared_ptr<URIPacket> anotherElement(new URIPacket);
-			anotherElement->URI = "https://www.facebook.com\0";
-			anotherElement->Relevance = 0;
-			DBConnection.AddURIToList(anotherElement);
-			DBConnection.AddURIToQueue(anotherElement->URI);
-
-			std::shared_ptr<URIPacket> otherElement(new URIPacket);
-			otherElement->URI = "http://en.wikipedia.org/wiki/Discrete_event_simulation\0";
-			otherElement->Relevance = 0;
-			DBConnection.AddURIToList(otherElement);
-			DBConnection.AddURIToQueue(otherElement->URI);
+			DBConnection.AddURIToList(packet);
+			DBConnection.AddURIToQueue(packet->URI);
 		}
 		catch (std::bad_alloc& e)
 		{
 			// To be added to logger once library is updated
 		}
 	}
-
 }
