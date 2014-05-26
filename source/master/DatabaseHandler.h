@@ -30,8 +30,6 @@ namespace thywin
 
 			/**
 			 * Create a database handler that will connect to a ODBC database
-			 * @param ipaddress The IP of the machine where the database is running
-			 * @param givenPort The port on which the database is listening
 			 */
 			DatabaseHandler();
 			virtual ~DatabaseHandler();
