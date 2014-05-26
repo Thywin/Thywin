@@ -37,7 +37,10 @@ namespace thywin
 	const char TP_CONTENT_SEPERATOR = (char) 3;
 
 	/**
-	 *
+	 * TP_CONTENT_VECTOR_SEPERATOR is a special character used for serialization
+	 * TP_CONTENT_VECTOR_SEPERATOR Is used to divide values within the @Content of a @ThywinPacket
+	 * based on a MultiURIPacket.
+	 * Expected to be used after each separate value within a struct or class, including the last value.
 	 */
 	const char TP_CONTENT_VECTOR_SEPERATOR = (char) 2;
 
