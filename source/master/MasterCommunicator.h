@@ -56,6 +56,12 @@ namespace thywin
 			 */
 			void HandlePutDocument(std::shared_ptr<ThywinPacketContent> Content);
 
+			/**
+			 * Wrapper for storing new indices in the database.
+			 * @param content, expected to be a documentVector.
+			 */
+			void HandlePutDocumentVector(std::shared_ptr<ThywinPacketContent> content);
+
 		private:
 			ThywinPacket createResponsePacket(std::shared_ptr<ThywinPacketContent> content);
 	};

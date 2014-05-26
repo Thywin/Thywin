@@ -23,6 +23,7 @@ namespace thywin
 {
 	std::mutex Master::URIQueueMutex;
 	std::mutex Master::DocumentQueueMutex;
+	std::mutex Master::DocumentVectorMutex;
 	sem_t Master::documentQueueSemaphore;
 	std::vector<std::shared_ptr<URIPacket>> Master::URIQueue;
 	DatabaseHandler Master::DBConnection(DEFAULT_DATABASE_IP, DEFAULT_DATABASE_PORT);
@@ -91,6 +92,21 @@ namespace thywin
 		return element;
 	}
 
+	void Master::PutDocumentVector(std::shared_ptr<DocumentVectorPacket> documentVector)
+	{
+		DocumentVectorMutex.lock();
+
+		std::shared_ptr<URIPacket> URIElement(new URIPacket);
+		URIElement->URI = documentVector->URI;
+		URIElement->Relevance = documentVector->Relevance;
+		DBConnection.AddURIToList(URIElement);
+		for (DocumentVector::iterator i = documentVector->Index.begin(); i != documentVector->Index.end(); i++)
+		{
+			DBConnection.AddWordcountToIndex(documentVector->URI, i->first, i->second);
+		}
+		DocumentVectorMutex.unlock();
+	}
+
 	void Master::fillURLQueue()
 	{
 		try
@@ -108,7 +124,7 @@ namespace thywin
 			DBConnection.AddURIToQueue(newelemente->URI);
 
 			std::shared_ptr<URIPacket> anotherElement(new URIPacket);
-			anotherElement->URI = "www.facebook.com\0";
+			anotherElement->URI = "https://www.facebook.com\0";
 			anotherElement->Relevance = 0;
 			DBConnection.AddURIToList(anotherElement);
 			DBConnection.AddURIToQueue(anotherElement->URI);

@@ -17,7 +17,7 @@
 
 #include "DocumentPacket.h"
 #include "URIPacket.h"
-#include "DocumentVector.h"
+#include "DocumentVectorPacket.h"
 #include "Communicator.h"
 #include "Logger.h"
 
@@ -47,9 +47,9 @@ namespace thywin
 			DocumentPacket GetDocumentFromQueue();
 
 			/*
-			 * todo
+			 * Store an Index with the relevance and the URI of the document.
 			 */
-			void StoreIndex(const DocumentVector& index);
+			void StoreIndex(const DocumentVectorPacket& index);
 
 			/*
 			 * Store an URI with the relevance of the document the URI is found in.

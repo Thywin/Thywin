@@ -84,13 +84,36 @@ namespace thywin
 		double dotProduct = 0;
 		for (DocumentVector::iterator i = documentVector.begin(); i != documentVector.end(); i++)
 		{
-			DocumentVector::iterator searchResult = this->find(i->first);
-			if (searchResult != this->end())
+			DocumentVector::iterator searchResult = find(i->first);
+			if (searchResult != end())
 			{
 				dotProduct += (i->second) * (searchResult->second);
 			}
 		}
 		return dotProduct;
+	}
+	
+	std::string DocumentVector::Serialize()
+	{
+		std::stringstream serializedStream;
+		for (DocumentVector::iterator i = begin(); i != end(); i++)
+		{
+			serializedStream << i->first << TP_CONTENT_SEPERATOR << i->second << TP_CONTENT_SEPERATOR;
+		}
+		return serializedStream.str();
+	}
+	
+	void DocumentVector::Deserialize(const std::string& serializedDocumentVector)
+	{
+		std::stringstream serializedStream;
+		serializedStream << serializedDocumentVector;
+		std::string wordBuffer;
+		std::string countBuffer;
+		while (std::getline(serializedStream, wordBuffer, TP_CONTENT_SEPERATOR)
+				&& std::getline(serializedStream, countBuffer, TP_CONTENT_SEPERATOR))
+		{
+			(*this)[wordBuffer] = stoi(countBuffer);
+		}
 	}
 
 } /* namespace thywin */
