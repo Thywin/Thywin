@@ -28,7 +28,6 @@ namespace thywin
 	std::vector<std::shared_ptr<URIPacket>> Master::URIQueue;
 	DatabaseHandler Master::DBConnection;
 
-
 	void Master::InitializeMaster()
 	{
 		sem_init(&documentQueueSemaphore, 0, DBConnection.GetRowCount("document_queue"));
@@ -44,8 +43,10 @@ namespace thywin
 	void Master::AddURIElementToQueue(std::shared_ptr<URIPacket> element)
 	{
 		Master::URIQueueMutex.lock();
-		DBConnection.AddURIToList(element);
-		DBConnection.AddURIToQueue(element->URI);
+		if (DBConnection.AddURIToList(element))
+		{
+			DBConnection.AddURIToQueue(element->URI);
+		}
 		Master::URIQueueMutex.unlock();
 	}
 

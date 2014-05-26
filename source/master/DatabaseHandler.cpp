@@ -117,15 +117,16 @@ namespace thywin
 		handleNonRowReturningQuery(query);
 	}
 
-	void DatabaseHandler::AddURIToList(std::shared_ptr<URIPacket> element)
+	bool DatabaseHandler::AddURIToList(std::shared_ptr<URIPacket> element)
 	{
 		if (!element->URI.empty())
 		{
 			std::ostringstream ossRelevance;
 			ossRelevance << element->Relevance;
 			std::string query = "SELECT add_uri('" + element->URI + "'," + ossRelevance.str() + ");";
-			handleNonRowReturningQuery(query);
+			return handleNonRowReturningQuery(query);
 		}
+		return false;
 	}
 
 	void DatabaseHandler::AddURIToQueue(std::string URI)
@@ -332,14 +333,17 @@ namespace thywin
 		}
 	}
 
-	void DatabaseHandler::handleNonRowReturningQuery(std::string SQLQuery)
+	bool DatabaseHandler::handleNonRowReturningQuery(std::string SQLQuery)
 	{
 		SQLHANDLE statementHandler = createStatementHandler();
 		if (SQL_SUCCESS != SQLExecDirect(statementHandler, (SQLCHAR*) SQLQuery.c_str(), SQL_NTS))
 		{
 			showError(SQL_HANDLE_STMT, statementHandler);
+			releaseStatementHandler(statementHandler);
+			return false;
 		}
 		releaseStatementHandler(statementHandler);
+		return true;
 	}
 
 	bool DatabaseHandler::executeQuery(std::string SQLQuery, SQLHANDLE& statementHandle)

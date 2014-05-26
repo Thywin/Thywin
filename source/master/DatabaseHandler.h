@@ -45,7 +45,7 @@ namespace thywin
 			 * Adds a new URI to the URI List table. This table is a collection of all URIs found.
 			 * @param element Add a new URI to the URI List table.
 			 */
-			void AddURIToList(std::shared_ptr<URIPacket> element);
+			bool AddURIToList(std::shared_ptr<URIPacket> element);
 
 			/**
 			 * Adds a new URI to the URI Queue table.
@@ -129,7 +129,7 @@ namespace thywin
 			SQLHANDLE connectionHandle;
 			bool connected;
 
-			void handleNonRowReturningQuery(std::string query);
+			bool handleNonRowReturningQuery(std::string query);
 			bool executeQuery(std::string query, SQLHANDLE& stmtHndl);
 			void showError(unsigned int handletype, const SQLHANDLE& handle);
 
