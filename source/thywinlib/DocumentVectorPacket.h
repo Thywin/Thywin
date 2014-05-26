@@ -16,6 +16,10 @@
 namespace thywin
 {
 
+	/**
+	 * A packet for sending across an index of a document. Contains URI, relevance and the index.
+	 * Is used for serialization and deserialization.
+	 */
 	class DocumentVectorPacket: public ThywinPacketContent
 		{
 			public:

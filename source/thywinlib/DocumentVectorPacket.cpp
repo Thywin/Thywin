@@ -23,22 +23,22 @@ namespace thywin
 		std::stringstream stream;
 		stream << input;
 
-		std::string token;
+		std::string serializedLine;
 		std::getline(stream, URI, TP_CONTENT_SEPERATOR);
-		std::getline(stream, token, TP_CONTENT_SEPERATOR);
+		std::getline(stream, serializedLine, TP_CONTENT_SEPERATOR);
 
 		try
 		{
-			Relevance = std::stoi(token);
+			Relevance = std::stoi(serializedLine);
 		}
 		catch (std::exception& e)
 		{
 			Relevance = 0;
 		}
 
-		std::getline(stream, token, TP_END_OF_PACKET);
+		std::getline(stream, serializedLine, TP_END_OF_PACKET);
 		DocumentVector vector;
-		vector.Deserialize(token);
+		vector.Deserialize(serializedLine);
 		Index = vector;
 	}
 }

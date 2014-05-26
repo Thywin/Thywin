@@ -92,17 +92,17 @@ namespace thywin
 		return element;
 	}
 
-	void Master::PutDocumentVector(std::shared_ptr<DocumentVectorPacket> vector)
+	void Master::PutDocumentVector(std::shared_ptr<DocumentVectorPacket> documentVector)
 	{
 		DocumentVectorMutex.lock();
 
 		std::shared_ptr<URIPacket> URIElement(new URIPacket);
-		URIElement->URI = vector->URI;
-		URIElement->Relevance = vector->Relevance;
+		URIElement->URI = documentVector->URI;
+		URIElement->Relevance = documentVector->Relevance;
 		DBConnection.AddURIToList(URIElement);
-		for (DocumentVector::iterator i = vector->Index.begin(); i != vector->Index.end(); i++)
+		for (DocumentVector::iterator i = documentVector->Index.begin(); i != documentVector->Index.end(); i++)
 		{
-			DBConnection.AddWordcountToIndex(vector->URI, i->first, i->second);
+			DBConnection.AddWordcountToIndex(documentVector->URI, i->first, i->second);
 		}
 		DocumentVectorMutex.unlock();
 	}

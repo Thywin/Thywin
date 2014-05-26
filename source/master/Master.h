@@ -51,14 +51,16 @@ namespace thywin
 
 			/**
 			 * Adds a new document element to the Document Queue.
-			 * @param documentElement Pointer to a documentElement struct
+			 * @param documentElement Pointer to a documentElement
 			 */
 			static void AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element);
 
 			/**
-			 *
+			 * Adds a new documentVector element to the index database.
+			 * @param documentVector Pointer to a documentVector
 			 */
-			static void PutDocumentVector(std::shared_ptr<DocumentVectorPacket> vector);
+			static void PutDocumentVector(std::shared_ptr<DocumentVectorPacket> documentVector);
+
 			/**
 			 * Disconnects the connection with the database
 			 */
