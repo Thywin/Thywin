@@ -21,50 +21,49 @@ namespace thywin
 	 * Is used for serialization and deserialization.
 	 */
 	class DocumentVectorPacket: public ThywinPacketContent
-		{
-			public:
+	{
+		public:
 
-				/**
-				 * Fills an documentVectorPacket will all necessary information.
-				 * @param packetURI The URI from which the index is.
-				 * @param packetRelevance Double that represents the relevance of the URI.
-				 * @param packetIndex The index that belongs to this URI.
-				 */
-				DocumentVectorPacket(std::string packetURI, double packetRelevance, DocumentVector packetIndex);
+			/**
+			 * Fills an documentVectorPacket will all necessary information.
+			 * @param packetURI The URI from which the index is.
+			 * @param packetRelevance Double that represents the relevance of the URI.
+			 * @param packetIndex The index that belongs to this URI.
+			 */
+			DocumentVectorPacket(std::string packetURI, double packetRelevance, DocumentVector packetIndex);
 
-				/**
-				 * Fills an documentVectorPacket will all necessary information.
-				 */
-				DocumentVectorPacket();
-				virtual ~DocumentVectorPacket();
+			/**
+			 * Fills an documentVectorPacket will all necessary information.
+			 */
+			DocumentVectorPacket();
 
-				/**
-				 * String containing a URI, location of a document on the web.
-				 */
-				std::string URI;
+			/**
+			 * String containing a URI, location of a document on the web.
+			 */
+			std::string URI;
 
-				/**
-				 * double that represents the relevance of the URI.
-				 */
-				double Relevance;
+			/**
+			 * double that represents the relevance of the URI.
+			 */
+			double Relevance;
 
-				/**
-				 * String that represents a document vector.
-				 */
-				DocumentVector Index;
+			/**
+			 * String that represents a document vector.
+			 */
+			DocumentVector Index;
 
-				/**
-				 * Serialize the DocumentVectorPacket to a string so it can be sent over a socket.
-				 * @return the string that represents the serialized DocumentVectorPacket
-				 */
-				std::string Serialize();
+			/**
+			 * Serialize the DocumentVectorPacket to a string so it can be sent over a socket.
+			 * @return the string that represents the serialized DocumentVectorPacket
+			 */
+			std::string Serialize();
 
-				/**
-				 * Deserialize a string to an DocumentVectorPacket
-				 * @param input serialized DocumentVectorPacket that will be deserialized to a DocumentVectorPacket
-				 */
-				void Deserialize(const std::string& input);
-		};
+			/**
+			 * Deserialize a string to an DocumentVectorPacket
+			 * @param input serialized DocumentVectorPacket that will be deserialized to a DocumentVectorPacket
+			 */
+			void Deserialize(const std::string& input);
+	};
 }
 
 #endif /* DOCUMENTVECTORPACKET_H_ */
