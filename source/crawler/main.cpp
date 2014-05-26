@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 			}
 		}
 
-		Crawler crawler(ipaddress, port);
+		Crawler crawler(ipaddress, (unsigned short) port);
 
 		while (true)
 		{
