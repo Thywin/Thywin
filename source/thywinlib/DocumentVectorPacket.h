@@ -33,6 +33,12 @@ namespace thywin
 				DocumentVectorPacket(std::string packetURI, double packetRelevance, DocumentVector packetIndex);
 
 				/**
+				 * Fills an documentVectorPacket will all necessary information.
+				 */
+				DocumentVectorPacket();
+				virtual ~DocumentVectorPacket();
+
+				/**
 				 * String containing a URI, location of a document on the web.
 				 */
 				std::string URI;

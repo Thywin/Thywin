@@ -12,17 +12,24 @@
 namespace thywin
 {
 
-	DocumentVectorPacket::DocumentVectorPacket(std::string packetURI, double packetRelevance, DocumentVector packetIndex)
+	DocumentVectorPacket::DocumentVectorPacket(std::string packetURI, double packetRelevance,
+			DocumentVector packetIndex)
 	{
 		URI = packetURI;
 		Relevance = packetRelevance;
 		Index = packetIndex;
 	}
 
+	DocumentVectorPacket::DocumentVectorPacket()
+	{
+		Relevance = 0;
+	}
+
 	std::string DocumentVectorPacket::Serialize()
 	{
 		std::stringstream documentVectorStream;
-		documentVectorStream << URI << TP_CONTENT_SEPERATOR << Relevance << TP_CONTENT_SEPERATOR << Index.Serialize() << TP_CONTENT_SEPERATOR;
+		documentVectorStream << URI << TP_CONTENT_SEPERATOR << Relevance << TP_CONTENT_SEPERATOR << Index.Serialize()
+				<< TP_CONTENT_SEPERATOR;
 		return documentVectorStream.str();
 	}
 

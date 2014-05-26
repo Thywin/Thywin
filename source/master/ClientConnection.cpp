@@ -90,8 +90,7 @@ namespace thywin
 				//MasterCommunicator::HandlePutRelevance(packet);	// to be implemented later
 				break;
 			case DOCUMENTVECTOR:
-				// TODO
-				communicator.HandlePutDocumentVector(packet.Content);	// to be implemented later
+				communicator.HandlePutDocumentVector(packet.Content);
 				break;
 		}
 	}
@@ -138,7 +137,6 @@ namespace thywin
 			data << packet.Content->Serialize();
 		}
 		data << TP_END_OF_PACKET;
-
 
 		int sendSize = send(clientSocket, (const char*) data.str().c_str(), data.str().size(), 0);
 		if (sendSize < 0)
