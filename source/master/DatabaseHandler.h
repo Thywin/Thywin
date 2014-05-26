@@ -18,9 +18,6 @@
 
 namespace thywin
 {
-
-	const int DEFAULT_DATABASE_PORT = 5432;
-	const std::string DEFAULT_DATABASE_IP = "192.168.100.13";
 	const std::string SQL_ERRORSTATE_UNIQUE = "23505";
 	const int CONNECTION_TIMEOUT_IN_MINUTES = 15;
 	const int RETRIEVE_URI_BUFFER_SIZE = 1024;
@@ -33,10 +30,8 @@ namespace thywin
 
 			/**
 			 * Create a database handler that will connect to a ODBC database
-			 * @param ipaddress The IP of the machine where the database is running
-			 * @param givenPort The port on which the database is listening
 			 */
-			DatabaseHandler(std::string ipaddress, int givenPort);
+			DatabaseHandler();
 			virtual ~DatabaseHandler();
 
 			/**
@@ -152,7 +147,7 @@ namespace thywin
 			 * Sets up a connection to the database of given IP.
 			 * In case a port was given with the constructor it will connect to a database of that port.
 			 */
-			void Connect(std::string ipaddress, int givenPort);
+			void connect();
 	};
 
 } /* namespace thywin */

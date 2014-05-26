@@ -26,7 +26,8 @@ namespace thywin
 	std::mutex Master::DocumentVectorMutex;
 	sem_t Master::documentQueueSemaphore;
 	std::vector<std::shared_ptr<URIPacket>> Master::URIQueue;
-	DatabaseHandler Master::DBConnection(DEFAULT_DATABASE_IP, DEFAULT_DATABASE_PORT);
+	DatabaseHandler Master::DBConnection;
+
 
 	void Master::InitializeMaster()
 	{
