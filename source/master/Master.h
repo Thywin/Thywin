@@ -88,6 +88,7 @@ namespace thywin
 			 * This function will fill the URI queue with basic URIs for starting points.
 			 */
 			static void fillURLQueue();
+			static void fillURIElementToQueue(std::string URI);
 	};
 }
 
