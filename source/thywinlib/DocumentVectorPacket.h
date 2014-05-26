@@ -25,6 +25,14 @@ namespace thywin
 			public:
 
 				/**
+				 * Fills an documentVectorPacket will all necessary information.
+				 * @param packetURI The URI from which the index is.
+				 * @param packetRelevance Double that represents the relevance of the URI.
+				 * @param packetIndex The index that belongs to this URI.
+				 */
+				DocumentVectorPacket(std::string packetURI, double packetRelevance, DocumentVector packetIndex);
+
+				/**
 				 * String containing a URI, location of a document on the web.
 				 */
 				std::string URI;

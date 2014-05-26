@@ -46,10 +46,7 @@ namespace thywin
 			DocumentVector docVector(text);
 			double relevance = docVector.CalculateSimilarity(subject);
 
-			DocumentVectorPacket documentVectorPacket;
-			documentVectorPacket.URI = documentToParse.URI;
-			documentVectorPacket.Relevance = relevance;
-			documentVectorPacket.Index = docVector;
+			DocumentVectorPacket documentVectorPacket(documentToParse.URI,relevance,docVector);
 			communicator.StoreIndex(documentVectorPacket);
 
 			std::stringstream logMessageRelevance;

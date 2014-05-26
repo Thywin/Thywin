@@ -11,6 +11,14 @@
 
 namespace thywin
 {
+
+	DocumentVectorPacket::DocumentVectorPacket(std::string packetURI, double packetRelevance, DocumentVector packetIndex)
+	{
+		URI = packetURI;
+		Relevance = packetRelevance;
+		Index = packetIndex;
+	}
+
 	std::string DocumentVectorPacket::Serialize()
 	{
 		std::stringstream documentVectorStream;
