@@ -5,6 +5,17 @@
  *      Author: Erwin
  */
 
+#include <iostream>
+
+int main()
+{
+	std::cout << "hallo" << std::endl;
+	return EXIT_SUCCESS;
+}
+
+
+/*
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -130,4 +141,4 @@ void* echoThread(void * socketFDPointer)
     if(LOGGING_ENABLED)
         printf("Connection at socket %d closed.\n", socketFD);
     return EXIT_SUCCESS;
-}
+}*/
