@@ -43,17 +43,7 @@ namespace thywin
 	void Master::AddURIElementToQueue(std::shared_ptr<URIPacket> element)
 	{
 		Master::URIQueueMutex.lock();
-		if (!DBConnection.URIInList(element->URI))
-		{
-			if (DBConnection.AddURIToList(element))
-			{
-				DBConnection.AddURIToQueue(element->URI);
-			}
-		}
-		else
-		{
-			DBConnection.AddURIToList(element);
-		}
+		DBConnection.AddURIToList(element);
 		Master::URIQueueMutex.unlock();
 	}
 
@@ -115,11 +105,8 @@ namespace thywin
 		std::shared_ptr<URIPacket> URIElement(new URIPacket);
 		URIElement->URI = documentVector->URI;
 		URIElement->Relevance = documentVector->Relevance;
-		DBConnection.AddURIToList(URIElement);
-		for (DocumentVector::iterator i = documentVector->Index.begin(); i != documentVector->Index.end(); i++)
-		{
-			DBConnection.AddWordcountToIndex(documentVector->URI, i->first, i->second);
-		}
+		DBConnection.UpdateURIInList(URIElement);
+		DBConnection.AddIndex(documentVector->URI, documentVector->Index);
 		DocumentVectorMutex.unlock();
 	}
 

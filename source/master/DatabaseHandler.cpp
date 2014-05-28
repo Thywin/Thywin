@@ -117,16 +117,15 @@ namespace thywin
 		handleNonRowReturningQuery(query);
 	}
 
-	bool DatabaseHandler::AddURIToList(std::shared_ptr<URIPacket> element)
+	void DatabaseHandler::AddURIToList(URIPacket::URIPacketPtr element)
 	{
 		if (!element->URI.empty())
 		{
 			std::ostringstream ossRelevance;
 			ossRelevance << element->Relevance;
 			std::string query = "SELECT add_uri('" + element->URI + "'," + ossRelevance.str() + ");";
-			return handleNonRowReturningQuery(query);
+			handleNonRowReturningQuery(query);
 		}
-		return false;
 	}
 
 	bool DatabaseHandler::URIInList(std::string URI)
@@ -156,7 +155,7 @@ namespace thywin
 		}
 	}
 
-	void DatabaseHandler::AddDocumentToQueue(std::shared_ptr<DocumentPacket> input)
+	void DatabaseHandler::AddDocumentToQueue(DocumentPacket::DocumentPacketPtr input)
 	{
 		SQLHANDLE statementHandle = createStatementHandler();
 		std::string statement = "INSERT INTO document_queue VALUES ((SELECT uri_id FROM uris WHERE uri = ?), ?)";
@@ -182,16 +181,41 @@ namespace thywin
 		releaseStatementHandler(statementHandle);
 	}
 
-	void DatabaseHandler::AddWordcountToIndex(std::string URI, std::string word, int count)
+	void DatabaseHandler::AddIndex(std::string URI, DocumentVector index)
 	{
-		std::ostringstream ossCount;
-		ossCount << count;
-		std::string query = "INSERT INTO indices VALUES ((SELECT uri_id FROM uris WHERE uri = '" + URI + "'), '" + word
-				+ "'," + ossCount.str() + ")";
-		handleNonRowReturningQuery(query);
+		std::string deleteQuery = "DELETE FROM indices WHERE uri_id = (SELECT uri_id FROM uris "
+				"WHERE uri = '" + URI + "')";
+		handleNonRowReturningQuery(deleteQuery);
+		std::string query = "INSERT INTO indices VALUES ";
+		for (DocumentVector::iterator i = index.begin(); i != index.end(); i++)
+		{
+			std::ostringstream ossCount;
+			ossCount << i->second;
+			query += "((SELECT uri_id FROM uris WHERE uri = '" + URI + "'), '" + i->first + "'," + ossCount.str() + ")";
+			if (i != index.end())
+			{
+				query += ",\n";
+			}
+		}
+		handleNonRowReturningQuery(query.substr(0, query.size() - 2));
 	}
 
-	std::shared_ptr<URIPacket> DatabaseHandler::RetrieveURIFromQueue()
+	void DatabaseHandler::UpdateURIInList(URIPacket::URIPacketPtr element)
+	{
+		if (!element->URI.empty())
+		{
+			if (URIInList(element->URI))
+			{
+				std::ostringstream ossRelevance;
+				ossRelevance << element->Relevance;
+				std::string query = "UPDATE uris SET relevance = " + ossRelevance.str() + " WHERE uri = '"
+						+ element->URI + "'";
+				handleNonRowReturningQuery(query);
+			}
+		}
+	}
+
+	URIPacket::URIPacketPtr DatabaseHandler::RetrieveURIFromQueue()
 	{
 		SQLHANDLE statementHandle = createStatementHandler();
 		std::shared_ptr<URIPacket> result(new URIPacket);
@@ -214,7 +238,7 @@ namespace thywin
 		return result;
 	}
 
-	std::shared_ptr<URIPacket> DatabaseHandler::RetrieveAndDeleteURIFromQueue()
+	URIPacket::URIPacketPtr DatabaseHandler::RetrieveAndDeleteURIFromQueue()
 	{
 		std::shared_ptr<URIPacket> result(new URIPacket);
 		result = RetrieveURIFromQueue();
@@ -225,7 +249,7 @@ namespace thywin
 		return result;
 	}
 
-	std::vector<std::shared_ptr<URIPacket>> DatabaseHandler::GetURIListFromQueue(const int amount)
+	URIPacket::URIPacketVector DatabaseHandler::GetURIListFromQueue(const int amount)
 	{
 		std::vector<std::shared_ptr<URIPacket>> CachedURIQueue;
 		SQLHANDLE statementHandle = createStatementHandler();
@@ -233,7 +257,7 @@ namespace thywin
 		std::ostringstream ossAmount;
 		ossAmount << amount;
 		std::string query = "SELECT uris.uri, uri_queue.priority FROM uris, uri_queue"
-				" WHERE uris.uri_id = uri_queue.uri_id ORDER BY row_number() OVER () LIMIT " + ossAmount.str();
+				" WHERE uris.uri_id = uri_queue.uri_id ORDER BY uri_queue.priority DESC LIMIT " + ossAmount.str();
 
 		if (executeQuery(query, statementHandle))
 		{
@@ -259,7 +283,7 @@ namespace thywin
 		return CachedURIQueue;
 	}
 
-	std::shared_ptr<DocumentPacket> DatabaseHandler::RetrieveDocumentFromQueue()
+	DocumentPacket::DocumentPacketPtr DatabaseHandler::RetrieveDocumentFromQueue()
 	{
 		SQLHANDLE statementHandler = createStatementHandler();
 		std::shared_ptr<DocumentPacket> result(new DocumentPacket);
@@ -291,7 +315,7 @@ namespace thywin
 		return result;
 	}
 
-	std::shared_ptr<DocumentPacket> DatabaseHandler::RetrieveAndDeleteDocumentFromQueue()
+	DocumentPacket::DocumentPacketPtr DatabaseHandler::RetrieveAndDeleteDocumentFromQueue()
 	{
 		std::shared_ptr<DocumentPacket> result = RetrieveDocumentFromQueue();
 		if (!result->URI.empty())
@@ -392,6 +416,10 @@ namespace thywin
 			{
 				// Once the library has been updated, this will be turned into a logger message.
 				std::cout << "Message: " << message << " SQLSTATE: " << sqlstate << std::endl;
+			}
+			else
+			{
+				std::cout << "Duplicate key detected" << std::endl;
 			}
 		}
 	}
