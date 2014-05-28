@@ -5,10 +5,11 @@
  *      Author: Erwin Janssen
  */
 
-#include "DocumentVector.h"
 #include <cmath>
 #include <algorithm>
 #include <iostream>
+#include "DocumentVector.h"
+#include "porter2_stemmer.h"
 
 namespace thywin
 {
@@ -35,7 +36,11 @@ namespace thywin
 		{
 			if (extractingWord && (text.at(i) < 'a' || text.at(i) > 'z'))
 			{
-				(*this)[text.substr(lastIndex, i - lastIndex)]++;
+				std::string foundWord(text.substr(lastIndex, i - lastIndex));
+				std::cout << "Found Word: " << foundWord << std::endl;
+				Porter2Stemmer::stem(foundWord);
+				std::cout << "Found Word2: " << foundWord << std::endl;
+				(*this)[foundWord]++;
 				lastIndex = i;
 				extractingWord = false;
 			}
@@ -46,7 +51,11 @@ namespace thywin
 			}
 			else if ((i == text.size() - 1) && extractingWord)
 			{
-				(*this)[text.substr(lastIndex, i - lastIndex + 1)]++;
+				std::string foundWord(text.substr(lastIndex, i - lastIndex + 1));
+				std::cout << "Found Word: " << foundWord << std::endl;
+				Porter2Stemmer::stem(foundWord);
+				std::cout << "Found Word2: " << foundWord << std::endl;
+				(*this)[foundWord]++;
 			}
 			// else omitted because there are no other cases that will be handled.
 		}
