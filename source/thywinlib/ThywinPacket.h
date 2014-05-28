@@ -45,7 +45,9 @@ namespace thywin
 		/** */
 		DOCUMENTVECTOR = 4,
 		/** Vector with mulitple URIs */
-		URIVECTOR = 5
+		URIVECTOR = 5,
+		/** Returns the result of a search query*/
+		SEARCH_RESULTS = 6
 	};
 
 	/**
