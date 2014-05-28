@@ -57,6 +57,7 @@ namespace thywin
 		catch (std::exception& e)
 		{
 			logger.Log(ERROR, "Crawler CrawlUri, " + std::string(e.what()));
+			exit(EXIT_FAILURE);
 		}
 	}
 
