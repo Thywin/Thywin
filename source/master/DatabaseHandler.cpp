@@ -150,7 +150,7 @@ namespace thywin
 		if (!URI.empty())
 		{
 			std::string query = "INSERT INTO uri_queue VALUES ((SELECT uri_id FROM uris WHERE uri = '" + URI
-					+ "'), (SELECT relevance FROM uris WHERE uri = '" + URI + "'))";
+					+ "'), (SELECT source_relevance FROM uris WHERE uri = '" + URI + "'))";
 			handleNonRowReturningQuery(query);
 		}
 	}
