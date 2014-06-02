@@ -25,6 +25,7 @@ require_once 'core/init.php';
 	
 	<form action="search.php" method="get" class="searchform">
 		<input type="text" name="search" id="search" placeholder="Start searching...">
+		<input type="hidden" name="token" value="<?php echo Token::generate(); ?>">
 		<button>Search</button>
 	</form>
 	

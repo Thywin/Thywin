@@ -5,19 +5,20 @@ $results = 0;
 $search = '';
 $searchResults = array();
 
-if (isset($_GET['search'])) {
-	$search = $_GET['search'];
-}
+if (Input::exists('get')) {
+	if (Token::check(Input::get('token'))) {
+		$search = Input::get('search');
+		if (!empty($search)) {
+			$host    = "80.113.19.16";
+			$port    = 7501;
+			
+			$connection = new Connection($host, $port);
+			$connection->write($search);
 
-if (!empty($search)) {
-	$host    = "80.113.19.16";
-	$port    = 7501;
-	
-	$connection = new Connection($host, $port);
-	$connection->write($search);
-
-	$read = $connection->read();
-	$searchResults =  explode(chr(3), $read);
+			$read = $connection->read();
+			$searchResults =  explode(chr(3), $read);
+		}
+ 	}
 }
 
 ?>
@@ -43,6 +44,7 @@ if (!empty($search)) {
 	
 	<form action="search.php" method="get" class="searchform">
 		<input type="text" name="search" id="search" placeholder="Start searching..." value="<?php echo $search; ?>">
+		<input type="hidden" name="token" value="<?php echo Token::generate(); ?>">
 		<button>Search</button>
 	</form>
 

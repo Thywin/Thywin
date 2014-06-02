@@ -4,9 +4,12 @@ session_start();
 $GLOBALS['config'] = array(
 	'psql' => array(
 		'host' => 'localhost',
-		'username' => 'root',
-		'password' => '',
+		'username' => 'user',
+		'password' => 'password',
 		'dbname' => 'database'
+	),
+	'session' => array(
+		'token_name' => 'token'
 	)
 );
 
