@@ -8,23 +8,21 @@
 #ifndef SEARCHENGINECOMMUNICATOR_H_
 #define SEARCHENGINECOMMUNICATOR_H_
 
-#include "Communicator.h"
-#include <sstream>
-#include <memory>
-#include "Logger.h"
-#include "MultiURIPacket.h"
+#include <string>
+
+#include <Logger.h>
+#include <MultiURIPacket.h>
 
 namespace thywin
 {
-
 	class SearchEngineCommunicator
 	{
 		public:
 			/**
-			 * Creates a connection class for handling the connection from client to Master Server.
-			 * @param Client Socket Descriptor for the client connection. Has to be a live connection
+			 * Creates a connection object for handling a connection with the search engine.
+			 * @param Client Socket Descriptor for the client connection. Has to be a live connection.
 			 */
-			SearchEngineCommunicator(int client);
+			SearchEngineCommunicator(int clientCommunicationSocket);
 
 			/**
 			 * Default destructor. Closes the connection with the client if still alive
@@ -49,7 +47,8 @@ namespace thywin
 			bool hasConnection();
 
 		private:
-			int clientSocket;
+			Logger logger;
+			int clientCommunicationSocket;
 			bool handlingConnection;
 			bool connection;
 

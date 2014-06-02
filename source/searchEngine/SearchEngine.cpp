@@ -18,18 +18,18 @@
 
 namespace thywin
 {
-	bool compareURIsWithRelevance(std::pair<std::string, double> first, std::pair<std::string, double> second)
+	bool SearchEngine::compareURIsWithRelevance(std::pair<std::string, double> first, std::pair<std::string, double> second)
 	{
 		return first.second < second.second;
 	}
 	
-	SearchEngine::SearchEngine()
+	SearchEngine::SearchEngine() : logger("SearchEngine.log")
 	{
 		// TODO Auto-generated constructor stub
 		
 	}
 	
-	SearchEngine::SearchEngine(const SearchEngine& searchEngine)
+	SearchEngine::SearchEngine(const SearchEngine& searchEngine) : logger("SearchEngine.log")
 	{
 		
 	}
@@ -97,7 +97,7 @@ namespace thywin
 				}
 				URIPacket uriPacket;
 				std::map<std::string, double>::iterator maxValue = std::max_element(uriWithRelevance.begin(),
-						uriWithRelevance.end(), compareURIsWithRelevance);
+						uriWithRelevance.end(), SearchEngine::compareURIsWithRelevance);
 				uriPacket.URI = maxValue->first;
 				uriPacket.Relevance = maxValue->second;
 				searchResults.Content.push_back(std::shared_ptr<URIPacket>(new URIPacket(uriPacket)));

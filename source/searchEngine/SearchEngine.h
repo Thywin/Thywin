@@ -8,12 +8,12 @@
 #ifndef SEARCHENGINE_H_
 #define SEARCHENGINE_H_
 
-#include "MultiURIPacket.h"
 #include <string>
+#include <Logger.h>
+#include "MultiURIPacket.h"
 
 namespace thywin
 {
-	
 	class SearchEngine
 	{
 		public:
@@ -23,6 +23,10 @@ namespace thywin
 			
 			MultiURIPacket Search(std::string searchWords);
 		private:
+			
+			
+			Logger logger;
+			static bool compareURIsWithRelevance(std::pair<std::string, double> first, std::pair<std::string, double> second);
 
 	};
 

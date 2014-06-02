@@ -2,40 +2,39 @@
  * SearchEngineServer.h
  *
  *  Created on: 28 mei 2014
- *      Author: Erwin
+ *      Author: Erwin Janssen
+ *      Author: Thomas Kooi
  */
 
 #ifndef SEARCHENGINESERVER_H_
 #define SEARCHENGINESERVER_H_
 
+#include <Logger.h>
+
 namespace thywin
 {
-	/**
-	 *	The number of clients that can be accepted for the server.
-	 *	This is the max number of clients that can be listened to.
-	 */
-	const int AMOUNT_OF_CONNECTIONS_ACCEPT_DEFAULT = 127;
-	
 	class SearchEngineServer
 	{
 		public:
 			/**
-			 * Creates the SearchEngineServer object and sets up the server on given port.
-			 * @param port Valid port number. Can be any number between 256 and 65535.
-			 * @param accept Number of accepted connections at any given time.
+			 * Creates a SearchEngineServer object and sets up the server on the given port.
+			 * @param port The port that this server will listen on. Must a be valid port number (can be any number between 256 and 65535)
+			 * @param maxNumberOfConnections The maximum amount of concurrent connections.
 			 */
-			SearchEngineServer(const int port, const int accept);
+			SearchEngineServer(const int port, const int maxNumberOfConnections);
 
-			virtual ~SearchEngineServer();
 			/**
-			 * Check whatever or not the server has a connection set up.
-			 * @return returns true when the server has connection (is setup) otherwise returns false.
+			 * Default destructor
 			 */
-			bool HasConnection();
+			virtual ~SearchEngineServer();
+
+			
 		private:
-			int serverSocket;
-			bool connection;
-			int maximumNumbersOfConnections;
+			Logger logger;
+			int listenSocketFD;
+			bool socketBound;
+			int maxNumberOfConnections;
+			
 			/**
 			 * Set up the server on port, if the server has not been set up yet
 			 * @param port Valid port number. Can be any number between # and #.
@@ -48,6 +47,8 @@ namespace thywin
 			 * that will be handled through a ClientConnection object.
 			 */
 			void Listen();
+			
+			static void* setUpConnectionWithClient(void *socket);
 	};
 
 } /* namespace thywin */

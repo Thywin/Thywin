@@ -21,18 +21,13 @@
 #include "DocumentVectorPacket.h"
 #include "SearchEngine.h"
 
+
 namespace thywin
 {
-	
-	/**
-	 * Loggers are temporarily placed in comments while awaiting library update
-	 */
-	SearchEngineCommunicator::SearchEngineCommunicator(int client)
+	SearchEngineCommunicator::SearchEngineCommunicator(int clientCommunicationSocket) : logger("SearchEngine.log")
 	{
-		std::stringstream out;
-		out << "Master_connection_" << client << ".log";
-		std::string logFileName = out.str();
-		clientSocket = client;
+		logger.Log(INFO, "Search Engine Communicator created.");
+		this->clientCommunicationSocket = clientCommunicationSocket;
 		handlingConnection = false;
 		connection = true;
 	}
@@ -64,7 +59,7 @@ namespace thywin
 			handlingConnection = false;
 			connection = false;
 			
-			if (close(clientSocket) < 0)
+			if (close(clientCommunicationSocket) < 0)
 			{
 				// who cares?
 			}
@@ -83,7 +78,7 @@ namespace thywin
 		std::stringstream data;
 		data << packet << TP_END_OF_PACKET;
 		
-		int sendSize = send(clientSocket, (const char*) data.str().c_str(), data.str().size(), 0);
+		int sendSize = send(clientCommunicationSocket, (const char*) data.str().c_str(), data.str().size(), 0);
 		if (sendSize < 0)
 		{
 			throw std::runtime_error(std::string(strerror(errno)));
@@ -93,16 +88,16 @@ namespace thywin
 	
 	std::string SearchEngineCommunicator::receivePacket()
 	{
-		std::stringstream receiveBuffer;
-		char characterReceiveBuffer;
-		int receiveSize = -1;
+		std::stringstream receivedMessage;
+		char buffer;
+		int receivedSize = -1;
 		do
 		{
-			receiveSize = recv(clientSocket, &characterReceiveBuffer, 1, 0);
-			checkReceiveSize(receiveSize);
-			receiveBuffer << characterReceiveBuffer;
-		} while (receiveSize > 0 && characterReceiveBuffer != TP_END_OF_PACKET);
-		return receiveBuffer.str();
+			receivedSize = recv(clientCommunicationSocket, &buffer, sizeof(buffer), 0);
+			checkReceiveSize(receivedSize);
+			receivedMessage << buffer;
+		} while (receivedSize > 0 && buffer != TP_END_OF_PACKET);
+		return receivedMessage.str();
 	}
 		
 	void SearchEngineCommunicator::checkReceiveSize(const int receiveSize)
