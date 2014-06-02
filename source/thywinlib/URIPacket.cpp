@@ -7,10 +7,10 @@
 
 #include <string>
 #include <iostream>
-#include "Communicator.h"
 #include <stdlib.h>
-#include "URIPacket.h"
 #include <stdio.h>
+#include "Communicator.h"
+#include "URIPacket.h"
 
 namespace thywin
 {

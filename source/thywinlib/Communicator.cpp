@@ -31,12 +31,12 @@ namespace thywin
 		connectionSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		if (connectionSocket == -1)
 		{
-			throw std::string("failed to create socket: ") + strerror(errno);
+			throw std::runtime_error(std::string("failed to create socket: ") + strerror(errno));
 		}
 
 		if (connect(connectionSocket, (struct sockaddr*) &sockAddr, sizeof(sockAddr)) < 0)
 		{
-			throw std::string("failed to connect to socket: ") + strerror(errno);
+			throw std::runtime_error(std::string("failed to connect to socket: ") + strerror(errno));
 		}
 	}
 
@@ -44,7 +44,7 @@ namespace thywin
 	{
 		if (close(connectionSocket) < 0)
 		{
-			throw std::string("failed to close socket: ") + strerror(errno);
+			throw std::runtime_error(std::string("failed to close socket: ") + strerror(errno));
 		}
 	}
 
@@ -61,7 +61,7 @@ namespace thywin
 		int sendSize = send(connectionSocket, (char*) data.str().c_str(), data.str().size(), 0);
 		if (sendSize < 0)
 		{
-			throw std::string("failed to send to socket: ") + strerror(errno);
+			throw std::runtime_error(std::string("failed to send to socket: ") + strerror(errno));
 		}
 
 		return sendSize;
@@ -100,15 +100,15 @@ namespace thywin
 	{
 		if (receiveSize < 0)
 		{
-			throw std::string("failed to receive from socket: ") + strerror(errno);
+			throw std::runtime_error(std::string("failed to receive from socket: ") + strerror(errno));
 		}
 		else if (receiveSize == 0)
 		{
 			if (close(socket) < 0)
 			{
-				throw std::string("failed to close socket: ") + strerror(errno);
+				throw std::runtime_error(std::string("failed to close socket: ") + strerror(errno));
 			}
-			throw std::string("Master closed the connection");
+			throw std::runtime_error(std::string("Master closed the connection"));
 		}
 		//no else because the code just continues the previous if's terminate the program.
 	}

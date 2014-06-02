@@ -3,12 +3,14 @@
  *
  *  Created on: 8 mei 2014
  *      Author: Erwin Janssen
+ *      Author: Bobby Bouwmann
  */
 
-#include "DocumentVector.h"
 #include <cmath>
 #include <algorithm>
 #include <iostream>
+#include "DocumentVector.h"
+#include "porter2_stemmer.h"
 
 namespace thywin
 {
@@ -35,7 +37,9 @@ namespace thywin
 		{
 			if (extractingWord && (text.at(i) < 'a' || text.at(i) > 'z'))
 			{
-				(*this)[text.substr(lastIndex, i - lastIndex)]++;
+				std::string foundWord(text.substr(lastIndex, i - lastIndex));
+				Porter2Stemmer::stem(foundWord);
+				(*this)[foundWord]++;
 				lastIndex = i;
 				extractingWord = false;
 			}
@@ -46,7 +50,9 @@ namespace thywin
 			}
 			else if ((i == text.size() - 1) && extractingWord)
 			{
-				(*this)[text.substr(lastIndex, i - lastIndex + 1)]++;
+				std::string foundWord(text.substr(lastIndex, i - lastIndex + 1));
+				Porter2Stemmer::stem(foundWord);
+				(*this)[foundWord]++;
 			}
 			// else omitted because there are no other cases that will be handled.
 		}
@@ -84,13 +90,36 @@ namespace thywin
 		double dotProduct = 0;
 		for (DocumentVector::iterator i = documentVector.begin(); i != documentVector.end(); i++)
 		{
-			DocumentVector::iterator searchResult = this->find(i->first);
-			if (searchResult != this->end())
+			DocumentVector::iterator searchResult = find(i->first);
+			if (searchResult != end())
 			{
 				dotProduct += (i->second) * (searchResult->second);
 			}
 		}
 		return dotProduct;
+	}
+	
+	std::string DocumentVector::Serialize()
+	{
+		std::stringstream serializedStream;
+		for (DocumentVector::iterator i = begin(); i != end(); i++)
+		{
+			serializedStream << i->first << TP_CONTENT_SEPERATOR << i->second << TP_CONTENT_SEPERATOR;
+		}
+		return serializedStream.str();
+	}
+	
+	void DocumentVector::Deserialize(const std::string& serializedDocumentVector)
+	{
+		std::stringstream serializedStream;
+		serializedStream << serializedDocumentVector;
+		std::string wordBuffer;
+		std::string countBuffer;
+		while (std::getline(serializedStream, wordBuffer, TP_CONTENT_SEPERATOR)
+				&& std::getline(serializedStream, countBuffer, TP_CONTENT_SEPERATOR))
+		{
+			(*this)[wordBuffer] = stoi(countBuffer);
+		}
 	}
 
 } /* namespace thywin */

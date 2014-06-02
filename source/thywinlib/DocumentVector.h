@@ -10,11 +10,13 @@
 
 #include <map>
 #include <string>
+#include "Communicator.h"
+#include "ThywinPacketContent.h"
 
 namespace thywin
 {
 	
-	class DocumentVector: public std::map<std::string, unsigned int>
+	class DocumentVector: public ThywinPacketContent, public std::map<std::string, unsigned int>
 	{
 		public:
 			
@@ -56,6 +58,17 @@ namespace thywin
 			 * @return The dot product between the two DocumentVectors, this value will be 0 or greater.
 			 */
 			double DotProduct(DocumentVector& documentVector);
+			
+			/**
+			 * @see ThywinPacketContent.Serialize()
+			 */
+			std::string Serialize();
+			
+			/**
+			 * Precondition: The object this function is called upon, is an empty DocumentVector
+			 * @see ThywinPacketContent.Deserialize()
+			 */
+			void Deserialize(const std::string& serializedDocumentVector);
 	};
 
 } /* namespace thywin */

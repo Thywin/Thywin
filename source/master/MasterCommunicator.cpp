@@ -9,6 +9,8 @@
 #include "MasterCommunicator.h"
 #include "URIPacket.h"
 #include "DocumentPacket.h"
+#include "MultiURIPacket.h"
+#include "DocumentVectorPacket.h"
 
 namespace thywin
 {
@@ -34,6 +36,19 @@ namespace thywin
 		Master::AddDocumentElementToQueue(packet);
 	}
 
+
+	void MasterCommunicator::HandlePutUriVector(std::shared_ptr<ThywinPacketContent> content)
+	{
+		std::shared_ptr<MultiURIPacket> packet = std::dynamic_pointer_cast<MultiURIPacket>(content);
+		Master::AddMultipleURISToQueue(packet);
+	}
+
+	void MasterCommunicator::HandlePutDocumentVector(std::shared_ptr<ThywinPacketContent> content)
+	{
+		std::shared_ptr<DocumentVectorPacket> packet = std::dynamic_pointer_cast<DocumentVectorPacket>(content);
+		Master::PutDocumentVector(packet);
+	}
+
 	ThywinPacket MasterCommunicator::createResponsePacket(std::shared_ptr<ThywinPacketContent> content)
 	{
 		ThywinPacket packet;
@@ -42,4 +57,5 @@ namespace thywin
 		packet.Content = content;
 		return packet;
 	}
+
 }

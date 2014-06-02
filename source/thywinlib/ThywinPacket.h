@@ -43,7 +43,9 @@ namespace thywin
 		/** */
 		RELEVANCE = 3,
 		/** */
-		DOCUMENTVECTOR = 4
+		DOCUMENTVECTOR = 4,
+		/** Vector with mulitple URIs */
+		URIVECTOR = 5
 	};
 
 	/**

@@ -18,13 +18,14 @@
 #include <sql.h>
 #include "DatabaseHandler.h"
 #include "Master.h"
+#include "IniParser/INIReader.h"
 
 namespace thywin
 {
 
-	DatabaseHandler::DatabaseHandler(std::string ipaddress, int givenPort = DEFAULT_DATABASE_PORT)
+	DatabaseHandler::DatabaseHandler()
 	{
-		Connect(ipaddress, givenPort);
+		connect();
 	}
 
 	DatabaseHandler::~DatabaseHandler()
@@ -32,7 +33,7 @@ namespace thywin
 		Disconnect();
 	}
 
-	void DatabaseHandler::Connect(std::string ipaddress, int givenPort)
+	void DatabaseHandler::connect()
 	{
 		connected = true;
 		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &environmentHandle))
@@ -55,10 +56,27 @@ namespace thywin
 
 		SQLSetConnectOption(connectionHandle, SQL_LOGIN_TIMEOUT, CONNECTION_TIMEOUT_IN_MINUTES);
 
+		INIReader reader("config.ini");
+		if (reader.ParseError() < 0)
+		{
+			throw std::runtime_error(std::string("Couldn't find \"config.ini\""));
+		}
+
+		std::string ipaddress = reader.Get("config", "ip", "UNKOWN");
+		int port = reader.GetInteger("config", "port", 0);
+		std::string database = reader.Get("config", "database", "UNKOWN");
+		std::string username = reader.Get("config", "username", "UNKOWN");
+		std::string password = reader.Get("config", "password", "UNKOWN");
+		if (ipaddress == "UNKOWN" || port == 0 || database == "UNKOWN" || username == "UNKOWN" || password == "UNKOWN")
+		{
+			throw std::runtime_error(
+					std::string("Config file not correct. Use the config.ini.example to see how it should be used."));
+		}
+
 		std::ostringstream ossPort;
-		ossPort << givenPort;
+		ossPort << port;
 		std::string temp = "DRIVER={/usr/lib/arm-linux-gnueabihf/odbc/psqlodbca.so};SERVER=" + ipaddress + ";PORT="
-				+ ossPort.str() + ";DATABASE=thywin;UID=thywin;PWD=hanicampna;";
+				+ ossPort.str() + ";DATABASE=" + database + ";UID=" + username + ";PWD=" + password + ";";
 
 		SQLCHAR retconstring[1024];
 		SQLRETURN connect = SQLDriverConnect(connectionHandle, NULL, (SQLCHAR*) temp.c_str(), SQL_NTS, retconstring,
@@ -99,7 +117,7 @@ namespace thywin
 		handleNonRowReturningQuery(query);
 	}
 
-	void DatabaseHandler::AddURIToList(std::shared_ptr<URIPacket> element)
+	void DatabaseHandler::AddURIToList(URIPacket::URIPacketPtr element)
 	{
 		if (!element->URI.empty())
 		{
@@ -108,6 +126,23 @@ namespace thywin
 			std::string query = "SELECT add_uri('" + element->URI + "'," + ossRelevance.str() + ");";
 			handleNonRowReturningQuery(query);
 		}
+	}
+
+	bool DatabaseHandler::URIInList(std::string URI)
+	{
+		SQLHANDLE statementHandler = createStatementHandler();
+		std::string query = "SELECT * FROM uris WHERE uri = '" + URI + "'";
+
+		if (executeQuery(query, statementHandler))
+		{
+			if (SQLFetch(statementHandler) == SQL_SUCCESS)
+			{
+				releaseStatementHandler(statementHandler);
+				return true;
+			}
+		}
+		releaseStatementHandler(statementHandler);
+		return false;
 	}
 
 	void DatabaseHandler::AddURIToQueue(std::string URI)
@@ -120,7 +155,7 @@ namespace thywin
 		}
 	}
 
-	void DatabaseHandler::AddDocumentToQueue(std::shared_ptr<DocumentPacket> input)
+	void DatabaseHandler::AddDocumentToQueue(DocumentPacket::DocumentPacketPtr input)
 	{
 		SQLHANDLE statementHandle = createStatementHandler();
 		std::string statement = "INSERT INTO document_queue VALUES ((SELECT uri_id FROM uris WHERE uri = ?), ?)";
@@ -146,16 +181,41 @@ namespace thywin
 		releaseStatementHandler(statementHandle);
 	}
 
-	void DatabaseHandler::AddWordcountToIndex(std::string URI, std::string word, int count)
+	void DatabaseHandler::AddIndex(std::string URI, DocumentVector index)
 	{
-		std::ostringstream ossCount;
-		ossCount << count;
-		std::string query = "INSERT INTO indices VALUES ((SELECT uri_id FROM uris WHERE uri = '" + URI + "'), '" + word
-				+ "'," + ossCount.str() + ")";
-		handleNonRowReturningQuery(query);
+		std::string deleteQuery = "DELETE FROM indices WHERE uri_id = (SELECT uri_id FROM uris "
+				"WHERE uri = '" + URI + "')";
+		handleNonRowReturningQuery(deleteQuery);
+		std::string query = "INSERT INTO indices VALUES ";
+		for (DocumentVector::iterator i = index.begin(); i != index.end(); i++)
+		{
+			std::ostringstream ossCount;
+			ossCount << i->second;
+			query += "((SELECT uri_id FROM uris WHERE uri = '" + URI + "'), '" + i->first + "'," + ossCount.str() + ")";
+			if (i != index.end())
+			{
+				query += ",\n";
+			}
+		}
+		handleNonRowReturningQuery(query.substr(0, query.size() - 2));
 	}
 
-	std::shared_ptr<URIPacket> DatabaseHandler::RetrieveURIFromQueue()
+	void DatabaseHandler::UpdateURIInList(URIPacket::URIPacketPtr element)
+	{
+		if (!element->URI.empty())
+		{
+			if (URIInList(element->URI))
+			{
+				std::ostringstream ossRelevance;
+				ossRelevance << element->Relevance;
+				std::string query = "UPDATE uris SET relevance = " + ossRelevance.str() + " WHERE uri = '"
+						+ element->URI + "'";
+				handleNonRowReturningQuery(query);
+			}
+		}
+	}
+
+	URIPacket::URIPacketPtr DatabaseHandler::RetrieveURIFromQueue()
 	{
 		SQLHANDLE statementHandle = createStatementHandler();
 		std::shared_ptr<URIPacket> result(new URIPacket);
@@ -178,7 +238,7 @@ namespace thywin
 		return result;
 	}
 
-	std::shared_ptr<URIPacket> DatabaseHandler::RetrieveAndDeleteURIFromQueue()
+	URIPacket::URIPacketPtr DatabaseHandler::RetrieveAndDeleteURIFromQueue()
 	{
 		std::shared_ptr<URIPacket> result(new URIPacket);
 		result = RetrieveURIFromQueue();
@@ -189,7 +249,7 @@ namespace thywin
 		return result;
 	}
 
-	std::vector<std::shared_ptr<URIPacket>> DatabaseHandler::GetURIListFromQueue(const int amount)
+	URIPacket::URIPacketVector DatabaseHandler::GetURIListFromQueue(const int amount)
 	{
 		std::vector<std::shared_ptr<URIPacket>> CachedURIQueue;
 		SQLHANDLE statementHandle = createStatementHandler();
@@ -197,7 +257,7 @@ namespace thywin
 		std::ostringstream ossAmount;
 		ossAmount << amount;
 		std::string query = "SELECT uris.uri, uri_queue.priority FROM uris, uri_queue"
-				" WHERE uris.uri_id = uri_queue.uri_id ORDER BY row_number() OVER () LIMIT " + ossAmount.str();
+				" WHERE uris.uri_id = uri_queue.uri_id ORDER BY uri_queue.priority DESC LIMIT " + ossAmount.str();
 
 		if (executeQuery(query, statementHandle))
 		{
@@ -223,7 +283,7 @@ namespace thywin
 		return CachedURIQueue;
 	}
 
-	std::shared_ptr<DocumentPacket> DatabaseHandler::RetrieveDocumentFromQueue()
+	DocumentPacket::DocumentPacketPtr DatabaseHandler::RetrieveDocumentFromQueue()
 	{
 		SQLHANDLE statementHandler = createStatementHandler();
 		std::shared_ptr<DocumentPacket> result(new DocumentPacket);
@@ -255,7 +315,7 @@ namespace thywin
 		return result;
 	}
 
-	std::shared_ptr<DocumentPacket> DatabaseHandler::RetrieveAndDeleteDocumentFromQueue()
+	DocumentPacket::DocumentPacketPtr DatabaseHandler::RetrieveAndDeleteDocumentFromQueue()
 	{
 		std::shared_ptr<DocumentPacket> result = RetrieveDocumentFromQueue();
 		if (!result->URI.empty())
@@ -277,6 +337,7 @@ namespace thywin
 				SQLGetData(stmtHndl, 1, SQL_C_LONG, &rowsInQueue, 0, NULL);
 			}
 		}
+		releaseStatementHandler(stmtHndl);
 		return rowsInQueue;
 	}
 
@@ -288,9 +349,11 @@ namespace thywin
 		{
 			if (SQLFetch(stmtHndl) == SQL_SUCCESS)
 			{
+				releaseStatementHandler(stmtHndl);
 				return false;
 			}
 		}
+		releaseStatementHandler(stmtHndl);
 		return true;
 	}
 
@@ -314,14 +377,17 @@ namespace thywin
 		}
 	}
 
-	void DatabaseHandler::handleNonRowReturningQuery(std::string SQLQuery)
+	bool DatabaseHandler::handleNonRowReturningQuery(std::string SQLQuery)
 	{
 		SQLHANDLE statementHandler = createStatementHandler();
 		if (SQL_SUCCESS != SQLExecDirect(statementHandler, (SQLCHAR*) SQLQuery.c_str(), SQL_NTS))
 		{
 			showError(SQL_HANDLE_STMT, statementHandler);
+			releaseStatementHandler(statementHandler);
+			return false;
 		}
 		releaseStatementHandler(statementHandler);
+		return true;
 	}
 
 	bool DatabaseHandler::executeQuery(std::string SQLQuery, SQLHANDLE& statementHandle)
@@ -353,6 +419,10 @@ namespace thywin
 			{
 				// Once the library has been updated, this will be turned into a logger message.
 				std::cout << "Message: " << message << " SQLSTATE: " << sqlstate << std::endl;
+			}
+			else
+			{
+				std::cout << "Duplicate key detected" << std::endl;
 			}
 		}
 	}
