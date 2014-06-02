@@ -1,16 +1,16 @@
 <?php
 require_once 'core/init.php';
 
-$uris = DB::getInstance()->get('uris', array('uri_id', '>', 0));
-$uri_count = $uris->count();
-
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Thywin</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Thywin</title>
 
 	<link href='http://fonts.googleapis.com/css?family=Roboto:400,300' rel='stylesheet' type='text/css'>
 	<link rel="stylesheet" href="css/style.css">
@@ -24,12 +24,10 @@ $uri_count = $uris->count();
 	</div>
 	
 	<form action="search.php" method="get" class="searchform">
-		<input type="text" name="search" id="seaarch" placeholder="Start searching...">
+		<input type="text" name="search" id="search" placeholder="Start searching...">
 		<button>Search</button>
 	</form>
-
-	<p><?php echo $uri_count; ?> unique links</p>
-
+	
 </div><!-- end search -->
 
 </body>
