@@ -337,6 +337,7 @@ namespace thywin
 				SQLGetData(stmtHndl, 1, SQL_C_LONG, &rowsInQueue, 0, NULL);
 			}
 		}
+		releaseStatementHandler(stmtHndl);
 		return rowsInQueue;
 	}
 
@@ -348,9 +349,11 @@ namespace thywin
 		{
 			if (SQLFetch(stmtHndl) == SQL_SUCCESS)
 			{
+				releaseStatementHandler(stmtHndl);
 				return false;
 			}
 		}
+		releaseStatementHandler(stmtHndl);
 		return true;
 	}
 
