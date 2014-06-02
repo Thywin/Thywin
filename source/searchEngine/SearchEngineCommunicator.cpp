@@ -44,45 +44,11 @@ namespace thywin
 		CloseConnection();
 	}
 	
-	void SearchEngineCommunicator::HandleGetRequest(const ThywinPacket& packet)
+	std::string SearchEngineCommunicator::getSearchResults(std::string searchWords)
 	{
-		ThywinPacket returnPacket;
-		returnPacket.Method = RESPONSE;
-		
-		if (packet.Type == SEARCH_RESULTS)
-		{
-			returnPacket.Content = getSearchResults(packet.Content);
-			
-			try
-			{
-				SendPacket(returnPacket);
-			}
-			catch (std::runtime_error& e)
-			{
-				printf("Error while sending return packet: %s\n", e.what());
-			}
-		}
-	}
-	
-	std::shared_ptr<MultiURIPacket> SearchEngineCommunicator::getSearchResults(std::shared_ptr<ThywinPacketContent> content)
-	{
-		std::cout << content << std::endl;
-		std::stringstream contentStream;
-		contentStream << content;
-		std::string searchWords;
-		std::getline(contentStream, searchWords, TP_END_OF_PACKET);
-		
-		
-		
 		SearchEngine searchEngine;
-		return std::shared_ptr<MultiURIPacket>(new MultiURIPacket(searchEngine.Search(searchWords)));
-		
-		
-		
-
-	}
-	void SearchEngineCommunicator::HandlePutRequest(const ThywinPacket& packet)
-	{
+		MultiURIPacket uriPackets = searchEngine.Search(searchWords);
+		return uriPackets.Serialize();
 	}
 	
 	bool SearchEngineCommunicator::hasConnection()
@@ -107,18 +73,15 @@ namespace thywin
 	
 	void SearchEngineCommunicator::HandleConnection()
 	{
-		handleReceivedThywinPacket(ReceivePacket());
+		while (true) {
+			sendPacket(getSearchResults(receivePacket()));
+		}
 	}
 	
-	int SearchEngineCommunicator::SendPacket(ThywinPacket& packet)
+	int SearchEngineCommunicator::sendPacket(std::string packet)
 	{
 		std::stringstream data;
-		data << packet.Method << TP_HEADER_SEPERATOR << packet.Type << TP_HEADER_SEPERATOR;
-		if (packet.Content != NULL)
-		{
-			data << packet.Content->Serialize();
-		}
-		data << TP_END_OF_PACKET;
+		data << packet << TP_END_OF_PACKET;
 		
 		int sendSize = send(clientSocket, (const char*) data.str().c_str(), data.str().size(), 0);
 		if (sendSize < 0)
@@ -128,7 +91,7 @@ namespace thywin
 		return sendSize;
 	}
 	
-	ThywinPacket SearchEngineCommunicator::ReceivePacket()
+	std::string SearchEngineCommunicator::receivePacket()
 	{
 		std::stringstream receiveBuffer;
 		char characterReceiveBuffer;
@@ -139,65 +102,9 @@ namespace thywin
 			checkReceiveSize(receiveSize);
 			receiveBuffer << characterReceiveBuffer;
 		} while (receiveSize > 0 && characterReceiveBuffer != TP_END_OF_PACKET);
-		return createThywinPacket(receiveBuffer);
+		return receiveBuffer.str();
 	}
-	
-	void SearchEngineCommunicator::fillThywinPacket(ThywinPacket& packet, std::stringstream& stream)
-	{
-		std::string valueForPacket;
-		std::cout << stream.str() << std::endl;
-		std::getline(stream, valueForPacket, TP_HEADER_SEPERATOR);
-		packet.Method = (PacketMethod) std::stoi(valueForPacket);
 		
-		std::getline(stream, valueForPacket, TP_HEADER_SEPERATOR);
-		packet.Type = (PacketType) std::stoi(valueForPacket);
-		if (packet.Method == PUT)
-		{
-			std::getline(stream, valueForPacket, TP_HEADER_SEPERATOR);
-			deserializePutObject(packet, valueForPacket);
-		}
-		
-		//std::getline(stream, valueForPacket, TP_END_OF_PACKET);
-		//packet.Content = valueForPacket;
-	}
-	
-	void SearchEngineCommunicator::deserializePutObject(ThywinPacket& packet, std::string& serializedObject)
-	{
-		if (packet.Method != PUT)
-		{
-			throw std::invalid_argument(std::string("Called deserialize object for a non PUT packet"));
-		}
-	}
-	
-	void SearchEngineCommunicator::handleReceivedThywinPacket(const ThywinPacket& packet)
-	{
-		switch (packet.Method)
-		{
-			case GET:
-				HandleGetRequest(packet);
-				break;
-			case PUT:
-				HandlePutRequest(packet);
-				break;
-			case RESPONSE:
-				break;
-		}
-	}
-	
-	ThywinPacket SearchEngineCommunicator::createThywinPacket(std::stringstream& receiveBuffer)
-	{
-		ThywinPacket returnPacket(GET, SEARCH_RESULTS);
-		try
-		{
-			fillThywinPacket(returnPacket, receiveBuffer);
-		}
-		catch (std::exception& e)
-		{
-			printf("Couldn't fill ThywinPacket\n");
-		}
-		return returnPacket;
-	}
-	
 	void SearchEngineCommunicator::checkReceiveSize(const int receiveSize)
 	{
 		if (receiveSize < 0)

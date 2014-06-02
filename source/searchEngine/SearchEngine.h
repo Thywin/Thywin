@@ -23,7 +23,7 @@ namespace thywin
 			
 			MultiURIPacket Search(std::string searchWords);
 		private:
-			static bool compareURIsWithRelevance(std::pair<std::string, double> first, std::pair<std::string, double> second);
+
 	};
 
 } /* namespace thywin */

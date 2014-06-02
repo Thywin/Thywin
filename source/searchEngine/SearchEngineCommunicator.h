@@ -53,16 +53,10 @@ namespace thywin
 			bool handlingConnection;
 			bool connection;
 
-			ThywinPacket ReceivePacket();
-			int SendPacket(ThywinPacket& sendPacket);
-			void HandleGetRequest(const ThywinPacket& packet);
-			std::shared_ptr<MultiURIPacket> getSearchResults(std::shared_ptr<ThywinPacketContent> content);
-			void HandlePutRequest(const ThywinPacket& packet);
-			void deserializePutObject(ThywinPacket& packet, std::string& serializedObject);
-			void fillThywinPacket(ThywinPacket& packet, std::stringstream& buffer);
-			void handleReceivedThywinPacket(const ThywinPacket& packet);
+			std::string receivePacket();
+			int sendPacket(std::string packet);
+			std::string getSearchResults(std::string searchWords);
 			void checkReceiveSize(const int receiveSize);
-			ThywinPacket createThywinPacket(std::stringstream& receiveBuffer);
 	};
 
 } /* namespace thywin */

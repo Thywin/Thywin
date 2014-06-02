@@ -18,6 +18,10 @@
 
 namespace thywin
 {
+	bool compareURIsWithRelevance(std::pair<std::string, double> first, std::pair<std::string, double> second)
+	{
+		return first.second < second.second;
+	}
 	
 	SearchEngine::SearchEngine()
 	{
@@ -38,7 +42,6 @@ namespace thywin
 	MultiURIPacket SearchEngine::Search(std::string searchWords)
 	{
 		MultiURIPacket searchResults;
-		
 		
 		//std::string searchWords("probabilistic logic discrete event simulation");
 		DocumentVector searchVector(searchWords);
@@ -64,12 +67,8 @@ namespace thywin
 			firstWord = false;
 		}
 		searchQueryStream << ")";
-		std::cout << searchWords << std::endl;
-		std::cout << searchQueryStream.str() << std::endl;
-		
 		if (databaseHandler.executeQuery(searchQueryStream.str(), sqlHandle))
 		{
-			
 			char uri[1024];
 			char keyword[1024];
 			unsigned int count = 0;
@@ -88,9 +87,7 @@ namespace thywin
 			{
 				uriWithRelevance[i->first] = i->second.CalculateSimilarity(searchVector);
 			}
-			
 			const unsigned int maxURIsToReturn = 25;
-			
 			
 			for (unsigned int i = 0; i < maxURIsToReturn; i++)
 			{
@@ -98,27 +95,21 @@ namespace thywin
 				{
 					break;
 				}
-				std::shared_ptr<URIPacket> uriPacket;
-				std::map<std::string, double>::iterator maxValue = std::max_element(uriWithRelevance.begin(), uriWithRelevance.end(), SearchEngine::compareURIsWithRelevance);
-				uriPacket->URI = maxValue->first;
-				uriPacket->Relevance = maxValue->second;
-				searchResults.Content.push_back(uriPacket);
+				URIPacket uriPacket;
+				std::map<std::string, double>::iterator maxValue = std::max_element(uriWithRelevance.begin(),
+						uriWithRelevance.end(), compareURIsWithRelevance);
+				uriPacket.URI = maxValue->first;
+				uriPacket.Relevance = maxValue->second;
+				searchResults.Content.push_back(std::shared_ptr<URIPacket>(new URIPacket(uriPacket)));
 				uriWithRelevance.erase(maxValue);
-				std::cout << uriPacket->URI << "\t" << uriPacket->Relevance << std::endl;
+				std::cout << uriPacket.URI << "\t" << uriPacket.Relevance << std::endl;
 			}
-			
-			
 		}
 		else
 		{
 			std::cout << "Failed to execute query";
 		}
 		return searchResults;
-	}
-	
-	bool SearchEngine::compareURIsWithRelevance(std::pair<std::string, double> first, std::pair<std::string, double> second)
-	{
-		return first.second < second.second;
 	}
 
 } /* namespace thywin */
