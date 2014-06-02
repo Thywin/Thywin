@@ -73,7 +73,7 @@ namespace thywin
 		std::string::size_type closeBracketPosition = std::string::npos;
 		do
 		{
-			if(closeBracketPosition == std::string::npos)
+			if (closeBracketPosition == std::string::npos)
 			{
 				openBracketPosition = content.find(openBracket, 0);
 			}
@@ -256,9 +256,22 @@ namespace thywin
 	{
 		const std::string protocolEnd("://");
 		std::string::size_type protocolEndPosition = URI.find(protocolEnd);
+		std::string::size_type firstHashtagPosition = URI.find("#");
+		std::string::size_type firstQuestionMarkPosition = URI.find("?");
 		if (protocolEndPosition != std::string::npos)
 		{
-			protocolEndPosition += protocolEnd.length();
+			if (protocolEndPosition > firstHashtagPosition && firstHashtagPosition != std::string::npos)
+			{
+				protocolEndPosition = std::string::npos;
+			}
+			else if (protocolEndPosition > firstQuestionMarkPosition && firstQuestionMarkPosition != std::string::npos)
+			{
+				protocolEndPosition = std::string::npos;
+			}
+			else
+			{
+				protocolEndPosition += protocolEnd.length();
+			}
 		}
 		return protocolEndPosition;
 	}
