@@ -22,6 +22,8 @@ require_once 'core/init.php';
 	<div class="logo">
 		<img src="img/logo.svg" alt="Thywin">
 	</div>
+
+	<h2>A Lannister always finds results!</h2>
 	
 	<form action="search.php" method="get" class="searchform">
 		<input type="text" name="search" id="search" placeholder="Start searching...">
