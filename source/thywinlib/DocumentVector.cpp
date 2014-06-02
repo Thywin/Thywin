@@ -3,6 +3,7 @@
  *
  *  Created on: 8 mei 2014
  *      Author: Erwin Janssen
+ *      Author: Bobby Bouwmann
  */
 
 #include <cmath>
@@ -37,9 +38,7 @@ namespace thywin
 			if (extractingWord && (text.at(i) < 'a' || text.at(i) > 'z'))
 			{
 				std::string foundWord(text.substr(lastIndex, i - lastIndex));
-				std::cout << "Found Word: " << foundWord << std::endl;
 				Porter2Stemmer::stem(foundWord);
-				std::cout << "Found Word2: " << foundWord << std::endl;
 				(*this)[foundWord]++;
 				lastIndex = i;
 				extractingWord = false;
@@ -52,9 +51,7 @@ namespace thywin
 			else if ((i == text.size() - 1) && extractingWord)
 			{
 				std::string foundWord(text.substr(lastIndex, i - lastIndex + 1));
-				std::cout << "Found Word: " << foundWord << std::endl;
 				Porter2Stemmer::stem(foundWord);
-				std::cout << "Found Word2: " << foundWord << std::endl;
 				(*this)[foundWord]++;
 			}
 			// else omitted because there are no other cases that will be handled.
