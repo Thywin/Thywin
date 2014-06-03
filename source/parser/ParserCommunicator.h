@@ -52,16 +52,6 @@ namespace thywin
 			 */
 			void StoreIndex(const DocumentVectorPacket& index);
 
-			/*
-			 * Store an URI with the relevance of the document the URI is found in.
-			 */
-			void StoreExpectedURIRelevance(const URIPacket& uriPacket);
-
-			/*
-			 * Store the actual relevance of a URI.
-			 */
-			void StoreActualURIRelevance(const URIPacket& uriPacket);
-
 			/**
 			 * Store multiple uris with their relevance.
 			 */
