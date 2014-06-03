@@ -40,22 +40,16 @@ namespace thywin
 			 */
 			void CloseConnection();
 
-			/**
-			 * Check whatever or not there is a connection established. Does not mean the connection is being handled!
-			 * @Return True on connection, false if connection is closed.
-			 */
-			bool hasConnection();
+
 
 		private:
 			Logger logger;
 			int clientCommunicationSocket;
-			bool handlingConnection;
 			bool connection;
 
 			std::string receivePacket();
-			int sendPacket(std::string packet);
+			void sendPacket(std::string packet);
 			std::string getSearchResults(std::string searchWords);
-			void checkReceiveSize(const int receiveSize);
 	};
 
 } /* namespace thywin */

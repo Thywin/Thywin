@@ -16,64 +16,59 @@
 #include <string>
 #include <errno.h>
 #include <stdexcept>
+#include <system_error>
 #include "Logger.h"
 #include "Communicator.h"
 #include "DocumentVectorPacket.h"
 #include "SearchEngine.h"
 
-
 namespace thywin
 {
-	SearchEngineCommunicator::SearchEngineCommunicator(int clientCommunicationSocket) : logger("SearchEngine.log")
+	SearchEngineCommunicator::SearchEngineCommunicator(int clientCommunicationSocket) :
+			logger("SearchEngine.log")
 	{
 		logger.Log(INFO, "Search Engine Communicator created.");
 		this->clientCommunicationSocket = clientCommunicationSocket;
-		handlingConnection = false;
 		connection = true;
 	}
 	
 	SearchEngineCommunicator::~SearchEngineCommunicator()
 	{
-		handlingConnection = false;
-		connection = false;
 		CloseConnection();
 	}
 	
-	std::string SearchEngineCommunicator::getSearchResults(std::string searchWords)
-	{
-		SearchEngine searchEngine;
-		MultiURIPacket uriPackets = searchEngine.Search(searchWords);
-		return uriPackets.Serialize();
-	}
-	
-	bool SearchEngineCommunicator::hasConnection()
-	{
-		return connection;
-	}
+	void SearchEngineCommunicator::HandleConnection()
+		{
+			try
+			{
+					sendPacket(getSearchResults(receivePacket()));
+			}
+			catch (std::exception& e)
+			{
+				logger.Log(ERROR, "Catched an exception in a connection thread: " + std::string(e.what()));
+				pthread_exit(NULL);
+			}
+			catch (...)
+			{
+				logger.Log(ERROR, "Unknown exception occurred in a connection thread");
+				pthread_exit(NULL);
+			}
+		}
 	
 	void SearchEngineCommunicator::CloseConnection()
 	{
-		if (hasConnection())
+		if (connection)
 		{
-			printf("Closing Connection\n");
-			handlingConnection = false;
 			connection = false;
 			
 			if (close(clientCommunicationSocket) < 0)
 			{
-				// who cares?
+				logger.Log(WARNING, std::string("Can't close socket in thread: ") + std::string(strerror(errno)));
 			}
 		}
 	}
 	
-	void SearchEngineCommunicator::HandleConnection()
-	{
-		while (true) {
-			sendPacket(getSearchResults(receivePacket()));
-		}
-	}
-	
-	int SearchEngineCommunicator::sendPacket(std::string packet)
+	void SearchEngineCommunicator::sendPacket(std::string packet)
 	{
 		std::stringstream data;
 		data << packet << TP_END_OF_PACKET;
@@ -83,7 +78,6 @@ namespace thywin
 		{
 			throw std::runtime_error(std::string(strerror(errno)));
 		}
-		return sendSize;
 	}
 	
 	std::string SearchEngineCommunicator::receivePacket()
@@ -94,26 +88,27 @@ namespace thywin
 		do
 		{
 			receivedSize = recv(clientCommunicationSocket, &buffer, sizeof(buffer), 0);
-			checkReceiveSize(receivedSize);
-			receivedMessage << buffer;
+			if(receivedSize < 0)
+			{
+				throw std::system_error();
+			}
+			else if(receivedSize == 0)
+			{
+				logger.Log(INFO, "A client closed the connection");
+			}
+			else
+			{
+				receivedMessage << buffer;				
+			}
 		} while (receivedSize > 0 && buffer != TP_END_OF_PACKET);
+		
 		return receivedMessage.str();
 	}
-		
-	void SearchEngineCommunicator::checkReceiveSize(const int receiveSize)
-	{
-		if (receiveSize < 0)
+	
+	std::string SearchEngineCommunicator::getSearchResults(std::string searchWords)
 		{
-			std::string errorMessage(strerror(errno));
-			CloseConnection();
-			throw std::runtime_error(errorMessage);
+			MultiURIPacket uriPackets = SearchEngine().Search(searchWords);
+			return uriPackets.Serialize();
 		}
-		else if (receiveSize == 0)
-		{
-			printf("Client Closed Connection\n");
-			CloseConnection();
-			throw std::runtime_error("Client Closed Connection");
-		} // There are no other cases that would need to be handled
-	}
 
 } /* namespace thywin */
