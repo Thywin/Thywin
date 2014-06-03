@@ -49,7 +49,7 @@ namespace thywin
 		}
 	}
 
-	int Communicator::SendPacket(const ThywinPacket& packet)
+	unsigned int Communicator::SendPacket(const ThywinPacket& packet)
 	{
 		std::stringstream data;
 		data << packet.Method << TP_HEADER_SEPERATOR << packet.Type << TP_HEADER_SEPERATOR;
