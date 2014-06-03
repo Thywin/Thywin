@@ -56,7 +56,7 @@ namespace thywin
 			//Logger logger; /* Temporarily placed in comment while awaiting library update */
 
 			ThywinPacket ReceivePacket();
-			int SendPacket(ThywinPacket& sendPacket);
+			unsigned int SendPacket(ThywinPacket& sendPacket);
 			void HandleGetRequest(const ThywinPacket& packet);
 			void HandlePutRequest(const ThywinPacket& packet);
 			void deserializePutObject(ThywinPacket& packet, std::string& serializedObject);

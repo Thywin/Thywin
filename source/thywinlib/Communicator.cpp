@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <iostream>
+#include <system_error>
 
 namespace thywin
 {
@@ -58,13 +59,21 @@ namespace thywin
 		}
 		data << TP_END_OF_PACKET;
 
-		int sendSize = send(connectionSocket, (char*) data.str().c_str(), data.str().size(), 0);
-		if (sendSize < 0)
+		const char* sendBuffer = data.str().c_str();
+		unsigned int totalBytesSent = 0;
+		while (totalBytesSent < data.str().size())
 		{
-			throw std::runtime_error(std::string("failed to send to socket: ") + strerror(errno));
+			int bytesSent = send(connectionSocket, &sendBuffer[totalBytesSent], data.str().size() - totalBytesSent, 0);
+
+			if (bytesSent < 0)
+			{
+				throw std::system_error();
+			}
+
+			totalBytesSent += bytesSent;
 		}
 
-		return sendSize;
+		return totalBytesSent;
 	}
 
 	std::shared_ptr<ThywinPacket> Communicator::ReceivePacket(std::shared_ptr<ThywinPacketContent> contentObject)
