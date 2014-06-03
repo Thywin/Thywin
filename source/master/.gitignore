@@ -38,3 +38,6 @@ local.properties
 *.out
 *.app
 /Debug
+
+# Config exclusion
+config.ini

@@ -19,6 +19,8 @@
 #include "ClientConnection.h"
 #include "Communicator.h"
 #include "MasterCommunicator.h"
+#include "MultiURIPacket.h"
+#include "DocumentVectorPacket.h"
 
 namespace thywin
 {
@@ -47,23 +49,6 @@ namespace thywin
 	{
 		ThywinPacket returnPacket;
 		returnPacket.Method = RESPONSE;
-		switch (packet.Type)
-		{
-			case URI:
-				returnPacket = communicator.HandleGetURI();
-				break;
-			case DOCUMENT:
-				returnPacket = communicator.HandleGetDocument();
-				break;
-			case RELEVANCE:
-				// TODO
-				//returnPacket = MasterCommunicator::HandleGetRelevance(); // to be implemented later
-				break;
-			case DOCUMENTVECTOR:
-				// TODO
-				//returnPacket = MasterCommunicator::HandleGetDocumentVector(); // to be implemented later
-				break;
-		}
 		try
 		{
 			SendPacket(returnPacket);
@@ -76,23 +61,6 @@ namespace thywin
 
 	void ClientConnection::HandlePutRequest(const ThywinPacket& packet)
 	{
-		switch (packet.Type)
-		{
-			case URI:
-				communicator.HandlePutURI(packet.Content);
-				break;
-			case DOCUMENT:
-				communicator.HandlePutDocument(packet.Content);
-				break;
-			case RELEVANCE:
-				// TODO
-				//MasterCommunicator::HandlePutRelevance(packet);	// to be implemented later
-				break;
-			case DOCUMENTVECTOR:
-				// TODO
-				//MasterCommunicator::HandlePutDocumentVector(packet);	// to be implemented later
-				break;
-		}
 	}
 
 	bool ClientConnection::hasConnection()
@@ -138,7 +106,6 @@ namespace thywin
 		}
 		data << TP_END_OF_PACKET;
 
-
 		int sendSize = send(clientSocket, (const char*) data.str().c_str(), data.str().size(), 0);
 		if (sendSize < 0)
 		{
@@ -163,7 +130,6 @@ namespace thywin
 
 	void ClientConnection::fillThywinPacket(ThywinPacket& packet, std::stringstream& buffer)
 	{
-		std::cout << buffer.str().substr(0,10) << std::endl;
 		std::string valueForPacket;
 		std::getline(buffer, valueForPacket, TP_HEADER_SEPERATOR);
 		packet.Method = (PacketMethod) std::stoi(valueForPacket);
@@ -184,33 +150,6 @@ namespace thywin
 		{
 			throw std::invalid_argument(std::string("Called deserialize object for a non PUT packet"));
 		}
-		switch (packet.Type)
-		{
-			case URI:
-			{
-				std::shared_ptr<URIPacket> uriPacket(new URIPacket);
-				uriPacket->Deserialize(serializedObject);
-				packet.Content = uriPacket;
-				break;
-			}
-			case DOCUMENT:
-			{
-				std::shared_ptr<DocumentPacket> docPacket(new DocumentPacket);
-				docPacket->Deserialize(serializedObject);
-				packet.Content = docPacket;
-				break;
-			}
-			case RELEVANCE:
-			{
-				// TODO
-				break;
-			}
-			case DOCUMENTVECTOR:
-			{
-				// TODO
-				break;
-			}
-		}
 	}
 
 	void ClientConnection::handleReceivedThywinPacket(const ThywinPacket& packet)
@@ -230,7 +169,6 @@ namespace thywin
 
 	ThywinPacket ClientConnection::createThywinPacket(std::stringstream& receiveBuffer)
 	{
-		std::cout << receiveBuffer.str().substr(0,10) << std::endl;
 		ThywinPacket returnPacket(GET, URI);
 		try
 		{

@@ -18,13 +18,14 @@
 #include <sql.h>
 #include "DatabaseHandler.h"
 #include "Master.h"
+#include "IniParser/INIReader.h"
 
 namespace thywin
 {
 
-	DatabaseHandler::DatabaseHandler(std::string ipaddress, int givenPort = DEFAULT_DATABASE_PORT)
+	DatabaseHandler::DatabaseHandler()
 	{
-		Connect(ipaddress, givenPort);
+		connect();
 	}
 
 	DatabaseHandler::~DatabaseHandler()
@@ -32,7 +33,7 @@ namespace thywin
 		Disconnect();
 	}
 
-	void DatabaseHandler::Connect(std::string ipaddress, int givenPort)
+	void DatabaseHandler::connect()
 	{
 		connected = true;
 		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &environmentHandle))
@@ -55,10 +56,27 @@ namespace thywin
 
 		SQLSetConnectOption(connectionHandle, SQL_LOGIN_TIMEOUT, CONNECTION_TIMEOUT_IN_MINUTES);
 
+		INIReader reader("config.ini");
+		if (reader.ParseError() < 0)
+		{
+			throw std::runtime_error(std::string("Couldn't find \"config.ini\""));
+		}
+
+		std::string ipaddress = reader.Get("config", "ip", "UNKOWN");
+		int port = reader.GetInteger("config", "port", 0);
+		std::string database = reader.Get("config", "database", "UNKOWN");
+		std::string username = reader.Get("config", "username", "UNKOWN");
+		std::string password = reader.Get("config", "password", "UNKOWN");
+		if (ipaddress == "UNKOWN" || port == 0 || database == "UNKOWN" || username == "UNKOWN" || password == "UNKOWN")
+		{
+			throw std::runtime_error(
+					std::string("Config file not correct. Use the config.ini.example to see how it should be used."));
+		}
+
 		std::ostringstream ossPort;
-		ossPort << givenPort;
+		ossPort << port;
 		std::string temp = "DRIVER={/usr/lib/arm-linux-gnueabihf/odbc/psqlodbca.so};SERVER=" + ipaddress + ";PORT="
-				+ ossPort.str() + ";DATABASE=thywin;UID=thywin;PWD=hanicampna;";
+				+ ossPort.str() + ";DATABASE=" + database + ";UID=" + username + ";PWD=" + password + ";";
 
 		SQLCHAR retconstring[1024];
 		SQLRETURN connect = SQLDriverConnect(connectionHandle, NULL, (SQLCHAR*) temp.c_str(), SQL_NTS, retconstring,
@@ -99,15 +117,33 @@ namespace thywin
 		handleNonRowReturningQuery(query);
 	}
 
-	void DatabaseHandler::AddURIToList(std::shared_ptr<URIPacket> element)
+	bool DatabaseHandler::AddURIToList(std::shared_ptr<URIPacket> element)
 	{
 		if (!element->URI.empty())
 		{
 			std::ostringstream ossRelevance;
 			ossRelevance << element->Relevance;
 			std::string query = "SELECT add_uri('" + element->URI + "'," + ossRelevance.str() + ");";
-			handleNonRowReturningQuery(query);
+			return handleNonRowReturningQuery(query);
 		}
+		return false;
+	}
+
+	bool DatabaseHandler::URIInList(std::string URI)
+	{
+		SQLHANDLE statementHandler = createStatementHandler();
+		std::string query = "SELECT * FROM uris WHERE uri = '" + URI + "'";
+
+		if (executeQuery(query, statementHandler))
+		{
+			if (SQLFetch(statementHandler) == SQL_SUCCESS)
+			{
+				releaseStatementHandler(statementHandler);
+				return true;
+			}
+		}
+		releaseStatementHandler(statementHandler);
+		return false;
 	}
 
 	void DatabaseHandler::AddURIToQueue(std::string URI)
@@ -314,14 +350,17 @@ namespace thywin
 		}
 	}
 
-	void DatabaseHandler::handleNonRowReturningQuery(std::string SQLQuery)
+	bool DatabaseHandler::handleNonRowReturningQuery(std::string SQLQuery)
 	{
 		SQLHANDLE statementHandler = createStatementHandler();
 		if (SQL_SUCCESS != SQLExecDirect(statementHandler, (SQLCHAR*) SQLQuery.c_str(), SQL_NTS))
 		{
 			showError(SQL_HANDLE_STMT, statementHandler);
+			releaseStatementHandler(statementHandler);
+			return false;
 		}
 		releaseStatementHandler(statementHandler);
+		return true;
 	}
 
 	bool DatabaseHandler::executeQuery(std::string SQLQuery, SQLHANDLE& statementHandle)

@@ -1,0 +1,7 @@
+# After changing the settings, save this file as config.ini
+[config]
+ip			= 127.0.0.1
+port		= 1234
+database 	= databaseName
+username 	= username
+password 	= password

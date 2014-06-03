@@ -35,9 +35,13 @@ namespace thywin
 		return *documentPacketSPtr;
 	}
 
-	void ParserCommunicator::StoreIndex(const DocumentVector& index)
+	void ParserCommunicator::StoreIndex(const DocumentVectorPacket& index)
 	{
+		std::shared_ptr<DocumentVectorPacket> documentVectorPtr(new DocumentVectorPacket(index));
 
+		ThywinPacket thywinPacket(PUT, DOCUMENTVECTOR, documentVectorPtr);
+
+		communicator.SendPacket(thywinPacket);
 	}
 
 	void ParserCommunicator::StoreExpectedURIRelevance(const URIPacket& uriPacket)
@@ -56,6 +60,15 @@ namespace thywin
 		ThywinPacket thywinPacket(PUT, RELEVANCE, uriPacketSPtr);
 
 		communicator.SendPacket(thywinPacket);
+	}
+
+	void ParserCommunicator::StoreMultipleURIs(const MultiURIPacket& multiURIPacket)
+	{
+		std::shared_ptr<MultiURIPacket> multiURIPacketSPtr(new MultiURIPacket(multiURIPacket));
+
+		ThywinPacket packet(PUT, URIVECTOR, multiURIPacketSPtr);
+
+		communicator.SendPacket(packet);
 	}
 
 } /* namespace thywin */
