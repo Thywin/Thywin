@@ -41,25 +41,10 @@ namespace thywin
 
 		ThywinPacket thywinPacket(PUT, DOCUMENTVECTOR, documentVectorPtr);
 
-		communicator.SendPacket(thywinPacket);
-	}
-
-	void ParserCommunicator::StoreExpectedURIRelevance(const URIPacket& uriPacket)
-	{
-		std::shared_ptr<URIPacket> uriPacketSPtr(new URIPacket(uriPacket));
-
-		ThywinPacket thywinPacket(PUT, URI, uriPacketSPtr);
-
-		communicator.SendPacket(thywinPacket);
-	}
-
-	void ParserCommunicator::StoreActualURIRelevance(const URIPacket& uriPacket)
-	{
-		std::shared_ptr<URIPacket> uriPacketSPtr(new URIPacket(uriPacket));
-
-		ThywinPacket thywinPacket(PUT, RELEVANCE, uriPacketSPtr);
-
-		communicator.SendPacket(thywinPacket);
+		unsigned int bytesSent = communicator.SendPacket(thywinPacket);
+		std::stringstream logMessageStoreIndex;
+		logMessageStoreIndex << "Stored index with size: " << bytesSent;
+		logger.Log(INFO, logMessageStoreIndex.str());
 	}
 
 	void ParserCommunicator::StoreMultipleURIs(const MultiURIPacket& multiURIPacket)
@@ -68,7 +53,10 @@ namespace thywin
 
 		ThywinPacket packet(PUT, URIVECTOR, multiURIPacketSPtr);
 
-		communicator.SendPacket(packet);
+		unsigned int bytesSent = communicator.SendPacket(packet);
+		std::stringstream logMessageStoreMultipleURIs;
+		logMessageStoreMultipleURIs << "Stored uri's with size: " << bytesSent;
+		logger.Log(INFO, logMessageStoreMultipleURIs.str());
 	}
 
 } /* namespace thywin */

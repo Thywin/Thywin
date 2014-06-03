@@ -135,7 +135,7 @@ namespace thywin
 		}
 	}
 
-	unsigned int ClientConnection::SendPacket(ThywinPacket& packet)
+	void ClientConnection::SendPacket(ThywinPacket& packet)
 	{
 		std::stringstream data;
 		data << packet.Method << TP_HEADER_SEPERATOR << packet.Type << TP_HEADER_SEPERATOR;
@@ -158,8 +158,6 @@ namespace thywin
 
 			totalBytesSent += bytesSent;
 		}
-
-		return totalBytesSent;
 	}
 
 	ThywinPacket ClientConnection::ReceivePacket()
