@@ -392,12 +392,6 @@ namespace thywin
 
 	bool DatabaseHandler::executeQuery(std::string SQLQuery, SQLHANDLE& statementHandle)
 	{
-		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, connectionHandle, &statementHandle))
-		{
-			showError(SQL_HANDLE_STMT, statementHandle);
-			Disconnect(statementHandle);
-			throw std::runtime_error(std::string("Couldn't allocate statement handle"));
-		}
 		if (SQL_SUCCESS != SQLExecDirect(statementHandle, (SQLCHAR*) SQLQuery.c_str(), SQL_NTS))
 		{
 			showError(SQL_HANDLE_STMT, statementHandle);
