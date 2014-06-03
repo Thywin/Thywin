@@ -50,7 +50,10 @@ namespace thywin
 			double relevance = docVector.CalculateSimilarity(subject);
 
 			DocumentVectorPacket documentVectorPacket(documentToParse.URI, relevance, docVector);
-			communicator.StoreIndex(documentVectorPacket);
+			if (relevance > 0)
+			{
+				communicator.StoreIndex(documentVectorPacket);
+			}
 
 			std::stringstream logMessageRelevance;
 			logMessageRelevance << "Relevance of current URI: " << documentToParse.URI << " Relevance: " << relevance;
@@ -61,8 +64,6 @@ namespace thywin
 			for (unsigned int i = 0; i < extractedURIs.size(); i++)
 			{
 				URIPacket::URIPacketPtr packet(new URIPacket);
-				std::transform(extractedURIs.at(i).begin(), extractedURIs.at(i).end(), extractedURIs.at(i).begin(),
-						::tolower);
 				packet->URI = extractedURIs.at(i);
 				packet->Relevance = relevance;
 				multiURIPacket.Content.insert(multiURIPacket.Content.end(), packet);
