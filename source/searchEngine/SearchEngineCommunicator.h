@@ -2,7 +2,7 @@
  * SearchEngineCommunicator.h
  *
  *  Created on: 28 mei 2014
- *      Author: Erwin
+ *      Author: Erwin Janssen
  */
 
 #ifndef SEARCHENGINECOMMUNICATOR_H_

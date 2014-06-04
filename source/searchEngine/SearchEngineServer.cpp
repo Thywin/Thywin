@@ -2,7 +2,8 @@
  * SearchEngineServer.cpp
  *
  *  Created on: 28 mei 2014
- *      Author: Erwin
+ *      Author: Erwin Janssen
+ *      Author: Thomas Kooi
  */
 
 #include "SearchEngineServer.h"

@@ -2,7 +2,7 @@
  * main.cpp
  *
  *  Created on: 27 mei 2014
- *      Author: Erwin
+ *      Author: Erwin Janssen
  */
 
 #include <algorithm>
@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 	Logger logger("SearchEngine.log");
 	try
 	{
-		if (argc < 3)
+		if (argc != 3)
 		{
 			std::cerr
 					<< "Incorrect useage of this program. Correct usage is:\nsearchEngine <port number> <maxium concurrent connections>"

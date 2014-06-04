@@ -2,7 +2,7 @@
  * SearchEngine.cpp
  *
  *  Created on: 28 mei 2014
- *      Author: Erwin
+ *      Author: Erwin Janssen
  */
 
 #include "SearchEngine.h"

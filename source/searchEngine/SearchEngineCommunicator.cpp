@@ -2,7 +2,7 @@
  * SearchEngineCommunicator.cpp
  *
  *  Created on: 28 mei 2014
- *      Author: Erwin
+ *      Author: Erwin Janssen
  */
 
 #include "SearchEngineCommunicator.h"
@@ -38,22 +38,22 @@ namespace thywin
 	}
 	
 	void SearchEngineCommunicator::HandleConnection()
+	{
+		try
 		{
-			try
-			{
-					sendPacket(getSearchResults(receivePacket()));
-			}
-			catch (std::exception& e)
-			{
-				logger.Log(ERROR, "Catched an exception in a connection thread: " + std::string(e.what()));
-				pthread_exit(NULL);
-			}
-			catch (...)
-			{
-				logger.Log(ERROR, "Unknown exception occurred in a connection thread");
-				pthread_exit(NULL);
-			}
+			sendPacket(getSearchResults(receivePacket()));
 		}
+		catch (std::exception& e)
+		{
+			logger.Log(ERROR, "Catched an exception in a connection thread: " + std::string(e.what()));
+			pthread_exit(NULL);
+		}
+		catch (...)
+		{
+			logger.Log(ERROR, "Unknown exception occurred in a connection thread");
+			pthread_exit(NULL);
+		}
+	}
 	
 	void SearchEngineCommunicator::CloseConnection()
 	{
@@ -73,11 +73,22 @@ namespace thywin
 		std::stringstream data;
 		data << packet << TP_END_OF_PACKET;
 		
-		int sendSize = send(clientCommunicationSocket, (const char*) data.str().c_str(), data.str().size(), 0);
-		if (sendSize < 0)
+		unsigned int bytesSend = 0;
+		unsigned int totalBytesSend = 0;
+		const char* sendBuffer = data.str().c_str();
+		
+		while (totalBytesSend < packet.size())
 		{
-			throw std::runtime_error(std::string(strerror(errno)));
+			bytesSend = send(clientCommunicationSocket, &sendBuffer[totalBytesSend],
+					data.str().size() - totalBytesSend, 0);
+			if (bytesSend < 0)
+			{
+				throw std::system_error();
+			}
+			
+			totalBytesSend += bytesSend;
 		}
+		
 	}
 	
 	std::string SearchEngineCommunicator::receivePacket()
@@ -88,17 +99,17 @@ namespace thywin
 		do
 		{
 			receivedSize = recv(clientCommunicationSocket, &buffer, sizeof(buffer), 0);
-			if(receivedSize < 0)
+			if (receivedSize < 0)
 			{
 				throw std::system_error();
 			}
-			else if(receivedSize == 0)
+			else if (receivedSize == 0)
 			{
 				logger.Log(INFO, "A client closed the connection");
 			}
 			else
 			{
-				receivedMessage << buffer;				
+				receivedMessage << buffer;
 			}
 		} while (receivedSize > 0 && buffer != TP_END_OF_PACKET);
 		
@@ -106,9 +117,9 @@ namespace thywin
 	}
 	
 	std::string SearchEngineCommunicator::getSearchResults(std::string searchWords)
-		{
-			MultiURIPacket uriPackets = SearchEngine().Search(searchWords);
-			return uriPackets.Serialize();
-		}
+	{
+		MultiURIPacket uriPackets = SearchEngine().Search(searchWords);
+		return uriPackets.Serialize();
+	}
 
 } /* namespace thywin */

@@ -2,7 +2,7 @@
  * SearchEngine.h
  *
  *  Created on: 28 mei 2014
- *      Author: Erwin
+ *      Author: Erwin Janssen
  */
 
 #ifndef SEARCHENGINE_H_
