@@ -15,6 +15,7 @@
 #include <string>
 #include <errno.h>
 #include <stdexcept>
+#include <system_error>
 #include "Logger.h"
 #include "ClientConnection.h"
 #include "Communicator.h"
@@ -37,7 +38,7 @@ namespace thywin
 		handlingConnection = false;
 		connection = true;
 	}
-	
+
 	ClientConnection::~ClientConnection()
 	{
 		handlingConnection = false;
@@ -96,7 +97,7 @@ namespace thywin
 		}
 	}
 
-	int ClientConnection::SendPacket(ThywinPacket& packet)
+	void ClientConnection::SendPacket(ThywinPacket& packet)
 	{
 		std::stringstream data;
 		data << packet.Method << TP_HEADER_SEPERATOR << packet.Type << TP_HEADER_SEPERATOR;
@@ -106,12 +107,19 @@ namespace thywin
 		}
 		data << TP_END_OF_PACKET;
 
-		int sendSize = send(clientSocket, (const char*) data.str().c_str(), data.str().size(), 0);
-		if (sendSize < 0)
+		const char* sendBuffer = data.str().c_str();
+		unsigned int totalBytesSent = 0;
+		while (totalBytesSent < data.str().size())
 		{
-			throw std::runtime_error(std::string(strerror(errno)));
+			int bytesSent = send(clientSocket, &sendBuffer[totalBytesSent], data.str().size() - totalBytesSent, 0);
+
+			if (bytesSent < 0)
+			{
+				throw std::system_error();
+			}
+
+			totalBytesSent += bytesSent;
 		}
-		return sendSize;
 	}
 
 	ThywinPacket ClientConnection::ReceivePacket()

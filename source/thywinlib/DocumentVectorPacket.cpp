@@ -42,14 +42,7 @@ namespace thywin
 		std::getline(stream, URI, TP_CONTENT_SEPERATOR);
 		std::getline(stream, serializedLine, TP_CONTENT_SEPERATOR);
 
-		try
-		{
-			Relevance = std::stoi(serializedLine);
-		}
-		catch (std::exception& e)
-		{
-			Relevance = 0;
-		}
+		Relevance = atof(serializedLine.c_str());
 
 		std::getline(stream, serializedLine, TP_END_OF_PACKET);
 		DocumentVector vector;

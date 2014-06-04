@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <vector>
+#include <algorithm>
 #include "Parser.h"
 #include "HTMLFileParser.h"
 #include "DocumentVector.h"
@@ -48,8 +49,11 @@ namespace thywin
 			DocumentVector docVector(text);
 			double relevance = docVector.CalculateSimilarity(subject);
 
-			DocumentVectorPacket documentVectorPacket(documentToParse.URI,relevance,docVector);
-			communicator.StoreIndex(documentVectorPacket);
+			DocumentVectorPacket documentVectorPacket(documentToParse.URI, relevance, docVector);
+			if (relevance > 0)
+			{
+				communicator.StoreIndex(documentVectorPacket);
+			}
 
 			std::stringstream logMessageRelevance;
 			logMessageRelevance << "Relevance of current URI: " << documentToParse.URI << " Relevance: " << relevance;
@@ -57,7 +61,7 @@ namespace thywin
 
 			MultiURIPacket multiURIPacket;
 
-			for (unsigned int i = 0; i < extractedURIs.size(); i ++)
+			for (unsigned int i = 0; i < extractedURIs.size(); i++)
 			{
 				URIPacket::URIPacketPtr packet(new URIPacket);
 				packet->URI = extractedURIs.at(i);

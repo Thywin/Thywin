@@ -3,12 +3,14 @@
  *
  *  Created on: 8 mei 2014
  *      Author: Erwin Janssen
+ *      Author: Bobby Bouwmann
  */
 
-#include "DocumentVector.h"
 #include <cmath>
 #include <algorithm>
 #include <iostream>
+#include "DocumentVector.h"
+#include "porter2_stemmer.h"
 
 namespace thywin
 {
@@ -35,7 +37,9 @@ namespace thywin
 		{
 			if (extractingWord && (text.at(i) < 'a' || text.at(i) > 'z'))
 			{
-				(*this)[text.substr(lastIndex, i - lastIndex)]++;
+				std::string foundWord(text.substr(lastIndex, i - lastIndex));
+				Porter2Stemmer::stem(foundWord);
+				(*this)[foundWord]++;
 				lastIndex = i;
 				extractingWord = false;
 			}
@@ -46,7 +50,9 @@ namespace thywin
 			}
 			else if ((i == text.size() - 1) && extractingWord)
 			{
-				(*this)[text.substr(lastIndex, i - lastIndex + 1)]++;
+				std::string foundWord(text.substr(lastIndex, i - lastIndex + 1));
+				Porter2Stemmer::stem(foundWord);
+				(*this)[foundWord]++;
 			}
 			// else omitted because there are no other cases that will be handled.
 		}

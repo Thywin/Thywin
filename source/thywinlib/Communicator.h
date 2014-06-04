@@ -65,7 +65,7 @@ namespace thywin
 			 * @param packet ThywinPacket. Automatically serializes the TPObject content.
 			 * Content can be NULL when sending a GET request
 			 */
-			int SendPacket(const ThywinPacket& packet);
+			unsigned int SendPacket(const ThywinPacket& packet);
 
 			/**
 			 * Needs to be called after a GET request. Handles deserialization of TPObject.
