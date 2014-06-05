@@ -27,12 +27,16 @@ namespace thywin
 	sem_t Master::documentQueueSemaphore;
 	std::vector<std::shared_ptr<URIPacket>> Master::URIQueue;
 	DatabaseHandler Master::DBConnection;
+	Logger Master::logger("master.queue.log");
 
 	void Master::InitializeMaster()
 	{
 		sem_init(&documentQueueSemaphore, 0, DBConnection.GetRowCount("document_queue"));
-		printf("Current document Queue size: %i\n", DBConnection.GetRowCount("document_queue"));
-		printf("Current uri Queue size: %i\n", DBConnection.GetRowCount("uri_queue"));
+
+		std::stringstream logMessageQueueSize;
+		logMessageQueueSize << "Current document Queue size: " << DBConnection.GetRowCount("document_queue")
+				<< std::endl << "Current uri Queue size: " << DBConnection.GetRowCount("uri_queue");
+		logger.Log(INFO, logMessageQueueSize.str());
 	}
 
 	Master::~Master()
@@ -42,52 +46,48 @@ namespace thywin
 
 	void Master::AddURIElementToQueue(std::shared_ptr<URIPacket> element)
 	{
-		Master::URIQueueMutex.lock();
+		URIQueueMutex.lock();
 		DBConnection.AddURIToList(element);
-		Master::URIQueueMutex.unlock();
+		URIQueueMutex.unlock();
 	}
 
 	std::shared_ptr<URIPacket> Master::GetNextURIElementFromQueue()
 	{
-		Master::URIQueueMutex.lock();
-		try
+		URIQueueMutex.lock();
+
+		if (DBConnection.IsQueueEmpty("uri_queue"))
 		{
-			if (DBConnection.IsQueueEmpty("uri_queue"))
-			{
-				Master::fillURLQueue();
-				/* Temporary queue filling for debug purposes. */
-			}
+			fillURLQueue();
+			logger.Log(INFO, "Filled the uri queue with the default uri's");
+			/* Fills the queue with the default starting point uri's. */
 		}
-		catch (std::exception& e)
-		{
-			// To be added to log once library is updated
-		}
+
 		if (URIQueue.empty())
 		{
 			std::vector<std::shared_ptr<URIPacket>> receivedCache = DBConnection.GetURIListFromQueue(URI_QUEUE_SIZE);
-			Master::URIQueue.insert(Master::URIQueue.end(), receivedCache.begin(), receivedCache.end());
+			URIQueue.insert(URIQueue.end(), receivedCache.begin(), receivedCache.end());
 		}
-		std::shared_ptr<URIPacket> element = Master::URIQueue.at(0);
-		Master::URIQueue.erase(URIQueue.begin());
+		std::shared_ptr<URIPacket> element = URIQueue.at(0);
+		URIQueue.erase(URIQueue.begin());
 
-		Master::URIQueueMutex.unlock();
+		URIQueueMutex.unlock();
 		return element;
 	}
 
 	void Master::AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element)
 	{
-		Master::DocumentQueueMutex.lock();
+		DocumentQueueMutex.lock();
 		DBConnection.AddDocumentToQueue(element);
 		sem_post(&documentQueueSemaphore);
-		Master::DocumentQueueMutex.unlock();
+		DocumentQueueMutex.unlock();
 	}
 
 	std::shared_ptr<DocumentPacket> Master::GetNextDocumentElementFromQueue()
 	{
 		sem_wait(&documentQueueSemaphore);
-		Master::DocumentQueueMutex.lock();
+		DocumentQueueMutex.lock();
 		std::shared_ptr<DocumentPacket> element = DBConnection.RetrieveAndDeleteDocumentFromQueue();
-		Master::DocumentQueueMutex.unlock();
+		DocumentQueueMutex.unlock();
 		return element;
 	}
 
@@ -115,23 +115,16 @@ namespace thywin
 		fillURIElementToQueue("http://www.cs.mun.ca/~donald/msc/node11.html");
 		fillURIElementToQueue("http://mdm.sagepub.com/content/32/5/701.full");
 		fillURIElementToQueue("http://en.wikipedia.org/wiki/Discrete_event_simulation");
-		fillURIElementToQueue("hhttp://www.albrechts.com/mike/DES/");
+		fillURIElementToQueue("http://www.albrechts.com/mike/DES/");
 	}
 
-	void Master::fillURIElementToQueue(std::string URI)
+	void Master::fillURIElementToQueue(const std::string& URI)
 	{
-		try
-		{
-			std::shared_ptr<URIPacket> packet(new URIPacket);
-			packet->URI = URI;
-			packet->Relevance = 0;
+		std::shared_ptr<URIPacket> packet(new URIPacket);
+		packet->URI = URI;
+		packet->Relevance = 0;
 
-			DBConnection.AddURIToList(packet);
-			DBConnection.AddURIToQueue(packet->URI);
-		}
-		catch (std::bad_alloc& e)
-		{
-			// To be added to logger once library is updated
-		}
+		DBConnection.AddURIToList(packet);
+		DBConnection.AddURIToQueue(packet->URI);
 	}
 }

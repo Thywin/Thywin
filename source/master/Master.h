@@ -18,6 +18,7 @@
 #include "DocumentVectorPacket.h"
 #include "DatabaseHandler.h"
 #include "MultiURIPacket.h"
+#include "Logger.h"
 
 namespace thywin
 {
@@ -75,6 +76,8 @@ namespace thywin
 
 		private:
 
+			static Logger logger;
+
 			static const int URI_QUEUE_SIZE = 50;
 			/**
 			 * Database connection object. Used get URIs or documents from the Database.
@@ -95,7 +98,7 @@ namespace thywin
 			 * This function will fill the URI queue with basic URIs for starting points.
 			 */
 			static void fillURLQueue();
-			static void fillURIElementToQueue(std::string URI);
+			static void fillURIElementToQueue(const std::string& URI);
 	};
 }
 

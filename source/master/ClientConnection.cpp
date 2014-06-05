@@ -26,23 +26,15 @@
 namespace thywin
 {
 
-	/**
-	 * Loggers are temporarily placed in comments while awaiting library update
-	 */
-	ClientConnection::ClientConnection(int client)
+	ClientConnection::ClientConnection(int client, Logger& threadLogger) :
+			logger(threadLogger)
 	{
-		std::stringstream out;
-		out << "Master_connection_" << client << ".log";
-		std::string logFileName = out.str();
 		clientSocket = client;
 		handlingConnection = false;
-		connection = true;
 	}
 
 	ClientConnection::~ClientConnection()
 	{
-		handlingConnection = false;
-		connection = false;
 		CloseConnection();
 	}
 
@@ -50,32 +42,51 @@ namespace thywin
 	{
 		ThywinPacket returnPacket;
 		returnPacket.Method = RESPONSE;
-		try
+		switch (packet.Type)
 		{
-			SendPacket(returnPacket);
+			case URI:
+				returnPacket = communicator.HandleGetURI();
+				break;
+			case DOCUMENT:
+				returnPacket = communicator.HandleGetDocument();
+				break;
+			default:
+				break;
 		}
-		catch (std::runtime_error& e)
-		{
-			printf("Error while sending return packet: %s\n", e.what());
-		}
+		SendPacket(returnPacket);
 	}
 
 	void ClientConnection::HandlePutRequest(const ThywinPacket& packet)
 	{
+		switch (packet.Type)
+		{
+			case URI:
+				communicator.HandlePutURI(packet.Content);
+				break;
+			case DOCUMENT:
+				communicator.HandlePutDocument(packet.Content);
+				break;
+			case DOCUMENTVECTOR:
+				communicator.HandlePutDocumentVector(packet.Content);
+				break;
+			case URIVECTOR:
+				communicator.HandlePutUriVector(packet.Content);
+				break;
+			default:
+				break;
+		}
 	}
 
 	bool ClientConnection::hasConnection()
 	{
-		return connection;
+		return handlingConnection;
 	}
 
 	void ClientConnection::CloseConnection()
 	{
-		if (hasConnection())
+		if (handlingConnection)
 		{
-			printf("Closing Connection\n");
 			handlingConnection = false;
-			connection = false;
 
 			if (close(clientSocket) < 0)
 			{
@@ -90,10 +101,7 @@ namespace thywin
 		while (handlingConnection)
 		{
 			ThywinPacket returnPacket = ReceivePacket();
-			if (hasConnection())
-			{
-				handleReceivedThywinPacket(returnPacket);
-			}
+			handleReceivedThywinPacket(returnPacket);
 		}
 	}
 
@@ -115,6 +123,9 @@ namespace thywin
 
 			if (bytesSent < 0)
 			{
+				std::stringstream sendError;
+				sendError << "Failed to send: " << strerror(errno);
+				logger.Log(ERROR, sendError.str());
 				throw std::system_error();
 			}
 
@@ -158,6 +169,39 @@ namespace thywin
 		{
 			throw std::invalid_argument(std::string("Called deserialize object for a non PUT packet"));
 		}
+		switch (packet.Type)
+		{
+			case URI:
+			{
+				std::shared_ptr<URIPacket> uriPacket(new URIPacket);
+				uriPacket->Deserialize(serializedObject);
+				packet.Content = uriPacket;
+				break;
+			}
+			case DOCUMENT:
+			{
+				std::shared_ptr<DocumentPacket> docPacket(new DocumentPacket);
+				docPacket->Deserialize(serializedObject);
+				packet.Content = docPacket;
+				break;
+			}
+			case DOCUMENTVECTOR:
+			{
+				std::shared_ptr<DocumentVectorPacket> docPacket(new DocumentVectorPacket);
+				docPacket->Deserialize(serializedObject);
+				packet.Content = docPacket;
+				break;
+			}
+			case URIVECTOR:
+			{
+				std::shared_ptr<MultiURIPacket> multiURIPacket(new MultiURIPacket);
+				multiURIPacket->Deserialize(serializedObject);
+				packet.Content = multiURIPacket;
+				break;
+			}
+			default:
+				break;
+		}
 	}
 
 	void ClientConnection::handleReceivedThywinPacket(const ThywinPacket& packet)
@@ -178,14 +222,7 @@ namespace thywin
 	ThywinPacket ClientConnection::createThywinPacket(std::stringstream& receiveBuffer)
 	{
 		ThywinPacket returnPacket(GET, URI);
-		try
-		{
-			fillThywinPacket(returnPacket, receiveBuffer);
-		}
-		catch (std::exception& e)
-		{
-			printf("Couldn't fill ThywinPacket\n");
-		}
+		fillThywinPacket(returnPacket, receiveBuffer);
 		return returnPacket;
 	}
 
@@ -199,7 +236,7 @@ namespace thywin
 		}
 		else if (receiveSize == 0)
 		{
-			printf("Client Closed Connection\n");
+			logger.Log(INFO, "Client Closed Connection\n");
 			CloseConnection();
 			throw std::runtime_error("Client Closed Connection");
 		} // There are no other cases that would need to be handled

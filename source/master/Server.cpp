@@ -25,18 +25,24 @@ namespace thywin
 	 */
 	void* setUpConnectionWithClient(void *socket)
 	{
+		int client = *((int *) socket);
+		free(socket);
+		
+		std::stringstream loggerLocation;
+		loggerLocation << "Master.client." << client << ".log";
+		Logger logger(loggerLocation.str());
+
 		try
 		{
-			int client = *((int *) socket);
-		    free(socket);
-			ClientConnection connection(client);
+			ClientConnection connection(client, logger);
 			connection.HandleConnection(); /* Blocking call. Will wait until client closed connection */
 		}
 		catch (std::exception& e)
 		{
 			std::cout << e.what() << std::endl;
 		}
-		catch (...) {
+		catch (...)
+		{
 			std::cout << "unexpected exception." << std::endl;
 		}
 		pthread_exit(NULL);
@@ -47,7 +53,7 @@ namespace thywin
 
 	Server::Server()
 	{
-		logger.Log(INFO,std::string("Server starting on default port and default amount of connections accept"));
+		logger.Log(INFO, std::string("Server starting on default port and default amount of connections accept"));
 		amountOfConnectionsAccept = AMOUNT_OF_CONNECTIONS_ACCEPT_DEFAULT;
 		connection = false;
 		SetUp(7500); /* Needs a define in the library for the default server port */
@@ -55,7 +61,7 @@ namespace thywin
 	}
 	Server::Server(const int port)
 	{
-		logger.Log(INFO,std::string("Server starting on port # and default amount of connections accept"));
+		logger.Log(INFO, std::string("Server starting on port # and default amount of connections accept"));
 		amountOfConnectionsAccept = AMOUNT_OF_CONNECTIONS_ACCEPT_DEFAULT;
 		connection = false;
 		SetUp(port);
@@ -64,13 +70,13 @@ namespace thywin
 
 	Server::Server(const int port, const int accept)
 	{
-		logger.Log(INFO,std::string("Server starting on port # and amount of connections accept #"));
+		logger.Log(INFO, std::string("Server starting on port # and amount of connections accept #"));
 		amountOfConnectionsAccept = accept;
 		connection = false;
 		SetUp(port);
 		Listen();
 	}
-	
+
 	Server::~Server()
 	{
 		connection = false;
@@ -107,7 +113,7 @@ namespace thywin
 			std::string errorMessage(strerror(errno));
 			throw std::runtime_error("Failed bind socket to port: " + errorMessage);
 		}
-		logger.Log(INFO,std::string("Socket has been created"));
+		logger.Log(INFO, std::string("Socket has been created"));
 
 		connection = true;
 		serverSocket = serverDesc;
@@ -129,7 +135,7 @@ namespace thywin
 		socklen_t sizeOfClientAddr = sizeof(clientAddr);
 		pthread_t thread_id;
 
-		logger.Log(INFO,std::string("Server is awaiting connections"));
+		logger.Log(INFO, std::string("Server is awaiting connections"));
 
 		while (HasConnection())
 		{
@@ -137,13 +143,13 @@ namespace thywin
 			printf("Connection accepted with client: %s port %i | CLIENT: %i\n", inet_ntoa(clientAddr.sin_addr),
 					ntohs(clientAddr.sin_port), client);
 
-			logger.Log(INFO,std::string("Connection accepted with client: port"));
-			int* arg = (int*)malloc(sizeof(*arg));
+			logger.Log(INFO, std::string("Connection accepted with client: port"));
+			int* arg = (int*) malloc(sizeof(*arg));
 			*arg = client;
 			if (pthread_create(&thread_id, NULL, setUpConnectionWithClient, arg) < 0)
 			{
 				close(client);
-				logger.Log(ERROR,std::string("Failed to create a new thread for client connection"));
+				logger.Log(ERROR, std::string("Failed to create a new thread for client connection"));
 				throw std::runtime_error("Failed to create a new thread for client connection");
 			}
 			else
