@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 	{
 		if (argc != 4)
 		{
-			std::cout << "Usage: crawler [numberOfClients] [ipaddress] [port]" << std::endl;
+			std::cout << "Usage: " << argv[0] << " [numberOfClients] [ipaddress] [port]" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 
@@ -34,7 +34,6 @@ int main(int argc, char** argv)
 
 		for (int i = 0; i < std::stoi(argv[1]); i++)
 		{
-			std::cout << i << std::endl;
 			pid_t processID = fork();
 			if (processID == -1)
 			{

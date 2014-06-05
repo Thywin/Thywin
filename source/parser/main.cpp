@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 	{
 		if (argc != 3)
 		{
-			std::cout << "Usage: parser [ipaddress] [port]" << std::endl;
+			std::cout << "Usage: " << argv[0] << " [ipaddress] [port]" << std::endl;
 			return EXIT_FAILURE;
 		}
 

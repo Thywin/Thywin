@@ -29,7 +29,6 @@ namespace thywin
 	Crawler::Crawler(const std::string& masterIP, const int masterPort) :
 			communication(masterIP, masterPort), logger(logfile)
 	{
-		std::cout << "IP: " << masterIP << " Port: " << masterPort << std::endl;
 	}
 
 	void Crawler::CrawlURI()
@@ -48,7 +47,6 @@ namespace thywin
 
 			if (receivedPacket->Type == URI && receivedPacket->Method == RESPONSE)
 			{
-				std::cout << "Retrieve URI: " << uriPacket->URI << std::endl;
 				crawl(uriPacket->URI, uriPacket->Relevance);
 			}
 		}
