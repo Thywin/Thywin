@@ -153,7 +153,6 @@ namespace thywin
 		{
 			if (URI.find(blackListURIs.at(i)) != std::string::npos)
 			{
-				printf("Black listed URI found: %s triggered on %s\n", URI.c_str(), blackListURIs.at(i).c_str());
 				return true;
 			}
 		}

@@ -28,12 +28,13 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			if (argc > 2) {
+			if (argc > 2)
+			{
 				std::ifstream infile(argv[2]);
 				std::string line;
 				while (std::getline(infile, line))
 				{
-				   Master::AddURIToBlackList(line);
+					Master::AddURIToBlackList(line);
 				}
 			}
 			const int portNumber = std::stoi(argv[1]);
