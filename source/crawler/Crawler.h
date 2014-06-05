@@ -25,7 +25,7 @@ namespace thywin
 			 * Constructor of the crawler. The constructor creates a Crawler object and sets the ipaddress for
 			 * the socket.
 			 */
-			Crawler(const std::string& masterIP, const unsigned short masterPort);
+			Crawler(const std::string& masterIP, const int masterPort);
 
 			/**
 			 * This function gets an URI from the master server. It then starts to crawl the URI and sends

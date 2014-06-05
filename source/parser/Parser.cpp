@@ -18,7 +18,7 @@
 
 namespace thywin
 {
-	Parser::Parser(const std::string& masterIP, const unsigned short masterPort) :
+	Parser::Parser(const std::string& masterIP, const int masterPort) :
 			logger("parser.log"), communicator(masterIP, masterPort)
 	{
 		running = false;
