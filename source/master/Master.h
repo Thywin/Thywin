@@ -73,6 +73,8 @@ namespace thywin
 			 */
 			virtual ~Master();
 
+			static void AddURIToBlackList(std::string& URI);
+
 		private:
 
 			static const int URI_QUEUE_SIZE = 50;
@@ -90,12 +92,14 @@ namespace thywin
 			 */
 			static sem_t documentQueueSemaphore;
 			static std::vector<std::shared_ptr<URIPacket>> URIQueue;
+			static std::vector<std::string> blackListURIs;
 
 			/**
 			 * This function will fill the URI queue with basic URIs for starting points.
 			 */
 			static void fillURLQueue();
 			static void fillURIElementToQueue(std::string URI);
+			static bool uriBlackListed(std::string& URI);
 	};
 }
 

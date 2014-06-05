@@ -26,6 +26,7 @@ namespace thywin
 	std::mutex Master::DocumentVectorMutex;
 	sem_t Master::documentQueueSemaphore;
 	std::vector<std::shared_ptr<URIPacket>> Master::URIQueue;
+	std::vector<std::string> Master::blackListURIs;
 	DatabaseHandler Master::DBConnection;
 
 	void Master::InitializeMaster()
@@ -42,9 +43,12 @@ namespace thywin
 
 	void Master::AddURIElementToQueue(std::shared_ptr<URIPacket> element)
 	{
-		Master::URIQueueMutex.lock();
-		DBConnection.AddURIToList(element);
-		Master::URIQueueMutex.unlock();
+		if (!uriBlackListed(element->URI))
+		{
+			Master::URIQueueMutex.lock();
+			DBConnection.AddURIToList(element);
+			Master::URIQueueMutex.unlock();
+		}
 	}
 
 	std::shared_ptr<URIPacket> Master::GetNextURIElementFromQueue()
@@ -110,6 +114,14 @@ namespace thywin
 		DocumentVectorMutex.unlock();
 	}
 
+	void Master::AddURIToBlackList(std::string& URI)
+	{
+		if (!URI.empty())
+		{
+			blackListURIs.insert(blackListURIs.end(), URI);
+		}
+	}
+
 	void Master::fillURLQueue()
 	{
 		fillURIElementToQueue("http://www.cs.mun.ca/~donald/msc/node11.html");
@@ -133,5 +145,18 @@ namespace thywin
 		{
 			// To be added to logger once library is updated
 		}
+	}
+
+	bool Master::uriBlackListed(std::string& URI)
+	{
+		for (unsigned int i = 0; i < blackListURIs.size(); i++)
+		{
+			if (URI.find(blackListURIs.at(i)) != std::string::npos)
+			{
+				printf("Black listed URI found: %s triggered on %s\n", URI.c_str(), blackListURIs.at(i).c_str());
+				return true;
+			}
+		}
+		return false;
 	}
 }
