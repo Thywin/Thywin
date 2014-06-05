@@ -79,7 +79,7 @@ namespace thywin
 
 		private:
 			int connectionSocket;
-			void checkRecv(int receiveSize, int socket);
+			void checkReceivedPacketForError(int receiveSize, int socket);
 	};
 
 } /* namespace thywin */

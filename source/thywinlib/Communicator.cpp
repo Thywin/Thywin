@@ -32,12 +32,12 @@ namespace thywin
 		connectionSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		if (connectionSocket == -1)
 		{
-			throw std::runtime_error(std::string("failed to create socket: ") + strerror(errno));
+			throw std::system_error();
 		}
 
 		if (connect(connectionSocket, (struct sockaddr*) &sockAddr, sizeof(sockAddr)) < 0)
 		{
-			throw std::runtime_error(std::string("failed to connect to socket: ") + strerror(errno));
+			throw std::system_error();
 		}
 	}
 
@@ -45,7 +45,7 @@ namespace thywin
 	{
 		if (close(connectionSocket) < 0)
 		{
-			throw std::runtime_error(std::string("failed to close socket: ") + strerror(errno));
+			//If close fails it doesn't matter.
 		}
 	}
 
@@ -79,12 +79,12 @@ namespace thywin
 	std::shared_ptr<ThywinPacket> Communicator::ReceivePacket(std::shared_ptr<ThywinPacketContent> contentObject)
 	{
 		std::stringstream receiveStream;
-		char receiveBuffer;
-		int receiveSize;
+		char receiveBuffer = 0;
+		int receiveSize = 0;
 		do
 		{
 			receiveSize = recv(connectionSocket, &receiveBuffer, sizeof(char), 0);
-			checkRecv(receiveSize, connectionSocket);
+			checkReceivedPacketForError(receiveSize, connectionSocket);
 			receiveStream << receiveBuffer;
 		} while (receiveSize > 0 && receiveBuffer != TP_END_OF_PACKET);
 
@@ -94,29 +94,33 @@ namespace thywin
 		std::string extractedValueType;
 		std::getline(receiveStream, extractedValueType, TP_HEADER_SEPERATOR);
 
-		std::string extractedValueContent;
-		std::getline(receiveStream, extractedValueContent, TP_END_OF_PACKET);
-		contentObject->Deserialize(extractedValueContent);
+		if (contentObject != NULL)
+		{
+			std::string extractedValueContent;
+			std::getline(receiveStream, extractedValueContent, TP_END_OF_PACKET);
+			contentObject->Deserialize(extractedValueContent);
+		}
 
 		std::shared_ptr<ThywinPacket> packet(
-				new ThywinPacket((PacketMethod) atoi(extractedValueMethod.c_str()),
-						(PacketType) atoi(extractedValueType.c_str()), contentObject));
+				new ThywinPacket((PacketMethod) std::stoi(extractedValueMethod),
+						(PacketType) std::stoi(extractedValueType), contentObject));
 
 		return packet;
 	}
 
-	void Communicator::checkRecv(int receiveSize, int socket)
+	void Communicator::checkReceivedPacketForError(int receiveSize, int socket)
 	{
 		if (receiveSize < 0)
 		{
-			throw std::runtime_error(std::string("failed to receive from socket: ") + strerror(errno));
+			throw std::system_error();
 		}
 		else if (receiveSize == 0)
 		{
 			if (close(socket) < 0)
 			{
-				throw std::runtime_error(std::string("failed to close socket: ") + strerror(errno));
+				throw std::system_error();
 			}
+			//throw an exception because when the master closes there is no use in continuing. 
 			throw std::runtime_error(std::string("Master closed the connection"));
 		}
 		//no else because the code just continues the previous if's terminate the program.

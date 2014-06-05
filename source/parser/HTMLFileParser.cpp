@@ -101,7 +101,7 @@ namespace thywin
 
 	std::string HTMLFileParser::constructURI(const std::string& rawURI, const std::string& sourceURI)
 	{
-		if (rawURI.length() == 0)
+		if (rawURI.empty())
 		{
 			return rawURI;
 		}
@@ -152,6 +152,8 @@ namespace thywin
 			std::string::size_type colonPosition = URI.find(colon);
 			std::string::size_type startQueryStringPosition = URI.find(startQueryString);
 
+			//here we check if the url looks like javascript: or mailto: 
+			//because they arent uri's where are interested in.
 			if (colonPosition > startQueryStringPosition || colonPosition == std::string::npos)
 			{
 				constructedURIStream << getHostPartOfURI(sourceURI) << getPathPartOfURI(sourceURI) << URI;

@@ -70,8 +70,6 @@ namespace thywin
 			}
 
 			communicator.StoreMultipleURIs(multiURIPacket);
-
-			multiURIPacket.Deserialize(multiURIPacket.Serialize());
 		}
 	}
 
