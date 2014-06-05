@@ -11,6 +11,8 @@
 #include <stdexcept>
 #include "Master.h"
 #include "Logger.h"
+#include <fstream>
+#include <string>
 
 using namespace thywin;
 
@@ -19,13 +21,22 @@ int main(int argc, char* argv[])
 	Logger logger("Master.log");
 	try
 	{
-		if (argc != 2)
+		if (argc < 2)
 		{
 			std::cerr << "Usage: " << argv[0] << "[port]" << std::endl;
 			return EXIT_FAILURE;
 		}
 		else
 		{
+			if (argc > 2)
+			{
+				std::ifstream infile(argv[2]);
+				std::string line;
+				while (std::getline(infile, line))
+				{
+					Master::AddURIToBlackList(line);
+				}
+			}
 			const int portNumber = std::stoi(argv[1]);
 			logger.Log(INFO, "Starting Master.");
 			Master::InitializeMaster();

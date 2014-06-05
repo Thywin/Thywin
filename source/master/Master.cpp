@@ -26,6 +26,7 @@ namespace thywin
 	std::mutex Master::DocumentVectorMutex;
 	sem_t Master::documentQueueSemaphore;
 	std::vector<std::shared_ptr<URIPacket>> Master::URIQueue;
+	std::vector<std::string> Master::blackListURIs;
 	DatabaseHandler Master::DBConnection;
 	Logger Master::logger("master.queue.log");
 
@@ -46,9 +47,12 @@ namespace thywin
 
 	void Master::AddURIElementToQueue(std::shared_ptr<URIPacket> element)
 	{
-		URIQueueMutex.lock();
-		DBConnection.AddURIToList(element);
-		URIQueueMutex.unlock();
+		if (!uriBlackListed(element->URI))
+		{
+			URIQueueMutex.lock();
+			DBConnection.AddURIToList(element);
+			URIQueueMutex.unlock();
+		}
 	}
 
 	std::shared_ptr<URIPacket> Master::GetNextURIElementFromQueue()
@@ -110,6 +114,14 @@ namespace thywin
 		DocumentVectorMutex.unlock();
 	}
 
+	void Master::AddURIToBlackList(std::string& URI)
+	{
+		if (!URI.empty())
+		{
+			blackListURIs.insert(blackListURIs.end(), URI);
+		}
+	}
+
 	void Master::fillURLQueue()
 	{
 		fillURIElementToQueue("http://www.cs.mun.ca/~donald/msc/node11.html");
@@ -126,5 +138,17 @@ namespace thywin
 
 		DBConnection.AddURIToList(packet);
 		DBConnection.AddURIToQueue(packet->URI);
+	}
+
+	bool Master::uriBlackListed(std::string& URI)
+	{
+		for (unsigned int i = 0; i < blackListURIs.size(); i++)
+		{
+			if (URI.find(blackListURIs.at(i)) != std::string::npos)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 }

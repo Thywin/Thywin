@@ -74,6 +74,12 @@ namespace thywin
 			 */
 			virtual ~Master();
 
+			/**
+			 * Adds an URI or element to the blacklist
+			 * @param URI or word that will be added to the blacklist
+			 */
+			static void AddURIToBlackList(std::string& URI);
+
 		private:
 
 			static Logger logger;
@@ -93,12 +99,14 @@ namespace thywin
 			 */
 			static sem_t documentQueueSemaphore;
 			static std::vector<std::shared_ptr<URIPacket>> URIQueue;
+			static std::vector<std::string> blackListURIs;
 
 			/**
 			 * This function will fill the URI queue with basic URIs for starting points.
 			 */
 			static void fillURLQueue();
 			static void fillURIElementToQueue(const std::string& URI);
+			static bool uriBlackListed(std::string& URI);
 	};
 }
 
