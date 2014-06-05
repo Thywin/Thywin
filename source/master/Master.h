@@ -73,6 +73,10 @@ namespace thywin
 			 */
 			virtual ~Master();
 
+			/**
+			 * Adds an URI or element to the blacklist
+			 * @param URI or word that will be added to the blacklist
+			 */
 			static void AddURIToBlackList(std::string& URI);
 
 		private:

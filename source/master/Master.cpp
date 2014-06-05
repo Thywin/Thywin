@@ -45,9 +45,9 @@ namespace thywin
 	{
 		if (!uriBlackListed(element->URI))
 		{
-			Master::URIQueueMutex.lock();
+			URIQueueMutex.lock();
 			DBConnection.AddURIToList(element);
-			Master::URIQueueMutex.unlock();
+			URIQueueMutex.unlock();
 		}
 	}
 
