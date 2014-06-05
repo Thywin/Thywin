@@ -25,7 +25,6 @@ local.properties
 *.obj
 
 # Compiled Dynamic libraries
-*.so
 *.dylib
 *.dll
 
@@ -40,3 +39,6 @@ local.properties
 *.out
 *.app
 /Debug
+
+# Config exclusion
+config.ini

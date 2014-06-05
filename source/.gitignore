@@ -1,5 +1,6 @@
 # eclipse specific git ignore
 .project
+.cproject
 .metadata
 bin/**
 tmp/**
@@ -37,3 +38,6 @@ local.properties
 *.exe
 *.out
 *.app
+
+# Config file
+config.ini

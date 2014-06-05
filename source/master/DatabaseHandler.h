@@ -15,12 +15,10 @@
 #include <memory>
 #include "URIPacket.h"
 #include "DocumentPacket.h"
+#include "DocumentVector.h"
 
 namespace thywin
 {
-
-	const int DEFAULT_DATABASE_PORT = 5432;
-	const std::string DEFAULT_DATABASE_IP = "192.168.100.13";
 	const std::string SQL_ERRORSTATE_UNIQUE = "23505";
 	const int CONNECTION_TIMEOUT_IN_MINUTES = 15;
 	const int RETRIEVE_URI_BUFFER_SIZE = 1024;
@@ -30,13 +28,10 @@ namespace thywin
 	{
 		public:
 
-
 			/**
 			 * Create a database handler that will connect to a ODBC database
-			 * @param ipaddress The IP of the machine where the database is running
-			 * @param givenPort The port on which the database is listening
 			 */
-			DatabaseHandler(std::string ipaddress, int givenPort);
+			DatabaseHandler();
 			virtual ~DatabaseHandler();
 
 			/**
@@ -50,7 +45,7 @@ namespace thywin
 			 * Adds a new URI to the URI List table. This table is a collection of all URIs found.
 			 * @param element Add a new URI to the URI List table.
 			 */
-			void AddURIToList(std::shared_ptr<URIPacket> element);
+			void AddURIToList(URIPacket::URIPacketPtr element);
 
 			/**
 			 * Adds a new URI to the URI Queue table.
@@ -63,7 +58,7 @@ namespace thywin
 			 * @param input A documentPacket containing a URI & Content.
 			 * URI should already be in the list.
 			 */
-			void AddDocumentToQueue(std::shared_ptr<DocumentPacket> input);
+			void AddDocumentToQueue(DocumentPacket::DocumentPacketPtr input);
 
 			/**
 			 * Adds the word to the database.
@@ -71,38 +66,44 @@ namespace thywin
 			 * @param word The word that is retrieved from the crawled document
 			 * @param count The amount of occurrences of that word in the document
 			 */
-			void AddWordcountToIndex(std::string URI, std::string word, int count);
+			void AddIndex(std::string URI, DocumentVector index);
+
+			/**
+			 * Updates the relevance of the URI in the uris table.
+			 * @param element the packet that contains the data that needs to be updated
+			 */
+			void UpdateURIInList(URIPacket::URIPacketPtr element);
 
 			/**
 			 * Retrieves the first URI in the queue.
 			 * @return Shared pointer to the URI and relevance.
 			 */
-			std::shared_ptr<URIPacket> RetrieveURIFromQueue();
+			URIPacket::URIPacketPtr RetrieveURIFromQueue();
 
 			/**
 			 * Retrieves the first URI in the queue and deletes the entry in the database.
 			 * @return Shared pointer to the URI and relevance.
 			 */
-			std::shared_ptr<URIPacket> RetrieveAndDeleteURIFromQueue();
+			URIPacket::URIPacketPtr RetrieveAndDeleteURIFromQueue();
 
 			/**
 			 * Retrieves the first document in the queue.
 			 * @return Shared pointer to the URI and content.
 			 */
-			std::shared_ptr<DocumentPacket> RetrieveDocumentFromQueue();
+			DocumentPacket::DocumentPacketPtr RetrieveDocumentFromQueue();
 
 			/**
 			 * Retrieves the first document in the queue and deletes the entry in the database.
 			 * @return Shared pointer to the URI and content.
 			 */
-			std::shared_ptr<DocumentPacket> RetrieveAndDeleteDocumentFromQueue();
+			DocumentPacket::DocumentPacketPtr RetrieveAndDeleteDocumentFromQueue();
 
 			/**
 			 * Get a list of URIpackets from the URI Queue table in the database.
 			 * @param amount The amount of URIs you want to get.
 			 * @return list of URIpackets. Shared pointers.
 			 */
-			std::vector<std::shared_ptr<URIPacket>> GetURIListFromQueue(const int amount);
+			URIPacket::URIPacketVector GetURIListFromQueue(const int amount);
 
 			/**
 			 * Get the number of rows that are within the given queue table.
@@ -129,12 +130,19 @@ namespace thywin
 			 */
 			void Disconnect();
 
+			/**
+			 * Check if given URI is already in the URI List.
+			 * @param URI URI to be checked.
+			 * @return true if the URI is already in the list, else false.
+			 */
+			bool URIInList(std::string URI);
+
 		private:
 			SQLHANDLE environmentHandle;
 			SQLHANDLE connectionHandle;
 			bool connected;
 
-			void handleNonRowReturningQuery(std::string query);
+			bool handleNonRowReturningQuery(std::string query);
 			bool executeQuery(std::string query, SQLHANDLE& stmtHndl);
 			void showError(unsigned int handletype, const SQLHANDLE& handle);
 
@@ -152,7 +160,7 @@ namespace thywin
 			 * Sets up a connection to the database of given IP.
 			 * In case a port was given with the constructor it will connect to a database of that port.
 			 */
-			void Connect(std::string ipaddress, int givenPort);
+			void connect();
 	};
 
 } /* namespace thywin */

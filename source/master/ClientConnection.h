@@ -15,7 +15,10 @@
 
 namespace thywin
 {
-
+	/**
+	 * Handles the connection between a client and the master.
+	 * For each thread with a client there will be a client connection.
+	 */
 	class ClientConnection
 	{
 		public:
@@ -23,7 +26,7 @@ namespace thywin
 			 * Creates a connection class for handling the connection from client to Master Server.
 			 * @param Client Socket Descriptor for the client connection. Has to be a live connection
 			 */
-			ClientConnection(int client);
+			ClientConnection(int client, Logger& threadLogger);
 
 			/**
 			 * Default destructor. Closes the connection with the client if still alive
@@ -48,15 +51,15 @@ namespace thywin
 			bool hasConnection();
 
 		private:
+			Logger logger;
 			int clientSocket;
 			bool handlingConnection;
-			bool connection;
 			std::string lastPacketContent;
 			MasterCommunicator communicator;
 			//Logger logger; /* Temporarily placed in comment while awaiting library update */
 
 			ThywinPacket ReceivePacket();
-			int SendPacket(ThywinPacket& sendPacket);
+			void SendPacket(ThywinPacket& sendPacket);
 			void HandleGetRequest(const ThywinPacket& packet);
 			void HandlePutRequest(const ThywinPacket& packet);
 			void deserializePutObject(ThywinPacket& packet, std::string& serializedObject);

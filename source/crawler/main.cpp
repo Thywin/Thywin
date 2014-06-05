@@ -10,48 +10,34 @@
 #include <stdio.h>
 #include <iostream>
 #include <stdexcept>
+#include <system_error>
 #include <errno.h>
-#include <string.h>
-#include "crawler.h"
+#include <string>
+#include "Crawler.h"
 #include "Communicator.h"
 
 using namespace thywin;
 
 int main(int argc, char** argv)
 {
-	Logger logger = Logger("log");
+	Logger logger = Logger("crawler.log");
 
 	try
 	{
-		long int NUMBER_OF_CLIENTS = 10;
-		std::string ipaddress = "192.168.100.13";
-		long int port = 7500;
-
-		if (argc > 4)
+		if (argc != 4)
 		{
-			std::cout << "Usage: ./crawler [numberOfClients] [ipaddress] [port]" << std::endl;
+			std::cerr << "Usage: " << argv[0] << " [numberOfClients] [ipaddress] [port]" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 
-		if (argc == 4)
-		{
-			NUMBER_OF_CLIENTS = strtol(argv[1], NULL, 0);
-			ipaddress = argv[2];
-			port = strtol(argv[3], NULL, 0);
-		} else if (argc == 2)
-		{
-			NUMBER_OF_CLIENTS = strtol(argv[1], NULL, 0);
-		}
+		logger.Log(INFO, "Starting to crawl using ip: " + std::string(argv[2]));
 
-		logger.Log(INFO, "Starting to crawl using ip: " + std::string(ipaddress));
-
-		for (int i = 0; i < NUMBER_OF_CLIENTS - 1; i++)
+		for (int i = 0; i < std::stoi(argv[1]); i++)
 		{
-
 			pid_t processID = fork();
 			if (processID == -1)
 			{
-				throw std::runtime_error(std::string(strerror(errno)));
+				throw std::system_error();
 			}
 			else if (processID == 0)
 			{
@@ -59,7 +45,7 @@ int main(int argc, char** argv)
 			}
 		}
 
-		Crawler crawler(ipaddress, port);
+		Crawler crawler(argv[2], std::stoi(argv[3]));
 
 		while (true)
 		{

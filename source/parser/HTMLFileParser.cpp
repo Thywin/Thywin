@@ -73,7 +73,14 @@ namespace thywin
 		std::string::size_type closeBracketPosition = std::string::npos;
 		do
 		{
-			openBracketPosition = content.find(openBracket, closeBracketPosition);
+			if (closeBracketPosition == std::string::npos)
+			{
+				openBracketPosition = content.find(openBracket, 0);
+			}
+			else
+			{
+				openBracketPosition = content.find(openBracket, closeBracketPosition);
+			}
 
 			if (openBracketPosition == std::string::npos)
 			{
@@ -83,7 +90,7 @@ namespace thywin
 			{
 				textStream
 						<< content.substr(closeBracketPosition + closeBracket.length(),
-								openBracketPosition - closeBracketPosition);
+								openBracketPosition - (closeBracketPosition + closeBracket.length()));
 			}
 
 			closeBracketPosition = content.find(closeBracket, openBracketPosition);
@@ -94,7 +101,7 @@ namespace thywin
 
 	std::string HTMLFileParser::constructURI(const std::string& rawURI, const std::string& sourceURI)
 	{
-		if (rawURI.length() == 0)
+		if (rawURI.empty())
 		{
 			return rawURI;
 		}
@@ -145,6 +152,8 @@ namespace thywin
 			std::string::size_type colonPosition = URI.find(colon);
 			std::string::size_type startQueryStringPosition = URI.find(startQueryString);
 
+			//here we check if the url looks like javascript: or mailto: 
+			//because they arent uri's where are interested in.
 			if (colonPosition > startQueryStringPosition || colonPosition == std::string::npos)
 			{
 				constructedURIStream << getHostPartOfURI(sourceURI) << getPathPartOfURI(sourceURI) << URI;
@@ -249,9 +258,22 @@ namespace thywin
 	{
 		const std::string protocolEnd("://");
 		std::string::size_type protocolEndPosition = URI.find(protocolEnd);
+		std::string::size_type firstHashtagPosition = URI.find("#");
+		std::string::size_type firstQuestionMarkPosition = URI.find("?");
 		if (protocolEndPosition != std::string::npos)
 		{
-			protocolEndPosition += protocolEnd.length();
+			if (protocolEndPosition > firstHashtagPosition && firstHashtagPosition != std::string::npos)
+			{
+				protocolEndPosition = std::string::npos;
+			}
+			else if (protocolEndPosition > firstQuestionMarkPosition && firstQuestionMarkPosition != std::string::npos)
+			{
+				protocolEndPosition = std::string::npos;
+			}
+			else
+			{
+				protocolEndPosition += protocolEnd.length();
+			}
 		}
 		return protocolEndPosition;
 	}

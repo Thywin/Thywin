@@ -15,7 +15,10 @@
 #include <semaphore.h>
 #include "URIPacket.h"
 #include "DocumentPacket.h"
+#include "DocumentVectorPacket.h"
 #include "DatabaseHandler.h"
+#include "MultiURIPacket.h"
+#include "Logger.h"
 
 namespace thywin
 {
@@ -50,18 +53,38 @@ namespace thywin
 
 			/**
 			 * Adds a new document element to the Document Queue.
-			 * @param documentElement Pointer to a documentElement struct
+			 * @param documentElement Pointer to a documentElement
 			 */
 			static void AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element);
+
+			/**
+			 * Adds multiple URIs to the URIs queue
+			 * @param packet Pointer to a MultiURIPacket object
+			 */
+			static void AddMultipleURISToQueue(std::shared_ptr<MultiURIPacket> packet);
+
+			/**
+			 * Adds a new documentVector element to the index database.
+			 * @param documentVector Pointer to a documentVector
+			 */
+			static void PutDocumentVector(std::shared_ptr<DocumentVectorPacket> documentVector);
 
 			/**
 			 * Disconnects the connection with the database
 			 */
 			virtual ~Master();
 
+			/**
+			 * Adds an URI or element to the blacklist
+			 * @param URI or word that will be added to the blacklist
+			 */
+			static void AddURIToBlackList(std::string& URI);
+
 		private:
 
-			static const int URI_QUEUE_SIZE = 300;
+			static Logger logger;
+
+			static const int URI_QUEUE_SIZE = 50;
 			/**
 			 * Database connection object. Used get URIs or documents from the Database.
 			 */
@@ -69,18 +92,21 @@ namespace thywin
 
 			static std::mutex URIQueueMutex;
 			static std::mutex DocumentQueueMutex;
-
+			static std::mutex DocumentVectorMutex;
 			/**
 			 * Semaphore for the document Queue.
 			 * Will be initialized with the number of documents available in the Database Queue on start.
 			 */
 			static sem_t documentQueueSemaphore;
 			static std::vector<std::shared_ptr<URIPacket>> URIQueue;
+			static std::vector<std::string> blackListURIs;
 
 			/**
 			 * This function will fill the URI queue with basic URIs for starting points.
 			 */
 			static void fillURLQueue();
+			static void fillURIElementToQueue(const std::string& URI);
+			static bool uriBlackListed(std::string& URI);
 	};
 }
 

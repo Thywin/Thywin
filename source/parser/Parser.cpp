@@ -7,14 +7,18 @@
 
 #include <iostream>
 
+#include <memory>
+#include <vector>
+#include <algorithm>
 #include "Parser.h"
 #include "HTMLFileParser.h"
 #include "DocumentVector.h"
+#include "MultiURIPacket.h"
+#include "DocumentVectorPacket.h"
 
 namespace thywin
 {
-
-	Parser::Parser(const std::string& masterIP, const unsigned short masterPort) :
+	Parser::Parser(const std::string& masterIP, const int masterPort) :
 			logger("parser.log"), communicator(masterIP, masterPort)
 	{
 		running = false;
@@ -45,17 +49,27 @@ namespace thywin
 			DocumentVector docVector(text);
 			double relevance = docVector.CalculateSimilarity(subject);
 
+			DocumentVectorPacket documentVectorPacket(documentToParse.URI, relevance, docVector);
+			if (relevance > 0)
+			{
+				communicator.StoreIndex(documentVectorPacket);
+			}
+
 			std::stringstream logMessageRelevance;
 			logMessageRelevance << "Relevance of current URI: " << documentToParse.URI << " Relevance: " << relevance;
 			logger.Log(INFO, logMessageRelevance.str());
 
+			MultiURIPacket multiURIPacket;
+
 			for (unsigned int i = 0; i < extractedURIs.size(); i++)
 			{
-				URIPacket uriPacket;
-				uriPacket.Relevance = relevance;
-				uriPacket.URI = extractedURIs.at(i);
-				communicator.StoreExpectedURIRelevance(uriPacket);
+				URIPacket::URIPacketPtr packet(new URIPacket);
+				packet->URI = extractedURIs.at(i);
+				packet->Relevance = relevance;
+				multiURIPacket.Content.insert(multiURIPacket.Content.end(), packet);
 			}
+
+			communicator.StoreMultipleURIs(multiURIPacket);
 		}
 	}
 

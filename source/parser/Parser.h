@@ -23,7 +23,7 @@ namespace thywin
 			 * @param masterIP ip of the master pi
 			 * @param masterPort port of the master pi
 			 */
-			Parser(const std::string& masterIP, const unsigned short masterPort);
+			Parser(const std::string& masterIP, const int masterPort);
 			
 			/**
 			 * Default destructor

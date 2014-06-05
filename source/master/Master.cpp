@@ -23,15 +23,21 @@ namespace thywin
 {
 	std::mutex Master::URIQueueMutex;
 	std::mutex Master::DocumentQueueMutex;
+	std::mutex Master::DocumentVectorMutex;
 	sem_t Master::documentQueueSemaphore;
 	std::vector<std::shared_ptr<URIPacket>> Master::URIQueue;
-	DatabaseHandler Master::DBConnection(DEFAULT_DATABASE_IP, DEFAULT_DATABASE_PORT);
+	std::vector<std::string> Master::blackListURIs;
+	DatabaseHandler Master::DBConnection;
+	Logger Master::logger("master.queue.log");
 
 	void Master::InitializeMaster()
 	{
 		sem_init(&documentQueueSemaphore, 0, DBConnection.GetRowCount("document_queue"));
-		printf("Current document Queue size: %i\n", DBConnection.GetRowCount("document_queue"));
-		printf("Current uri Queue size: %i\n", DBConnection.GetRowCount("uri_queue"));
+
+		std::stringstream logMessageQueueSize;
+		logMessageQueueSize << "Current document Queue size: " << DBConnection.GetRowCount("document_queue")
+				<< std::endl << "Current uri Queue size: " << DBConnection.GetRowCount("uri_queue");
+		logger.Log(INFO, logMessageQueueSize.str());
 	}
 
 	Master::~Master()
@@ -41,88 +47,108 @@ namespace thywin
 
 	void Master::AddURIElementToQueue(std::shared_ptr<URIPacket> element)
 	{
-		Master::URIQueueMutex.lock();
-		DBConnection.AddURIToList(element);
-		DBConnection.AddURIToQueue(element->URI);
-		Master::URIQueueMutex.unlock();
+		if (!uriBlackListed(element->URI))
+		{
+			URIQueueMutex.lock();
+			DBConnection.AddURIToList(element);
+			URIQueueMutex.unlock();
+		}
 	}
 
 	std::shared_ptr<URIPacket> Master::GetNextURIElementFromQueue()
 	{
-		Master::URIQueueMutex.lock();
-		try
+		URIQueueMutex.lock();
+
+		if (DBConnection.IsQueueEmpty("uri_queue"))
 		{
-			if (DBConnection.IsQueueEmpty("uri_queue"))
-			{
-				Master::fillURLQueue();
-				/* Temporary queue filling for debug purposes. */
-			}
+			fillURLQueue();
+			logger.Log(INFO, "Filled the uri queue with the default uri's");
+			/* Fills the queue with the default starting point uri's. */
 		}
-		catch (std::exception& e)
-		{
-			// To be added to log once library is updated
-		}
+
 		if (URIQueue.empty())
 		{
 			std::vector<std::shared_ptr<URIPacket>> receivedCache = DBConnection.GetURIListFromQueue(URI_QUEUE_SIZE);
-			Master::URIQueue.insert(Master::URIQueue.end(), receivedCache.begin(), receivedCache.end());
+			URIQueue.insert(URIQueue.end(), receivedCache.begin(), receivedCache.end());
 		}
-		std::shared_ptr<URIPacket> element = Master::URIQueue.at(0);
-		Master::URIQueue.erase(URIQueue.begin());
+		std::shared_ptr<URIPacket> element = URIQueue.at(0);
+		URIQueue.erase(URIQueue.begin());
 
-		Master::URIQueueMutex.unlock();
+		URIQueueMutex.unlock();
 		return element;
 	}
 
 	void Master::AddDocumentElementToQueue(std::shared_ptr<DocumentPacket> element)
 	{
-		Master::DocumentQueueMutex.lock();
+		DocumentQueueMutex.lock();
 		DBConnection.AddDocumentToQueue(element);
 		sem_post(&documentQueueSemaphore);
-		Master::DocumentQueueMutex.unlock();
+		DocumentQueueMutex.unlock();
 	}
 
 	std::shared_ptr<DocumentPacket> Master::GetNextDocumentElementFromQueue()
 	{
 		sem_wait(&documentQueueSemaphore);
-		Master::DocumentQueueMutex.lock();
+		DocumentQueueMutex.lock();
 		std::shared_ptr<DocumentPacket> element = DBConnection.RetrieveAndDeleteDocumentFromQueue();
-		Master::DocumentQueueMutex.unlock();
+		DocumentQueueMutex.unlock();
 		return element;
+	}
+
+	void Master::AddMultipleURISToQueue(std::shared_ptr<MultiURIPacket> packet)
+	{
+		for (unsigned int i = 0; i < packet->Content.size(); i++)
+		{
+			AddURIElementToQueue(packet->Content.at(i));
+		}
+	}
+
+	void Master::PutDocumentVector(std::shared_ptr<DocumentVectorPacket> documentVector)
+	{
+		DocumentVectorMutex.lock();
+		std::shared_ptr<URIPacket> URIElement(new URIPacket);
+		URIElement->URI = documentVector->URI;
+		URIElement->Relevance = documentVector->Relevance;
+		DBConnection.UpdateURIInList(URIElement);
+		DBConnection.AddIndex(documentVector->URI, documentVector->Index);
+		DocumentVectorMutex.unlock();
+	}
+
+	void Master::AddURIToBlackList(std::string& URI)
+	{
+		if (!URI.empty())
+		{
+			blackListURIs.insert(blackListURIs.end(), URI);
+		}
 	}
 
 	void Master::fillURLQueue()
 	{
-		try
-		{
-			std::shared_ptr<URIPacket> URIElement(new URIPacket);
-			URIElement->URI = "http://thywin.com/kaas/kaas/index.html\0";
-			URIElement->Relevance = 0;
-			DBConnection.AddURIToList(URIElement);
-			DBConnection.AddURIToQueue(URIElement->URI);
-
-			std::shared_ptr<URIPacket> newelemente(new URIPacket);
-			newelemente->URI = "http://www.cs.mun.ca/~donald/msc/node11.html\0";
-			newelemente->Relevance = 0;
-			DBConnection.AddURIToList(newelemente);
-			DBConnection.AddURIToQueue(newelemente->URI);
-
-			std::shared_ptr<URIPacket> anotherElement(new URIPacket);
-			anotherElement->URI = "www.facebook.com\0";
-			anotherElement->Relevance = 0;
-			DBConnection.AddURIToList(anotherElement);
-			DBConnection.AddURIToQueue(anotherElement->URI);
-
-			std::shared_ptr<URIPacket> otherElement(new URIPacket);
-			otherElement->URI = "http://en.wikipedia.org/wiki/Discrete_event_simulation\0";
-			otherElement->Relevance = 0;
-			DBConnection.AddURIToList(otherElement);
-			DBConnection.AddURIToQueue(otherElement->URI);
-		}
-		catch (std::bad_alloc& e)
-		{
-			// To be added to logger once library is updated
-		}
+		fillURIElementToQueue("http://www.cs.mun.ca/~donald/msc/node11.html");
+		fillURIElementToQueue("http://mdm.sagepub.com/content/32/5/701.full");
+		fillURIElementToQueue("http://en.wikipedia.org/wiki/Discrete_event_simulation");
+		fillURIElementToQueue("http://www.albrechts.com/mike/DES/");
 	}
 
+	void Master::fillURIElementToQueue(const std::string& URI)
+	{
+		std::shared_ptr<URIPacket> packet(new URIPacket);
+		packet->URI = URI;
+		packet->Relevance = 0;
+
+		DBConnection.AddURIToList(packet);
+		DBConnection.AddURIToQueue(packet->URI);
+	}
+
+	bool Master::uriBlackListed(std::string& URI)
+	{
+		for (unsigned int i = 0; i < blackListURIs.size(); i++)
+		{
+			if (URI.find(blackListURIs.at(i)) != std::string::npos)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 }

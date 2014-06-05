@@ -5,10 +5,10 @@
  *      Author: Thomas Kooi
  */
 
+#include <stdlib.h>
 #include <string>
 #include <iostream>
 #include "Communicator.h"
-#include <stdlib.h>
 #include "DocumentPacket.h"
 
 namespace thywin
@@ -26,7 +26,6 @@ namespace thywin
 		std::stringstream stream;
 		stream << input;
 
-		std::string token;
 		std::getline(stream, URI, TP_CONTENT_SEPERATOR);
 		std::getline(stream, Document, TP_CONTENT_SEPERATOR);
 	}
