@@ -29,12 +29,10 @@ int main(int argc, char* argv[])
 		else
 		{
 			if (argc > 2) {
-				printf("Blacklisting enabled\n");
 				std::ifstream infile(argv[2]);
 				std::string line;
 				while (std::getline(infile, line))
 				{
-					printf("Blacklisted URI: %s\n",line.c_str());
 				   Master::AddURIToBlackList(line);
 				}
 			}
