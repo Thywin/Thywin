@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 	{
 		if (argc != 4)
 		{
-			std::cout << "Usage: " << argv[0] << " [numberOfClients] [ipaddress] [port]" << std::endl;
+			std::cerr << "Usage: " << argv[0] << " [numberOfClients] [ipaddress] [port]" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 
