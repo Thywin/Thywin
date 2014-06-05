@@ -19,10 +19,10 @@ int main(int argc, char* argv[])
 	Logger logger("Master.log");
 	try
 	{
-		if (argc < 2)
+		if (argc != 2)
 		{
-			logger.Log(ERROR, "No port has been given..");
-			return (EXIT_FAILURE);
+			std::cerr << "Usage: " << argv[0] << "[port]" << std::endl;
+			return EXIT_FAILURE;
 		}
 		else
 		{

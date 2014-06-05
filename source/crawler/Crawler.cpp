@@ -26,7 +26,7 @@ namespace thywin
 {
 	const std::string logfile = "crawler.log";
 
-	Crawler::Crawler(const std::string& masterIP, const unsigned short masterPort) :
+	Crawler::Crawler(const std::string& masterIP, const int masterPort) :
 			communication(masterIP, masterPort), logger(logfile)
 	{
 	}

@@ -13,7 +13,13 @@ int main(int argc, char** argv)
 	Logger logger("parser.log");
 	try
 	{
-		Parser parser("192.168.100.13", 7500);
+		if (argc != 3)
+		{
+			std::cerr << "Usage: " << argv[0] << " [ipaddress] [port]" << std::endl;
+			return EXIT_FAILURE;
+		}
+
+		Parser parser(argv[1], std::stoi(argv[2]));
 		parser.Run();
 
 		return EXIT_SUCCESS;
