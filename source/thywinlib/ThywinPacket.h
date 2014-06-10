@@ -3,7 +3,7 @@
  *
  *  Created on: May 13, 2014
  *      Author: Thomas Kooi
- *      		Imre Woudstra
+ *      Author: Imre Woudstra
  */
 
 #ifndef THYWINPACKET_H_

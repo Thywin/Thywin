@@ -9,6 +9,9 @@ class DB
 	private $_results;
 	private $_count = 0;
 
+	/**
+     * Create a DB connection
+	 */
 	private function __construct() 
 	{
 		try
@@ -21,6 +24,9 @@ class DB
 		}
 	}	
 
+	/**
+     * Get a instance of the Database with an active connection
+	 */
 	public static function getInstance() 
 	{
 		if (!isset(self::$_instance)) 
@@ -31,6 +37,9 @@ class DB
 		return self::$_instance;
 	}
 
+	/**
+     * Create a query based on a SQL statement and matching values for the question marks
+	 */
 	public function query($sql, $params = array()) 
 	{
 		$this->_error = false;
@@ -64,6 +73,9 @@ class DB
 		return $this;
 	}
 
+	/**
+     * Perform a query on the database based on an action, a table and a where condition
+	 */
 	public function action($action, $table, $where = array())
 	{
 		if (count($where) === 3)
@@ -88,20 +100,32 @@ class DB
 		return false;
 	}
 
+	/**
+     * Get data from a certain table with a where condition
+	 */
 	public function get($table, $where)
 	{
 		return $this->action('SELECT *', $table, $where);
 	}
 
+	/**
+     * Return errors;
+	 */
 	public function error()
 	{
 		return $this->_error;
 	}
 
+	/**
+     * Return the row count;
+	 */
 	public function count() {
 		return $this->_count;
 	}
 
+	/**
+     * Return the query results;
+	 */
 	public function results() {
 		return $this->_results;
 	}

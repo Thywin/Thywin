@@ -5,7 +5,7 @@ $results = 0;
 $search = '';
 $searchResults = array();
 
-if (Input::exists()) {
+if (Input::exists('get')) {
 	$search = Input::get('search');
 	if (!empty($search)) {
 		$host    = "80.113.19.16";

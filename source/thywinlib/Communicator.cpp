@@ -3,7 +3,7 @@
  *
  *  Created on: May 13, 2014
  *      Author: Thomas Kooi
- *      		Imre Woudstra
+ *      Author: Imre Woudstra
  */
 
 #include "Communicator.h"
@@ -43,10 +43,8 @@ namespace thywin
 
 	Communicator::~Communicator()
 	{
-		if (close(connectionSocket) < 0)
-		{
-			//If close fails it doesn't matter.
-		}
+		close(connectionSocket);
+		//If close fails it doesn't matter.
 	}
 
 	unsigned int Communicator::SendPacket(const ThywinPacket& packet)

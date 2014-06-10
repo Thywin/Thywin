@@ -2,7 +2,7 @@
  * DocumentVectorPacket.cpp
  *
  *  Created on: 23 mei 2014
- *      Author: Bobby
+ *      Author: Bobby Bouwmann
  */
 
 #include "Communicator.h"

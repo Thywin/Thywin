@@ -88,10 +88,8 @@ namespace thywin
 		{
 			handlingConnection = false;
 
-			if (close(clientSocket) < 0)
-			{
-				// who cares?
-			}
+		    close(clientSocket);
+		    //If close fails it doesn't matter.
 		}
 	}
 

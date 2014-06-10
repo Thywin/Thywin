@@ -3,7 +3,7 @@
  *
  *  Created on: May 13, 2014
  *      Author: Thomas Kooi
- *      		Imre Woudstra
+ *      Auhtor: Imre Woudstra
  */
 
 #ifndef COMMUNICATOR_H_
