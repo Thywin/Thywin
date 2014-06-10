@@ -2,6 +2,9 @@
 
 class Config 
 {
+	/**
+     * Get a value out of global config array from init.php
+	 */
 	public static function get($path = null) 
 	{
 		if ($path) 
