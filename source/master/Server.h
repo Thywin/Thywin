@@ -42,6 +42,10 @@ namespace thywin
 			 * @param accept Number of accepted connections at any given time.
 			 */
 			Server(const int port, const int accept);
+
+			/**
+			 * Default destructor
+			 */
 			virtual ~Server();
 
 			/**

@@ -2,7 +2,7 @@
  * MultiURIPacket.h
  *
  *  Created on: 26 mei 2014
- *      Author: Bobby
+ *      Author: Bobby Bouwmann
  */
 
 #ifndef MULTIURIPACKET_H_

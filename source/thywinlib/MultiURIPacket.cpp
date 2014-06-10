@@ -2,7 +2,7 @@
  * MultiURIPacket.cpp
  *
  *  Created on: 26 mei 2014
- *      Author: Bobby
+ *      Author: Bobby Bouwmann
  */
 
 #include <string>

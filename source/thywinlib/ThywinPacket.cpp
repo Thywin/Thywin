@@ -2,7 +2,7 @@
  * ThywinPacket.cpp
  *
  *  Created on: 22 mei 2014
- *      Author: Bobby
+ *      Author: Bobby Bouwmann
  */
 
 #include <memory>
